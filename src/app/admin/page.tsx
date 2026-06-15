@@ -5,15 +5,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ShieldAlert, 
-  Trophy, 
-  CreditCard, 
   Swords, 
   Loader2,
   Trash2,
-  DollarSign,
-  PlusCircle
+  Trophy,
+  Skull
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdminDashboard() {
@@ -54,6 +51,14 @@ export default function AdminDashboard() {
   const [perKill, setPerKill] = useState('');
   const [maxPlayers, setMaxPlayers] = useState('48');
   const [startTime, setStartTime] = useState('');
+  
+  // Prize Breakdown
+  const [p1, setP1] = useState('');
+  const [p2, setP2] = useState('');
+  const [p3, setP3] = useState('');
+  const [p4, setP4] = useState('');
+  const [p5, setP5] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -63,10 +68,7 @@ export default function AdminDashboard() {
         return;
       }
       if (profile?.role !== 'admin') {
-        const timer = setTimeout(() => {
-          router.replace('/');
-        }, 500);
-        return () => clearTimeout(timer);
+        router.replace('/');
       }
     }
   }, [user, userLoading, profileLoading, profile, router]);
@@ -91,6 +93,13 @@ export default function AdminDashboard() {
         currentPlayers: 0,
         startTime: new Date(startTime).toISOString(),
         status: 'open',
+        prizes: {
+          p1: Number(p1),
+          p2: Number(p2),
+          p3: Number(p3),
+          p4: Number(p4),
+          p5: Number(p5),
+        },
         createdAt: serverTimestamp(),
       });
       
@@ -104,12 +113,9 @@ export default function AdminDashboard() {
       setPrizePool('');
       setPerKill('');
       setStartTime('');
+      setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create match.",
-      });
+      toast({ variant: "destructive", title: "Error", description: "Failed to create match." });
     } finally {
       setIsSubmitting(false);
     }
@@ -125,9 +131,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-          Verifying Identity...
-        </p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Authorizing...</p>
       </div>
     );
   }
@@ -145,10 +149,9 @@ export default function AdminDashboard() {
       </header>
 
       <Tabs defaultValue="create" className="space-y-6">
-        <TabsList className="grid grid-cols-3 bg-card border border-white/5 h-12 rounded-xl p-1">
-          <TabsTrigger value="create" className="rounded-lg font-bold text-[10px] uppercase tracking-widest">Create</TabsTrigger>
-          <TabsTrigger value="manage" className="rounded-lg font-bold text-[10px] uppercase tracking-widest">Manage</TabsTrigger>
-          <TabsTrigger value="finance" className="rounded-lg font-bold text-[10px] uppercase tracking-widest">Finance</TabsTrigger>
+        <TabsList className="grid grid-cols-2 bg-card border border-white/5 h-12 rounded-xl p-1">
+          <TabsTrigger value="create" className="rounded-lg font-bold text-[10px] uppercase tracking-widest">Create Match</TabsTrigger>
+          <TabsTrigger value="manage" className="rounded-lg font-bold text-[10px] uppercase tracking-widest">Manage List</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create">
@@ -157,72 +160,101 @@ export default function AdminDashboard() {
               <CardTitle className="text-lg font-headline font-bold uppercase italic">Launch Tournament</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddMatch} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
-                  <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="input-simple" required />
+              <form onSubmit={handleAddMatch} className="space-y-6">
+                <div className="grid gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
+                    <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="input-simple" required />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mode</Label>
+                      <Select value={matchMode} onValueChange={setMatchMode}>
+                        <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Solo">Solo</SelectItem>
+                          <SelectItem value="Duo">Duo</SelectItem>
+                          <SelectItem value="Squad">Squad</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Map</Label>
+                      <Select value={matchMap} onValueChange={setMatchMap}>
+                        <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Bermuda">Bermuda</SelectItem>
+                          <SelectItem value="Purgatory">Purgatory</SelectItem>
+                          <SelectItem value="Kalahari">Kalahari</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Version</Label>
+                      <Select value={matchVersion} onValueChange={setMatchVersion}>
+                        <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TPP">TPP</SelectItem>
+                          <SelectItem value="FPP">FPP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Start Time</Label>
+                      <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="input-simple" required />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Fee (TK)</Label>
+                      <Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="input-simple" required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Total Prize</Label>
+                      <Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="input-simple" required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Per Kill</Label>
+                      <Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="input-simple" required />
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-white/5 rounded-xl bg-background/40 space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase text-primary tracking-widest flex items-center gap-2">
+                      <Trophy className="w-3 h-3" /> Position Prize Pool
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase">1st Winner</Label>
+                        <Input type="number" value={p1} onChange={(e) => setP1(e.target.value)} className="input-simple h-9 text-xs" required />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase">2nd Winner</Label>
+                        <Input type="number" value={p2} onChange={(e) => setP2(e.target.value)} className="input-simple h-9 text-xs" required />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase">3rd Winner</Label>
+                        <Input type="number" value={p3} onChange={(e) => setP3(e.target.value)} className="input-simple h-9 text-xs" required />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase">4th Winner</Label>
+                        <Input type="number" value={p4} onChange={(e) => setP4(e.target.value)} className="input-simple h-9 text-xs" required />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase">5th Winner</Label>
+                        <Input type="number" value={p5} onChange={(e) => setP5(e.target.value)} className="input-simple h-9 text-xs" required />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mode</Label>
-                    <Select value={matchMode} onValueChange={setMatchMode}>
-                      <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Solo">Solo</SelectItem>
-                        <SelectItem value="Duo">Duo</SelectItem>
-                        <SelectItem value="Squad">Squad</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Map</Label>
-                    <Select value={matchMap} onValueChange={setMatchMap}>
-                      <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Bermuda">Bermuda</SelectItem>
-                        <SelectItem value="Purgatory">Purgatory</SelectItem>
-                        <SelectItem value="Kalahari">Kalahari</SelectItem>
-                        <SelectItem value="Nexterra">Nexterra</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Version</Label>
-                    <Select value={matchVersion} onValueChange={setMatchVersion}>
-                      <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TPP">TPP</SelectItem>
-                        <SelectItem value="FPP">FPP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Start Time</Label>
-                    <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="input-simple" required />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Fee (TK)</Label>
-                    <Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="input-simple" required />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Prize (TK)</Label>
-                    <Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="input-simple" required />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Kill (TK)</Label>
-                    <Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="input-simple" required />
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg mt-2">
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Launch Tournament'}
+                <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg">
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Launch Match'}
                 </Button>
               </form>
             </CardContent>
@@ -242,7 +274,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <span className="block text-sm font-bold">{match.title} <span className="text-primary">{match.matchId}</span></span>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map} • {match.currentPlayers}/{match.maxPlayers}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map}</span>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => handleDeleteMatch(match.id)}>

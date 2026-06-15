@@ -3,15 +3,14 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Menu, Gamepad2, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { Flame, Menu, Gamepad2, Loader2, Trophy, Swords, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, query, limit, orderBy } from 'firebase/firestore';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
@@ -24,6 +23,13 @@ export default function Home() {
   }, [db, user]);
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+
+  const tournamentsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(5));
+  }, [db]);
+
+  const { data: tournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -41,22 +47,10 @@ export default function Home() {
 
   if (!user) return null;
 
-  const modes = [
-    { id: 'br-solo', name: 'Br solo', desc: 'Survival Duo', matches: 0, imageId: 'br-solo' },
-    { id: 'br-duo', name: 'Br duo', desc: 'Survival Duo', matches: 0, imageId: 'br-duo' },
-    { id: 'br-squad', name: 'Br squad', desc: 'Team Combat', matches: 4, imageId: 'br-squad' },
-    { id: 'cs-rank', name: 'Cs rank', desc: 'Ranked 4v4', matches: 12, imageId: 'cs-rank' },
-    { id: 'cs-headshot', name: 'Cs headshot', desc: 'Pro Precision', matches: 8, imageId: 'cs-headshot' },
-    { id: 'lw-1v1', name: 'Long wolf 1v1', desc: 'Solo Duel', matches: 0, imageId: 'lw-1v1' },
-    { id: 'lw-2v2', name: 'Long wolf 2v2', desc: 'Duo Duel', matches: 0, imageId: 'lw-2v2' },
-    { id: 'lw-headshot', name: 'Long wolf headshot', desc: 'Pro Precision 1v1', matches: 3, imageId: 'lw-hs' },
-  ];
-
   const userAvatar = profile?.photoURL || user?.photoURL || PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
 
   return (
-    <div className="min-h-screen pb-24">
-      {/* Top Header */}
+    <div className="min-h-screen pb-32">
       <header className="px-6 pt-6 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
         <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-full transition-colors">
           <Menu className="w-6 h-6" />
@@ -77,69 +71,82 @@ export default function Home() {
         </Link>
       </header>
 
-      <main className="px-6 space-y-6">
+      <main className="px-6 space-y-8">
         <div className="space-y-1">
-          <h1 className="text-2xl font-headline font-bold uppercase tracking-tight text-glow">
-            Battle <span className="text-primary">Arena</span>
+          <h1 className="text-3xl font-headline font-black uppercase italic tracking-tight text-glow-red">
+            IGNITE <span className="text-primary">ARENA</span>
           </h1>
-          <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest">Select your game mode</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Victory Awaits the Elite</p>
         </div>
 
-        {/* Game Modes Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {modes.map((mode) => {
-            const imageData = PlaceHolderImages.find(img => img.id === mode.imageId);
-            return (
-              <Link href={`/play?mode=${mode.id}`} key={mode.id}>
-                <Card className="overflow-hidden bg-card border-white/5 card-glow relative group aspect-[3/4]">
-                  {/* Background Image */}
-                  <div className="absolute inset-0 z-0">
-                    <Image 
-                      src={imageData?.imageUrl || 'https://picsum.photos/seed/gaming/600/800'} 
-                      alt={mode.name}
-                      fill
-                      className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-110"
-                      data-ai-hint={imageData?.imageHint || 'gaming'}
-                    />
-                    <div className="absolute inset-0 magma-overlay" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
-                  </div>
+        {/* Quick Stats Banner */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="bg-card border-white/5 p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+            <Trophy className="w-6 h-6 text-yellow-500" />
+            <div className="text-center">
+              <span className="block text-xl font-black italic">{profile?.coins || 0}</span>
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">TK Balance</span>
+            </div>
+          </Card>
+          <Card className="bg-card border-white/5 p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+            <Swords className="w-6 h-6 text-primary" />
+            <div className="text-center">
+              <span className="block text-xl font-black italic">12</span>
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Matches Played</span>
+            </div>
+          </Card>
+        </div>
 
-                  {/* Mode Icon Overlay */}
-                  <div className="absolute top-3 right-3 z-20">
-                    <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
-                      <Gamepad2 className="w-4 h-4 text-primary" />
+        {/* Dynamic Matches Summary */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black uppercase italic tracking-widest text-primary flex items-center gap-2">
+              <Zap className="w-4 h-4 fill-primary" /> Latest Tournaments
+            </h2>
+            <Link href="/play" className="text-[10px] font-bold text-muted-foreground uppercase hover:text-primary">View All</Link>
+          </div>
+
+          <div className="space-y-3">
+            {tournamentsLoading ? (
+              <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+            ) : tournaments?.length === 0 ? (
+              <div className="text-center py-10 bg-white/5 rounded-2xl border border-white/5 border-dashed">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">No Matches Scheduled</p>
+              </div>
+            ) : tournaments?.map((match: any) => (
+              <Link href="/play" key={match.id}>
+                <Card className="bg-card/40 border-white/5 p-4 rounded-2xl hover:bg-card transition-all mb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center">
+                        <Gamepad2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-black uppercase italic">{match.title}</span>
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-xs font-black text-primary italic">{match.prizePool} TK</span>
+                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Prize Pool</span>
                     </div>
                   </div>
-
-                  {/* Content */}
-                  <CardContent className="relative z-10 h-full p-4 flex flex-col justify-end">
-                    <div className="space-y-0.5">
-                      <h3 className="text-sm font-headline font-bold uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors">
-                        {mode.name}
-                      </h3>
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                        {mode.matches} Matches Live
-                      </p>
-                    </div>
-                  </CardContent>
                 </Card>
               </Link>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Pro League / Elite Banner */}
-        <section className="pt-2">
-          <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer">
+        <section>
+          <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer rounded-2xl">
             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
             <CardContent className="p-6 relative z-10 flex items-center justify-between">
               <div className="space-y-1">
-                <Badge className="bg-white/20 text-white border-white/20 mb-2">PRO EVENT</Badge>
-                <h3 className="text-xl font-headline font-bold uppercase text-white tracking-tight">BR Pro League</h3>
-                <p className="text-white/80 text-xs font-medium">Weekly tournaments with high prize pools.</p>
+                <Badge className="bg-white/20 text-white border-white/20 mb-2 font-black italic">ELITE SCOUT</Badge>
+                <h3 className="text-xl font-headline font-bold uppercase text-white tracking-tight italic">AI Tactical Scout</h3>
+                <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">Get AI insights for the next match.</p>
               </div>
-              <Flame className="w-12 h-12 text-white/30 group-hover:scale-125 transition-transform" />
+              <Zap className="w-12 h-12 text-white/30 group-hover:scale-125 transition-transform" />
             </CardContent>
           </Card>
         </section>
