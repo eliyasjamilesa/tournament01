@@ -16,6 +16,7 @@ export default function Home() {
     { id: 'cs-headshot', name: 'Cs headshot', desc: 'Pro Precision', matches: 8, imageId: 'cs-headshot' },
     { id: 'lw-1v1', name: 'Long wolf 1v1', desc: 'Solo Duel', matches: 0, imageId: 'lw-1v1' },
     { id: 'lw-2v2', name: 'Long wolf 2v2', desc: 'Duo Duel', matches: 0, imageId: 'lw-2v2' },
+    { id: 'lw-headshot', name: 'Long wolf headshot', desc: 'Pro Precision 1v1', matches: 3, imageId: 'lw-hs' },
   ];
 
   const userAvatar = PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;

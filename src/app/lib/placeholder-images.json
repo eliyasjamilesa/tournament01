@@ -44,6 +44,12 @@
       "imageHint": "team duel"
     },
     {
+      "id": "lw-hs",
+      "description": "Lone Wolf Headshot Mode",
+      "imageUrl": "https://picsum.photos/seed/lw-hs/600/800",
+      "imageHint": "precision duel"
+    },
+    {
       "id": "player-avatar",
       "description": "Player profile avatar",
       "imageUrl": "https://picsum.photos/seed/avatar/200/200",
