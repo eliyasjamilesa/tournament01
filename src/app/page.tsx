@@ -1,105 +1,111 @@
 
-import { Flame, ArrowRight } from 'lucide-react';
+import { Flame, Menu, Gamepad2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function Home() {
   const modes = [
-    {
-      id: 'br',
-      name: 'BR E-Sports',
-      desc: 'Tactical survival matches',
-      matches: 24,
-      image: PlaceHolderImages.find(img => img.id === 'br-mode')?.imageUrl || 'https://picsum.photos/seed/br/800/600',
-      color: 'hsl(var(--primary))',
-    },
-    {
-      id: 'cs',
-      name: 'Clash Squad',
-      desc: 'Intense 4v4 team battles',
-      matches: 18,
-      image: PlaceHolderImages.find(img => img.id === 'cs-mode')?.imageUrl || 'https://picsum.photos/seed/cs/800/600',
-      color: 'hsl(var(--secondary))',
-    },
-    {
-      id: 'lw',
-      name: 'Lone Wolf',
-      desc: 'Pure 1v1 duels',
-      matches: 12,
-      image: PlaceHolderImages.find(img => img.id === 'lw-mode')?.imageUrl || 'https://picsum.photos/seed/lw/800/600',
-      color: '#A855F7',
-    }
+    { id: 'br-solo', name: 'Br solo', desc: 'Survival Duo', matches: 0, imageId: 'br-solo' },
+    { id: 'br-duo', name: 'Br duo', desc: 'Survival Duo', matches: 0, imageId: 'br-duo' },
+    { id: 'br-squad', name: 'Br squad', desc: 'Team Combat', matches: 4, imageId: 'br-squad' },
+    { id: 'cs-rank', name: 'Cs rank', desc: 'Ranked 4v4', matches: 12, imageId: 'cs-rank' },
+    { id: 'cs-headshot', name: 'Cs headshot', desc: 'Pro Precision', matches: 8, imageId: 'cs-headshot' },
+    { id: 'lw-1v1', name: 'Long wolf 1v1', desc: 'Solo Duel', matches: 0, imageId: 'lw-1v1' },
+    { id: 'lw-2v2', name: 'Long wolf 2v2', desc: 'Duo Duel', matches: 0, imageId: 'lw-2v2' },
   ];
 
+  const userAvatar = PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
+
   return (
-    <div className="p-6 space-y-8">
-      <header className="flex items-center justify-between pt-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-headline font-bold text-glow">
-            IGNITE<span className="text-primary">ARENA</span>
-          </h1>
-          <p className="text-muted-foreground text-xs uppercase tracking-widest font-semibold">Elite Tournament Hub</p>
+    <div className="min-h-screen pb-24">
+      {/* Top Header */}
+      <header className="px-6 pt-6 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+        <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-full transition-colors">
+          <Menu className="w-6 h-6" />
+        </button>
+        
+        <div className="flex items-center gap-2 bg-red-950/20 border border-red-500/20 px-3 py-1.5 rounded-full">
+          <Flame className="w-4 h-4 text-primary animate-pulse" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Live Status</span>
         </div>
-        <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
-           <Flame className="text-primary w-6 h-6 animate-pulse" />
-        </div>
+
+        <Avatar className="w-9 h-9 border border-white/10 ring-2 ring-primary/20">
+          <AvatarImage src={userAvatar} />
+          <AvatarFallback>N</AvatarFallback>
+        </Avatar>
       </header>
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-headline font-bold uppercase tracking-tight">Game Modes</h2>
-          <span className="text-xs font-bold text-primary">Live Now</span>
+      <main className="px-6 space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-headline font-bold uppercase tracking-tight text-glow">
+            Battle <span className="text-primary">Arena</span>
+          </h1>
+          <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest">Select your game mode</p>
         </div>
 
-        <div className="grid gap-4">
-          {modes.map((mode) => (
-            <Link href={`/play?mode=${mode.id}`} key={mode.id}>
-              <Card className="overflow-hidden group relative border-white/5 hover:border-primary/50 transition-all duration-500 hover:scale-[1.02] shadow-lg bg-card">
-                <div className="absolute inset-0 z-0">
-                  <Image 
-                    src={mode.image} 
-                    alt={mode.name}
-                    fill
-                    className="object-cover opacity-40 group-hover:opacity-60 transition-opacity"
-                    data-ai-hint={PlaceHolderImages.find(img => img.id === `${mode.id}-mode`)?.imageHint || 'gaming'}
-                  />
-                  <div className="absolute inset-0 magma-overlay" />
-                </div>
-                <CardContent className="relative z-10 p-6 flex flex-col justify-end min-h-[140px]">
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-1">
-                      <Badge className="mb-2 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-                        {mode.matches} Active Matches
-                      </Badge>
-                      <h3 className="text-2xl font-headline font-bold tracking-tight">{mode.name}</h3>
-                      <p className="text-muted-foreground text-sm font-medium">{mode.desc}</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-primary/90 flex items-center justify-center group-hover:bg-primary transition-colors">
-                      <ArrowRight className="text-white w-5 h-5" />
+        {/* Game Modes Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {modes.map((mode) => {
+            const imageData = PlaceHolderImages.find(img => img.id === mode.imageId);
+            return (
+              <Link href={`/play?mode=${mode.id}`} key={mode.id}>
+                <Card className="overflow-hidden bg-card border-white/5 card-glow relative group aspect-[3/4]">
+                  {/* Background Image */}
+                  <div className="absolute inset-0 z-0">
+                    <Image 
+                      src={imageData?.imageUrl || 'https://picsum.photos/seed/gaming/600/800'} 
+                      alt={mode.name}
+                      fill
+                      className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-110"
+                      data-ai-hint={imageData?.imageHint || 'gaming'}
+                    />
+                    <div className="absolute inset-0 magma-overlay" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+                  </div>
+
+                  {/* Mode Icon Overlay */}
+                  <div className="absolute top-3 right-3 z-20">
+                    <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
+                      <Gamepad2 className="w-4 h-4 text-primary" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
 
-      <section className="space-y-4">
-        <div className="p-5 rounded-2xl magma-gradient flex items-center justify-between overflow-hidden relative group">
-          <div className="relative z-10 space-y-1">
-            <h3 className="text-lg font-headline font-bold uppercase text-white leading-tight">Elite Membership</h3>
-            <p className="text-white/80 text-xs font-medium max-w-[180px]">Unlock special rewards and faster match entries.</p>
-            <button className="mt-2 bg-white text-primary font-bold px-4 py-1.5 rounded-full text-xs hover:bg-white/90 transition-all">
-              Join Elite
-            </button>
-          </div>
-          <Flame className="w-24 h-24 absolute -right-4 -bottom-4 text-white/20 group-hover:scale-110 transition-transform" />
+                  {/* Content */}
+                  <CardContent className="relative z-10 h-full p-4 flex flex-col justify-end">
+                    <div className="space-y-0.5">
+                      <h3 className="text-sm font-headline font-bold uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors">
+                        {mode.name}
+                      </h3>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                        {mode.matches} Matches Live
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
-      </section>
+
+        {/* Pro League / Elite Banner */}
+        <section className="pt-2">
+          <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer">
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+            <CardContent className="p-6 relative z-10 flex items-center justify-between">
+              <div className="space-y-1">
+                <Badge className="bg-white/20 text-white border-white/20 mb-2">PRO EVENT</Badge>
+                <h3 className="text-xl font-headline font-bold uppercase text-white tracking-tight">BR Pro League</h3>
+                <p className="text-white/80 text-xs font-medium">Weekly tournaments with high prize pools.</p>
+              </div>
+              <Flame className="w-12 h-12 text-white/30 group-hover:scale-125 transition-transform" />
+            </CardContent>
+          </Card>
+        </section>
+      </main>
     </div>
   );
 }

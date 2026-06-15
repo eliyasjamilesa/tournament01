@@ -2,22 +2,46 @@
 {
   "placeholderImages": [
     {
-      "id": "br-mode",
-      "description": "Battle Royale mode background",
-      "imageUrl": "https://picsum.photos/seed/br-fire/800/600",
-      "imageHint": "fire volcano"
+      "id": "br-solo",
+      "description": "Battle Royale Solo Mode",
+      "imageUrl": "https://picsum.photos/seed/br-solo/600/800",
+      "imageHint": "warrior solo"
     },
     {
-      "id": "cs-mode",
-      "description": "Clash Squad mode background",
-      "imageUrl": "https://picsum.photos/seed/cs-squad/800/600",
-      "imageHint": "cyberpunk city"
+      "id": "br-duo",
+      "description": "Battle Royale Duo Mode",
+      "imageUrl": "https://picsum.photos/seed/br-duo/600/800",
+      "imageHint": "duo team"
     },
     {
-      "id": "lw-mode",
-      "description": "Lone Wolf mode background",
-      "imageUrl": "https://picsum.photos/seed/lw-wolf/800/600",
-      "imageHint": "lone warrior"
+      "id": "br-squad",
+      "description": "Battle Royale Squad Mode",
+      "imageUrl": "https://picsum.photos/seed/br-squad/600/800",
+      "imageHint": "squad team"
+    },
+    {
+      "id": "cs-rank",
+      "description": "Clash Squad Ranked Mode",
+      "imageUrl": "https://picsum.photos/seed/cs-rank/600/800",
+      "imageHint": "combat rank"
+    },
+    {
+      "id": "cs-headshot",
+      "description": "Clash Squad Headshot Mode",
+      "imageUrl": "https://picsum.photos/seed/cs-hs/600/800",
+      "imageHint": "sniper headshot"
+    },
+    {
+      "id": "lw-1v1",
+      "description": "Lone Wolf 1v1 Mode",
+      "imageUrl": "https://picsum.photos/seed/lw-1v1/600/800",
+      "imageHint": "lone duel"
+    },
+    {
+      "id": "lw-2v2",
+      "description": "Lone Wolf 2v2 Mode",
+      "imageUrl": "https://picsum.photos/seed/lw-2v2/600/800",
+      "imageHint": "team duel"
     },
     {
       "id": "player-avatar",
