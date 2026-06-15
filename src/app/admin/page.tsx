@@ -5,19 +5,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ShieldAlert, 
-  Plus, 
   Trophy, 
   CreditCard, 
-  Settings, 
-  Users, 
   Swords, 
-  ChevronRight, 
   Loader2,
-  Calendar,
-  DollarSign,
   Trash2,
-  AlertCircle,
-  RefreshCcw
+  DollarSign
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +21,6 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@
 import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminDashboard() {
   const { user, loading: userLoading } = useUser();
@@ -61,12 +53,14 @@ export default function AdminDashboard() {
   // Admin Check Logic
   const isAdmin = profile?.role === 'admin';
 
-  // Handle Redirection if not logged in at all
+  // Security Redirect: If not admin after loading, send to home
   useEffect(() => {
-    if (!userLoading && !user) {
-      router.replace('/login');
+    if (!userLoading && !profileLoading) {
+      if (!user || !isAdmin) {
+        router.replace('/');
+      }
     }
-  }, [user, userLoading, router]);
+  }, [user, userLoading, profileLoading, isAdmin, router]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +91,7 @@ export default function AdminDashboard() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create match. Check your permissions.",
+        description: "Failed to create match.",
       });
     } finally {
       setIsSubmitting(false);
@@ -123,58 +117,19 @@ export default function AdminDashboard() {
     }
   };
 
-  // 1. Show Loading State
-  if (userLoading || profileLoading) {
+  // 1. Show Loading State or nothing while redirecting
+  if (userLoading || profileLoading || !isAdmin) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-          Authenticating Admin...
+          Verifying Identity...
         </p>
       </div>
     );
   }
 
-  // 2. Show Access Denied if not admin
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background text-center gap-6">
-        <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive">
-          <ShieldAlert className="w-8 h-8" />
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-xl font-headline font-bold uppercase">Access Denied</h1>
-          <p className="text-sm text-muted-foreground max-w-xs">
-            আপনার অ্যাকাউন্টে অ্যাডমিন পারমিশন নেই। ডাটাবেসে নিচের UID-টি চেক করুন।
-          </p>
-        </div>
-        
-        <Alert variant="destructive" className="bg-card border-white/5 text-left max-w-sm">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="text-xs font-bold uppercase tracking-wider">Debug Info</AlertTitle>
-          <AlertDescription className="mt-2 space-y-1">
-            <p className="text-[10px] font-mono break-all text-white bg-black/40 p-2 rounded select-all">UID: {user?.uid}</p>
-            <p className="text-[10px] font-mono">Current Role: "{profile?.role || 'null'}"</p>
-          </AlertDescription>
-        </Alert>
-
-        <p className="text-[10px] text-muted-foreground italic max-w-[250px]">
-          Firebase Console-এ 'users' কালেকশনে গিয়ে এই UID-তে 'role' ফিল্ডটি 'admin' লিখে সেট করুন।
-        </p>
-
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
-            <RefreshCcw className="w-4 h-4" /> Refresh Now
-          </Button>
-          <Button onClick={() => router.push('/')} variant="ghost">
-            Back to Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // 3. Show Dashboard if Admin
+  // 2. Show Dashboard only if Admin
   return (
     <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
       <header className="space-y-2 pt-4 mb-8">
