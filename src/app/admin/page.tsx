@@ -41,10 +41,10 @@ export default function AdminDashboard() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
-  // Tournament Collection
+  // Tournament Collection - Real-time monitoring
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(10));
+    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(20));
   }, [db]);
 
   const { data: tournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
@@ -56,20 +56,37 @@ export default function AdminDashboard() {
   const [prizePool, setPrizePool] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Robust protection logic
   useEffect(() => {
-    if (!userLoading && !profileLoading) {
-      if (!user || profile?.role !== 'admin') {
-        router.push('/');
-      }
+    // Wait until both user and profile are loaded
+    if (userLoading || profileLoading) return;
+
+    if (!user) {
+      router.replace('/login');
+      return;
     }
-  }, [user, profile, userLoading, profileLoading, router]);
+
+    // If profile is loaded but role is not admin, redirect
+    if (profile && profile.role !== 'admin') {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "You do not have administrative privileges.",
+      });
+      router.replace('/');
+    } else if (!profile && !profileLoading) {
+      // If no profile document exists at all
+      router.replace('/');
+    }
+  }, [user, profile, userLoading, profileLoading, router, toast]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
     setIsSubmitting(true);
+    
     try {
-      await addDoc(collection(db, 'tournaments'), {
+      addDoc(collection(db, 'tournaments'), {
         title: matchTitle,
         mode: matchMode,
         entryFee: Number(entryFee),
@@ -79,10 +96,12 @@ export default function AdminDashboard() {
         maxPlayers: matchMode === 'BR' ? 50 : 16,
         createdAt: serverTimestamp(),
       });
+      
       toast({
         title: "Match Created",
-        description: `${matchTitle} has been added to the arena.`,
+        description: `${matchTitle} has been added successfully.`,
       });
+      
       setMatchTitle('');
       setEntryFee('');
       setPrizePool('');
@@ -90,7 +109,7 @@ export default function AdminDashboard() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: "Failed to create tournament.",
       });
     } finally {
       setIsSubmitting(false);
@@ -102,10 +121,10 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this match?')) return;
     
     try {
-      await deleteDoc(doc(db, 'tournaments', id));
+      deleteDoc(doc(db, 'tournaments', id));
       toast({
         title: "Match Deleted",
-        description: "The match has been removed from the list.",
+        description: "The match has been removed.",
       });
     } catch (error: any) {
       toast({
@@ -118,13 +137,15 @@ export default function AdminDashboard() {
 
   if (userLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Authenticating Admin...</p>
       </div>
     );
   }
 
-  if (profile?.role !== 'admin') return null;
+  // Only render if user is confirmed admin
+  if (!user || profile?.role !== 'admin') return null;
 
   return (
     <div className="min-h-screen bg-background p-6 pb-24">
@@ -214,7 +235,7 @@ export default function AdminDashboard() {
           </Card>
 
           <div className="space-y-4">
-             <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground px-1">Recent Matches</h3>
+             <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground px-1">Active Matches</h3>
              {tournamentsLoading ? (
                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
              ) : tournaments.length === 0 ? (
@@ -258,8 +279,8 @@ export default function AdminDashboard() {
                 <Trophy className="w-8 h-8 text-primary" />
               </div>
               <h3 className="font-headline font-bold text-lg uppercase italic">Publish Match Results</h3>
-              <p className="text-muted-foreground text-xs max-w-[200px] mt-1">Select a completed tournament to distribute rewards and update leaderboards.</p>
-              <Button className="mt-6 font-bold uppercase tracking-widest h-10 px-8">Coming Soon</Button>
+              <p className="text-muted-foreground text-xs max-max-w-[200px] mt-1">Select a completed tournament to distribute rewards and update leaderboards.</p>
+              <Button className="mt-6 font-bold uppercase tracking-widest h-10 px-8" variant="secondary">Coming Soon</Button>
            </Card>
         </TabsContent>
 
