@@ -16,7 +16,8 @@ import {
   Calendar,
   DollarSign,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  RefreshCcw
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@
 import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminDashboard() {
   const { user, loading: userLoading } = useUser();
@@ -56,27 +58,31 @@ export default function AdminDashboard() {
   const [prizePool, setPrizePool] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Admin Check Logic
+  const isAdmin = profile?.role === 'admin';
+
   useEffect(() => {
-    // Wait until everything is loaded
     if (userLoading || profileLoading) return;
 
-    // Not logged in? Go to login
     if (!user) {
       router.replace('/login');
       return;
     }
 
-    // Check if user has admin role
-    if (!profile || profile.role !== 'admin') {
-      console.log("Access Denied for role:", profile?.role);
+    // Logging for debug purposes
+    console.log("Admin Check - UID:", user.uid);
+    console.log("Admin Check - Role from DB:", profile?.role);
+
+    if (!isAdmin) {
+      // We don't redirect immediately to give the user a chance to see debug info if needed
+      // but we show the error toast
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: "You do not have administrative privileges.",
+        description: "Your account does not have admin privileges in the database.",
       });
-      router.replace('/');
     }
-  }, [user, profile, userLoading, profileLoading, router, toast]);
+  }, [user, profile, userLoading, profileLoading, router, toast, isAdmin]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,8 +151,39 @@ export default function AdminDashboard() {
     );
   }
 
-  // Prevent UI flash before redirect
-  if (!user || profile?.role !== 'admin') return null;
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background text-center gap-6">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-xl font-headline font-bold uppercase">Access Denied</h1>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            আপনার অ্যাকাউন্টে অ্যাডমিন পারমিশন নেই। ডাটাবেসে আপনার রোলটি চেক করুন।
+          </p>
+        </div>
+        
+        <Alert variant="destructive" className="bg-card border-white/5 text-left">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-xs font-bold uppercase tracking-wider">Debug Info</AlertTitle>
+          <AlertDescription className="mt-2 space-y-1">
+            <p className="text-[10px] font-mono break-all">UID: {user?.uid}</p>
+            <p className="text-[10px] font-mono">Current Role: {profile?.role || 'null'}</p>
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
+            <RefreshCcw className="w-4 h-4" /> Try Again
+          </Button>
+          <Button onClick={() => router.push('/')} variant="ghost">
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
