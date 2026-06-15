@@ -1,0 +1,29 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "br-mode",
+      "description": "Battle Royale mode background",
+      "imageUrl": "https://picsum.photos/seed/br-fire/800/600",
+      "imageHint": "fire volcano"
+    },
+    {
+      "id": "cs-mode",
+      "description": "Clash Squad mode background",
+      "imageUrl": "https://picsum.photos/seed/cs-squad/800/600",
+      "imageHint": "cyberpunk city"
+    },
+    {
+      "id": "lw-mode",
+      "description": "Lone Wolf mode background",
+      "imageUrl": "https://picsum.photos/seed/lw-wolf/800/600",
+      "imageHint": "lone warrior"
+    },
+    {
+      "id": "player-avatar",
+      "description": "Player profile avatar",
+      "imageUrl": "https://picsum.photos/seed/avatar/200/200",
+      "imageHint": "gamer avatar"
+    }
+  ]
+}
