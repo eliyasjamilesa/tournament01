@@ -50,14 +50,29 @@ export default function AdminDashboard() {
   const [prizePool, setPrizePool] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Admin Check Logic
-  const isAdmin = profile?.role === 'admin';
-
-  // Security Redirect: Only redirect if loading is finished AND user is definitively not an admin
+  // Security Logic
   useEffect(() => {
+    // Debugging Logs - Check these in F12 Console
+    console.log("Auth Loading:", userLoading);
+    console.log("Profile Loading:", profileLoading);
+    console.log("Current User:", user?.uid);
+    console.log("Profile Data:", profile);
+
+    // Only redirect if EVERYTHING is loaded and user is NOT an admin
     if (!userLoading && !profileLoading) {
-      if (!user || profile?.role !== 'admin') {
-        router.replace('/');
+      if (!user) {
+        console.warn("No user found, redirecting to login...");
+        router.replace('/login');
+        return;
+      }
+      
+      if (profile?.role !== 'admin') {
+        console.warn("User is not admin, redirecting to home...");
+        // Wait a small bit to ensure profile data isn't just flickering
+        const timer = setTimeout(() => {
+          router.replace('/');
+        }, 500);
+        return () => clearTimeout(timer);
       }
     }
   }, [user, userLoading, profileLoading, profile, router]);
@@ -118,13 +133,18 @@ export default function AdminDashboard() {
   };
 
   // 1. Show Loading State while verifying
-  if (userLoading || profileLoading || (user && !isAdmin)) {
+  if (userLoading || profileLoading || !profile || profile.role !== 'admin') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-          Verifying Identity...
-        </p>
+        <div className="text-center space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+            Verifying Identity...
+          </p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-tighter">
+            UID: {user?.uid || "Checking..."}
+          </p>
+        </div>
       </div>
     );
   }
