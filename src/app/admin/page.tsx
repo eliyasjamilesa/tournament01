@@ -62,16 +62,15 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Wait until both user and profile are loaded before making a redirection decision
     if (!userLoading && !profileLoading) {
       if (!user) {
         router.replace('/login');
-        return;
-      }
-      if (profile?.role !== 'admin') {
+      } else if (profile?.role !== 'admin') {
         router.replace('/');
       }
     }
-  }, [user, userLoading, profileLoading, profile, router]);
+  }, [user, userLoading, profile, profileLoading, router]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,11 +126,12 @@ export default function AdminDashboard() {
     deleteDoc(doc(db, 'tournaments', id));
   };
 
+  // Show loading state while checking permissions
   if (userLoading || profileLoading || !profile || profile.role !== 'admin') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Authorizing...</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Verifying Admin Access...</p>
       </div>
     );
   }
