@@ -1,9 +1,7 @@
-
 "use client";
 
 import { 
   Settings, 
-  Flame, 
   Swords, 
   LogOut, 
   ChevronRight, 
@@ -14,21 +12,54 @@ import {
   ShieldCheck,
   Bell,
   CreditCard,
-  UserCircle
+  UserCircle,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
-  const avatarUrl = PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
+  const { user, loading: userLoading } = useUser();
+  const db = useFirestore();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+
+  const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+
+  const handleSignOut = async () => {
+    if (!auth) return;
+    await signOut(auth);
+    router.push('/login');
+  };
+
+  if (userLoading || profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
 
   const stats = [
     { label: 'MATCHES', value: '124', icon: Swords },
-    { label: 'COINS', value: '450', highlight: true, icon: Wallet },
+    { label: 'COINS', value: profile?.coins || '100', highlight: true, icon: Wallet },
     { label: 'WINS', value: '28', icon: Trophy },
   ];
 
@@ -59,8 +90,10 @@ export default function ProfilePage() {
         <div className="relative mb-6">
           <div className="p-1 rounded-full border border-white/10">
             <Avatar className="w-24 h-24 rounded-full border-2 border-background">
-              <AvatarImage src={avatarUrl} className="object-cover" />
-              <AvatarFallback className="bg-muted text-xl font-bold">V</AvatarFallback>
+              <AvatarImage src={profile?.photoURL || user?.photoURL} className="object-cover" />
+              <AvatarFallback className="bg-muted text-xl font-bold">
+                {profile?.displayName?.[0] || user?.displayName?.[0] || 'V'}
+              </AvatarFallback>
             </Avatar>
           </div>
           <button className="absolute bottom-1 right-1 bg-primary p-2 rounded-full shadow-lg border-2 border-background">
@@ -71,15 +104,17 @@ export default function ProfilePage() {
         <div className="space-y-4 w-full max-w-[280px]">
           <div className="space-y-1">
             <h1 className="text-2xl font-headline font-bold uppercase tracking-tight">
-              ViperElite_99
+              {profile?.displayName || user?.displayName || 'Unknown Player'}
             </h1>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Pro Arena Member</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              Pro Arena Member
+            </p>
           </div>
           
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
             <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              <span>Level 42</span>
-              <span>85% to Lvl 43</span>
+              <span>Level {profile?.level || 1}</span>
+              <span>85% to Lvl {(profile?.level || 1) + 1}</span>
             </div>
             <Progress value={85} className="h-1.5 bg-background" />
           </div>
@@ -136,6 +171,7 @@ export default function ProfilePage() {
       <div className="px-6 mt-12">
         <Button 
           variant="destructive" 
+          onClick={handleSignOut}
           className="w-full h-12 rounded-xl font-headline font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-destructive/20"
         >
           <LogOut className="w-4 h-4 mr-2" />
