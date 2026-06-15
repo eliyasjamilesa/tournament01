@@ -14,16 +14,19 @@ import {
   ChevronRight, 
   Loader2,
   Calendar,
-  DollarSign
+  DollarSign,
+  Trash2,
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminDashboard() {
   const { user, loading: userLoading } = useUser();
@@ -37,6 +40,14 @@ export default function AdminDashboard() {
   }, [db, user]);
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+
+  // Tournament Collection
+  const tournamentsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(10));
+  }, [db]);
+
+  const { data: tournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
 
   // Match Form State
   const [matchTitle, setMatchTitle] = useState('');
@@ -86,6 +97,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteMatch = async (id: string) => {
+    if (!db) return;
+    if (!confirm('Are you sure you want to delete this match?')) return;
+    
+    try {
+      await deleteDoc(doc(db, 'tournaments', id));
+      toast({
+        title: "Match Deleted",
+        description: "The match has been removed from the list.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete match.",
+      });
+    }
+  };
+
   if (userLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -93,6 +123,8 @@ export default function AdminDashboard() {
       </div>
     );
   }
+
+  if (profile?.role !== 'admin') return null;
 
   return (
     <div className="min-h-screen bg-background p-6 pb-24">
@@ -182,21 +214,41 @@ export default function AdminDashboard() {
           </Card>
 
           <div className="space-y-4">
-             <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground px-1">Active Lobby Management</h3>
-             <Card className="border-white/5 bg-card/40 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                      <Swords className="w-5 h-5 text-green-500" />
-                    </div>
-                    <div>
-                      <span className="block text-sm font-bold">Current Active Matches</span>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">14 Lobbies Online</span>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="h-8 text-[9px] font-bold uppercase tracking-widest">View All</Button>
-                </div>
-             </Card>
+             <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground px-1">Recent Matches</h3>
+             {tournamentsLoading ? (
+               <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+             ) : tournaments.length === 0 ? (
+               <div className="text-center py-8 text-muted-foreground text-xs uppercase font-bold tracking-widest border border-dashed border-white/10 rounded-xl">No matches found</div>
+             ) : (
+               <div className="space-y-3">
+                 {tournaments.map((match: any) => (
+                   <Card key={match.id} className="border-white/5 bg-card/40 p-4">
+                     <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                           <Swords className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                           <span className="block text-sm font-bold">{match.title}</span>
+                           <div className="flex items-center gap-2">
+                             <Badge variant="outline" className="text-[8px] h-4 font-bold uppercase tracking-tighter border-white/10">{match.mode}</Badge>
+                             <span className="text-[10px] font-bold text-muted-foreground uppercase">{match.currentPlayers}/{match.maxPlayers} Players</span>
+                           </div>
+                         </div>
+                       </div>
+                       <Button 
+                         variant="ghost" 
+                         size="icon" 
+                         className="text-muted-foreground hover:text-destructive h-8 w-8"
+                         onClick={() => handleDeleteMatch(match.id)}
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   </Card>
+                 ))}
+               </div>
+             )}
           </div>
         </TabsContent>
 
@@ -207,7 +259,7 @@ export default function AdminDashboard() {
               </div>
               <h3 className="font-headline font-bold text-lg uppercase italic">Publish Match Results</h3>
               <p className="text-muted-foreground text-xs max-w-[200px] mt-1">Select a completed tournament to distribute rewards and update leaderboards.</p>
-              <Button className="mt-6 font-bold uppercase tracking-widest h-10 px-8">Select Tournament</Button>
+              <Button className="mt-6 font-bold uppercase tracking-widest h-10 px-8">Coming Soon</Button>
            </Card>
         </TabsContent>
 
@@ -218,18 +270,18 @@ export default function AdminDashboard() {
                     <DollarSign className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Pending Topups</span>
                  </div>
-                 <span className="text-2xl font-black font-headline tracking-tighter">24</span>
+                 <span className="text-2xl font-black font-headline tracking-tighter">--</span>
               </Card>
               <Card className="border-white/5 bg-card/60 p-4 space-y-2">
                  <div className="flex items-center gap-2 text-primary">
                     <CreditCard className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Withdrawals</span>
                  </div>
-                 <span className="text-2xl font-black font-headline tracking-tighter">08</span>
+                 <span className="text-2xl font-black font-headline tracking-tighter">--</span>
               </Card>
            </div>
            <Button className="w-full h-12 bg-white/5 hover:bg-white/10 border border-white/5 font-bold uppercase tracking-widest rounded-xl text-[11px]">
-              View All Transactions
+              View All Transactions (Coming Soon)
            </Button>
         </TabsContent>
       </Tabs>
