@@ -24,6 +24,7 @@ import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from '@/fireb
 import { doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ProfilePage() {
   const { user, loading: userLoading } = useUser();
@@ -38,23 +39,24 @@ export default function ProfilePage() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, userLoading, router]);
+
   const handleSignOut = async () => {
     if (!auth) return;
     await signOut(auth);
     router.push('/login');
   };
 
-  if (userLoading || profileLoading) {
+  if (userLoading || profileLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
   }
 
   const stats = [
@@ -85,7 +87,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen pb-32 bg-background pt-12">
-      {/* Profile Header */}
       <div className="flex flex-col items-center px-6 text-center">
         <div className="relative mb-6">
           <div className="p-1 rounded-full border border-white/10">
@@ -121,7 +122,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <section className="px-6 mt-8">
         <div className="grid grid-cols-3 gap-3">
           {stats.map((stat) => (
@@ -137,7 +137,6 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Navigation Sections */}
       <div className="px-6 mt-10 space-y-8">
         {sections.map((section) => (
           <div key={section.title} className="space-y-3">
@@ -167,7 +166,6 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Logout */}
       <div className="px-6 mt-12">
         <Button 
           variant="destructive" 
