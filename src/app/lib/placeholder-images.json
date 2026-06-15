@@ -1,4 +1,3 @@
-
 {
   "placeholderImages": [
     {
@@ -54,6 +53,12 @@
       "description": "Player profile avatar",
       "imageUrl": "https://picsum.photos/seed/avatar/200/200",
       "imageHint": "gamer avatar"
+    },
+    {
+      "id": "app-logo",
+      "description": "Main app logo with gaming theme",
+      "imageUrl": "https://picsum.photos/seed/fflogo/400/400",
+      "imageHint": "gaming logo"
     }
   ]
 }
