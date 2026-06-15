@@ -1,10 +1,10 @@
-
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Flame, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -19,16 +21,37 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || !db) return;
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
+      const user = userCredential.user;
+      
+      await updateProfile(user, { displayName: name });
+      
+      // Initialize User Profile in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      setDoc(userRef, {
+        uid: user.uid,
+        displayName: name,
+        email: user.email,
+        photoURL: user.photoURL || '',
+        coins: 100, // Starting bonus
+        level: 1,
+      }, { merge: true }).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'create',
+          requestResourceData: { uid: user.uid, displayName: name },
+        }));
+      });
+
       router.push('/');
     } catch (error: any) {
       toast({
@@ -42,11 +65,30 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
-    if (!auth) return;
+    if (!auth || !db) return;
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+
+      // Initialize User Profile for Google User
+      const userRef = doc(db, 'users', user.uid);
+      setDoc(userRef, {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        coins: 100,
+        level: 1,
+      }, { merge: true }).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'create',
+          requestResourceData: { uid: user.uid },
+        }));
+      });
+
       router.push('/');
     } catch (error: any) {
       toast({
