@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Play, Zap, Trophy, User } from 'lucide-react';
+import { Home, Trophy, Swords, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BottomNav() {
@@ -11,9 +11,8 @@ export function BottomNav() {
 
   const navItems = [
     { label: 'Home', icon: Home, href: '/' },
-    { label: 'Play', icon: Play, href: '/play' },
-    { label: 'Scout', icon: Zap, href: '/scout' },
-    { label: 'Results', icon: Trophy, href: '/results' },
+    { label: 'Result', icon: Trophy, href: '/results' },
+    { label: 'Joined', icon: Swords, href: '/joined' },
     { label: 'Profile', icon: User, href: '/profile' },
   ];
 

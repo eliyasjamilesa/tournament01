@@ -1,4 +1,5 @@
-import { Flame, Users, User, ArrowRight } from 'lucide-react';
+
+import { Flame, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +13,7 @@ export default function Home() {
       name: 'BR E-Sports',
       desc: 'Tactical survival matches',
       matches: 24,
-      image: PlaceHolderImages.find(img => img.id === 'br-mode')?.imageUrl,
+      image: PlaceHolderImages.find(img => img.id === 'br-mode')?.imageUrl || 'https://picsum.photos/seed/br/800/600',
       color: 'hsl(var(--primary))',
     },
     {
@@ -20,7 +21,7 @@ export default function Home() {
       name: 'Clash Squad',
       desc: 'Intense 4v4 team battles',
       matches: 18,
-      image: PlaceHolderImages.find(img => img.id === 'cs-mode')?.imageUrl,
+      image: PlaceHolderImages.find(img => img.id === 'cs-mode')?.imageUrl || 'https://picsum.photos/seed/cs/800/600',
       color: 'hsl(var(--secondary))',
     },
     {
@@ -28,7 +29,7 @@ export default function Home() {
       name: 'Lone Wolf',
       desc: 'Pure 1v1 duels',
       matches: 12,
-      image: PlaceHolderImages.find(img => img.id === 'lw-mode')?.imageUrl,
+      image: PlaceHolderImages.find(img => img.id === 'lw-mode')?.imageUrl || 'https://picsum.photos/seed/lw/800/600',
       color: '#A855F7',
     }
   ];
@@ -59,11 +60,11 @@ export default function Home() {
               <Card className="overflow-hidden group relative border-white/5 hover:border-primary/50 transition-all duration-500 hover:scale-[1.02] shadow-lg bg-card">
                 <div className="absolute inset-0 z-0">
                   <Image 
-                    src={mode.image || ''} 
+                    src={mode.image} 
                     alt={mode.name}
                     fill
                     className="object-cover opacity-40 group-hover:opacity-60 transition-opacity"
-                    data-ai-hint={PlaceHolderImages.find(img => img.id === `${mode.id}-mode`)?.imageHint}
+                    data-ai-hint={PlaceHolderImages.find(img => img.id === `${mode.id}-mode`)?.imageHint || 'gaming'}
                   />
                   <div className="absolute inset-0 magma-overlay" />
                 </div>
