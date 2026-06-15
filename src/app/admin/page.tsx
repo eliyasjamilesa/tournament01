@@ -57,25 +57,22 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Debugging current role
-    if (profile) {
-      console.log("Current User Role:", profile.role);
-    }
-
+    // Wait until everything is loaded
     if (userLoading || profileLoading) return;
 
+    // Not logged in? Go to login
     if (!user) {
       router.replace('/login');
       return;
     }
 
-    // Check if role is missing or not admin
+    // Check if user has admin role
     if (!profile || profile.role !== 'admin') {
-      console.warn("Access Denied: Not an admin or profile not found.");
+      console.log("Access Denied for role:", profile?.role);
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: profile ? "You are not an admin." : "Profile data not found.",
+        description: "You do not have administrative privileges.",
       });
       router.replace('/');
     }
@@ -107,10 +104,11 @@ export default function AdminDashboard() {
       setEntryFee('');
       setPrizePool('');
     } catch (error: any) {
+      console.error("Failed to add match:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create tournament.",
+        description: "You don't have permission to create matches.",
       });
     } finally {
       setIsSubmitting(false);
@@ -140,16 +138,18 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Checking Credentials...</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+          Authenticating Admin...
+        </p>
       </div>
     );
   }
 
-  // Final check to prevent rendering if redirecting
+  // Prevent UI flash before redirect
   if (!user || profile?.role !== 'admin') return null;
 
   return (
-    <div className="min-h-screen bg-background p-6 pb-24">
+    <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
       <header className="space-y-2 pt-4 mb-8">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">

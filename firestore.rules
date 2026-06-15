@@ -5,22 +5,27 @@ service cloud.firestore {
     // Helper function to check if user is admin
     function isAdmin() {
       return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // User profile rules
     match /users/{userId} {
+      // যে কেউ নিজের প্রোফাইল পড়তে পারবে এবং লগইন করা থাকলে অন্যদের প্রোফাইলও দেখতে পারবে (লিডারবোর্ডের জন্য)
       allow read: if request.auth != null;
+      // শুধুমাত্র ইউজার নিজে তার প্রোফাইল তৈরি বা আপডেট করতে পারবে, অথবা অ্যাডমিন পারবে
       allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
     // Tournament rules
     match /tournaments/{tournamentId} {
+      // লগইন করা সব ইউজার টুর্নামেন্ট দেখতে পারবে
       allow read: if request.auth != null;
+      // শুধুমাত্র অ্যাডমিন টুর্নামেন্ট যোগ, পরিবর্তন বা ডিলিট করতে পারবে
       allow write: if isAdmin();
     }
     
-    // Default fallback
+    // Default fallback - safety net
     match /{document=**} {
       allow read: if request.auth != null;
       allow write: if isAdmin();
