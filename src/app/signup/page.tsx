@@ -113,7 +113,16 @@ export default function SignupPage() {
 
       router.push('/');
     } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
+        const message = `ডোমেইনটি অনুমোদিত নয়। অনুগ্রহ করে Firebase কনসোলে "${domain}" ডোমেইনটি অথোরাইজ করুন।`;
+        setErrorMsg(message);
+        toast({
+          variant: 'destructive',
+          title: 'Unauthorized Domain',
+          description: message,
+        });
+      } else if (error.code !== 'auth/popup-closed-by-user') {
         setErrorMsg(error.message);
         toast({
           variant: 'destructive',
@@ -128,7 +137,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 max-w-md mx-auto relative overflow-x-hidden">
-      {/* Language Header */}
       <div className="absolute top-6 right-6 z-10">
         <Button variant="outline" size="sm" className="bg-[#1a1a1a]/80 border-white/5 rounded-full text-[10px] font-bold uppercase tracking-wider h-8 px-4 gap-2">
           <Globe className="w-3.5 h-3.5 text-primary" />
@@ -137,7 +145,6 @@ export default function SignupPage() {
       </div>
 
       <div className="flex flex-col items-center mt-12 space-y-6 w-full">
-        {/* Logo Section */}
         <div className="relative group">
           <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-primary/50 logo-glow">
             <Image 
@@ -151,7 +158,6 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* Title Section */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-headline font-bold text-primary text-glow-red uppercase italic">
             Create an account
@@ -169,7 +175,6 @@ export default function SignupPage() {
           </Alert>
         )}
 
-        {/* Form Section */}
         <form onSubmit={handleSignup} className="w-full space-y-6 mt-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Username</Label>
