@@ -1,10 +1,10 @@
 
 export const firebaseConfig = {
-  // আপনার Firebase Console (Project Settings > General > Your apps) থেকে সংগৃহীত ডাটা এখানে বসান
-  apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY",
+  apiKey: "AIzaSyDcz0a6VOzs9yW8mFQpPCNfDGsGC3KnqSQ",
   authDomain: "tournament-app-76d39.firebaseapp.com",
   projectId: "tournament-app-76d39",
   storageBucket: "tournament-app-76d39.firebasestorage.app",
-  messagingSenderId: "75870",
-  appId: "REPLACE_WITH_YOUR_ACTUAL_APP_ID"
+  messagingSenderId: "732250378255",
+  appId: "1:732250378255:web:bd40cfb906b9d7fe24d37a",
+  measurementId: "G-HKGYBEWPCX"
 };
