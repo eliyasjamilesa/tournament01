@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function ProfilePage() {
@@ -56,7 +57,7 @@ export default function ProfilePage() {
       {/* Profile Header */}
       <div className="flex flex-col items-center px-6 text-center">
         <div className="relative mb-6">
-          <div className="p-1 rounded-full border-2 border-primary/20">
+          <div className="p-1 rounded-full border border-white/10">
             <Avatar className="w-24 h-24 rounded-full border-2 border-background">
               <AvatarImage src={avatarUrl} className="object-cover" />
               <AvatarFallback className="bg-muted text-xl font-bold">V</AvatarFallback>
@@ -67,31 +68,29 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="space-y-3 w-full max-w-[240px]">
+        <div className="space-y-4 w-full max-w-[280px]">
           <div className="space-y-1">
             <h1 className="text-2xl font-headline font-bold uppercase tracking-tight">
               ViperElite_99
             </h1>
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Pro Member</span>
-            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Pro Arena Member</p>
           </div>
           
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+            <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
               <span>Level 42</span>
               <span>85% to Lvl 43</span>
             </div>
-            <Progress value={85} className="h-1.5 bg-white/5" />
+            <Progress value={85} className="h-1.5 bg-background" />
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <section className="px-6 mt-10">
+      <section className="px-6 mt-8">
         <div className="grid grid-cols-3 gap-3">
           {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl border border-white/5 bg-card/40 backdrop-blur-sm">
+            <div key={stat.label} className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
               <span className={`text-xl font-headline font-bold tracking-tighter ${stat.highlight ? 'text-primary' : 'text-foreground'}`}>
                 {stat.value}
               </span>
@@ -103,23 +102,23 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Enhanced Navigation Sections */}
+      {/* Navigation Sections */}
       <div className="px-6 mt-10 space-y-8">
         {sections.map((section) => (
-          <div key={section.title} className="space-y-4">
+          <div key={section.title} className="space-y-3">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">
               {section.title}
             </h2>
-            <Card className="border-white/5 bg-card/30 overflow-hidden">
+            <Card className="border-white/5 bg-card/30 overflow-hidden shadow-none">
               <div className="divide-y divide-white/5">
                 {section.items.map((item) => (
                   <Link href={item.href} key={item.label} className="block group">
                     <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-secondary/30 flex items-center justify-center transition-colors">
                           <item.icon className={`w-4 h-4 ${item.color}`} />
                         </div>
-                        <span className="text-sm font-semibold text-foreground/90">
+                        <span className="text-sm font-bold text-foreground/80 tracking-tight">
                           {item.label}
                         </span>
                       </div>
@@ -134,11 +133,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Logout */}
-      <div className="px-6 mt-12 flex justify-center">
-        <button className="flex items-center gap-2 text-destructive font-bold uppercase text-[10px] tracking-widest py-3 px-10 rounded-xl border border-destructive/10 bg-destructive/5 hover:bg-destructive/10 transition-all">
-          <LogOut className="w-3.5 h-3.5" />
+      <div className="px-6 mt-12">
+        <Button 
+          variant="destructive" 
+          className="w-full h-12 rounded-xl font-headline font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-destructive/20"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
           Sign Out
-        </button>
+        </Button>
+        <p className="text-center text-[9px] text-muted-foreground/40 mt-6 uppercase font-bold tracking-widest">
+          App Version 1.0.4-Stable
+        </p>
       </div>
     </div>
   );
