@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,7 +52,8 @@ export default function SignupPage() {
         photoURL: user.photoURL || '',
         coins: 100,
         level: 1,
-        createdAt: new Date().toISOString()
+        role: 'user', // Default role
+        createdAt: serverTimestamp()
       }, { merge: true });
 
       router.push('/');
@@ -93,7 +95,8 @@ export default function SignupPage() {
           photoURL: user.photoURL || '',
           coins: 100,
           level: 1,
-          createdAt: new Date().toISOString()
+          role: 'user',
+          createdAt: serverTimestamp()
         }, { merge: true });
       }
 

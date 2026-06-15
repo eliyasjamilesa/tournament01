@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,7 +74,8 @@ export default function LoginPage() {
           photoURL: user.photoURL || '',
           coins: 100,
           level: 1,
-          createdAt: new Date().toISOString()
+          role: 'user',
+          createdAt: serverTimestamp()
         }, { merge: true });
       }
 
