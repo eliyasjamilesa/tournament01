@@ -68,21 +68,7 @@ export default function AdminDashboard() {
       router.replace('/login');
       return;
     }
-
-    // Logging for debug purposes
-    console.log("Admin Check - UID:", user.uid);
-    console.log("Admin Check - Role from DB:", profile?.role);
-
-    if (!isAdmin) {
-      // We don't redirect immediately to give the user a chance to see debug info if needed
-      // but we show the error toast
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "Your account does not have admin privileges in the database.",
-      });
-    }
-  }, [user, profile, userLoading, profileLoading, router, toast, isAdmin]);
+  }, [user, profile, userLoading, profileLoading, router, isAdmin]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,11 +96,10 @@ export default function AdminDashboard() {
       setEntryFee('');
       setPrizePool('');
     } catch (error: any) {
-      console.error("Failed to add match:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "You don't have permission to create matches.",
+        description: "Failed to create match. Check your permissions.",
       });
     } finally {
       setIsSubmitting(false);
@@ -145,7 +130,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-          Authenticating Admin...
+          Checking Admin Status...
         </p>
       </div>
     );
@@ -160,18 +145,22 @@ export default function AdminDashboard() {
         <div className="space-y-2">
           <h1 className="text-xl font-headline font-bold uppercase">Access Denied</h1>
           <p className="text-sm text-muted-foreground max-w-xs">
-            আপনার অ্যাকাউন্টে অ্যাডমিন পারমিশন নেই। ডাটাবেসে আপনার রোলটি চেক করুন।
+            আপনার অ্যাকাউন্টে অ্যাডমিন পারমিশন নেই। ডাটাবেসে নিচের UID-টি চেক করুন।
           </p>
         </div>
         
-        <Alert variant="destructive" className="bg-card border-white/5 text-left">
+        <Alert variant="destructive" className="bg-card border-white/5 text-left max-w-sm">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle className="text-xs font-bold uppercase tracking-wider">Debug Info</AlertTitle>
           <AlertDescription className="mt-2 space-y-1">
-            <p className="text-[10px] font-mono break-all">UID: {user?.uid}</p>
-            <p className="text-[10px] font-mono">Current Role: {profile?.role || 'null'}</p>
+            <p className="text-[10px] font-mono break-all text-white bg-black/40 p-2 rounded select-all">UID: {user?.uid}</p>
+            <p className="text-[10px] font-mono">Status: Role in DB is "{profile?.role || 'not found'}"</p>
           </AlertDescription>
         </Alert>
+
+        <p className="text-[10px] text-muted-foreground italic">
+          Tip: Firebase Console-এ 'users' কালেকশনে গিয়ে এই UID-তে 'role' ফিল্ডটি 'admin' লিখে সেট করুন।
+        </p>
 
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
@@ -188,14 +177,17 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
       <header className="space-y-2 pt-4 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
-            <ShieldAlert className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
+              <ShieldAlert className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-headline font-black uppercase italic tracking-tight">Admin <span className="text-primary">Panel</span></h1>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Arena Management</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-headline font-black uppercase italic tracking-tight">Admin <span className="text-primary">Panel</span></h1>
-            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Arena Management System</p>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase tracking-widest">Exit</Button>
         </div>
       </header>
 
