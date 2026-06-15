@@ -1,13 +1,46 @@
 
-import { Flame, Menu, Gamepad2 } from 'lucide-react';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Flame, Menu, Gamepad2, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export default function Home() {
+  const { user, loading: authLoading } = useUser();
+  const router = useRouter();
+  const db = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+
+  const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
+  if (authLoading || (user && profileLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   const modes = [
     { id: 'br-solo', name: 'Br solo', desc: 'Survival Duo', matches: 0, imageId: 'br-solo' },
     { id: 'br-duo', name: 'Br duo', desc: 'Survival Duo', matches: 0, imageId: 'br-duo' },
@@ -19,7 +52,7 @@ export default function Home() {
     { id: 'lw-headshot', name: 'Long wolf headshot', desc: 'Pro Precision 1v1', matches: 3, imageId: 'lw-hs' },
   ];
 
-  const userAvatar = PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
+  const userAvatar = profile?.photoURL || user?.photoURL || PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
 
   return (
     <div className="min-h-screen pb-24">
@@ -34,10 +67,14 @@ export default function Home() {
           <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Live Status</span>
         </div>
 
-        <Avatar className="w-9 h-9 border border-white/10 ring-2 ring-primary/20">
-          <AvatarImage src={userAvatar} />
-          <AvatarFallback>N</AvatarFallback>
-        </Avatar>
+        <Link href="/profile">
+          <Avatar className="w-9 h-9 border border-white/10 ring-2 ring-primary/20">
+            <AvatarImage src={userAvatar} className="object-cover" />
+            <AvatarFallback className="bg-muted font-bold">
+              {profile?.displayName?.[0] || user?.displayName?.[0] || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       </header>
 
       <main className="px-6 space-y-6">

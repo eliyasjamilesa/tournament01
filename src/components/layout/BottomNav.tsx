@@ -1,13 +1,19 @@
 
-"use client";
+'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Trophy, Swords, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/firebase';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  // Hide nav on auth pages or if not logged in
+  const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
+  if (isAuthPage || !user) return null;
 
   const navItems = [
     { label: 'Home', icon: Home, href: '/' },
