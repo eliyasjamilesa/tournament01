@@ -8,17 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Flame, Loader2, Mail, Lock, Eye, EyeOff, Globe } from 'lucide-react';
+import { Flame, Loader2, Mail, Lock, Eye, EyeOff, Globe, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const auth = useAuth();
   const router = useRouter();
@@ -30,14 +32,25 @@ export default function LoginPage() {
     e.preventDefault();
     if (!auth) return;
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (error: any) {
+      let message = error.message;
+      if (error.code === 'auth/user-not-found') {
+        message = "No account found with this email. Please sign up first.";
+      } else if (error.code === 'auth/wrong-password') {
+        message = "Incorrect password. Please try again.";
+      } else if (error.code === 'auth/invalid-credential') {
+        message = "Invalid email or password. Please check your credentials.";
+      }
+      
+      setErrorMsg(message);
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message,
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -47,11 +60,13 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     if (!auth) return;
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
+      setErrorMsg(error.message);
       toast({
         variant: 'destructive',
         title: 'Google Login Failed',
@@ -96,6 +111,14 @@ export default function LoginPage() {
             Log in to access the arena
           </p>
         </div>
+
+        {errorMsg && (
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="text-xs font-bold uppercase">Error</AlertTitle>
+            <AlertDescription className="text-xs">{errorMsg}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Form Section */}
         <form onSubmit={handleEmailLogin} className="w-full space-y-6 mt-4">

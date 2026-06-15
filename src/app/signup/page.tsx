@@ -8,13 +8,14 @@ import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Flame, Loader2, User, Mail, Lock, Phone, Eye, EyeOff, Globe } from 'lucide-react';
+import { Flame, Loader2, User, Mail, Lock, Phone, Eye, EyeOff, Globe, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -23,6 +24,7 @@ export default function SignupPage() {
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const auth = useAuth();
   const db = useFirestore();
@@ -35,6 +37,7 @@ export default function SignupPage() {
     e.preventDefault();
     if (!auth || !db) return;
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -60,10 +63,18 @@ export default function SignupPage() {
 
       router.push('/');
     } catch (error: any) {
+      let message = error.message;
+      if (error.code === 'auth/email-already-in-use') {
+        message = "This email is already registered. Try logging in instead.";
+      } else if (error.code === 'auth/weak-password') {
+        message = "Password is too weak. Please use at least 6 characters.";
+      }
+      
+      setErrorMsg(message);
       toast({
         variant: 'destructive',
         title: 'Signup Failed',
-        description: error.message,
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -73,6 +84,7 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     if (!auth || !db) return;
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
@@ -96,6 +108,7 @@ export default function SignupPage() {
 
       router.push('/');
     } catch (error: any) {
+      setErrorMsg(error.message);
       toast({
         variant: 'destructive',
         title: 'Google Signup Failed',
@@ -140,6 +153,14 @@ export default function SignupPage() {
             Start your journey with us
           </p>
         </div>
+
+        {errorMsg && (
+          <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="text-xs font-bold uppercase">Error</AlertTitle>
+            <AlertDescription className="text-xs">{errorMsg}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Form Section */}
         <form onSubmit={handleSignup} className="w-full space-y-6 mt-4">
