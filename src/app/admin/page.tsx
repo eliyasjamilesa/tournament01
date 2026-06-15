@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     return doc(db, 'users', user.uid);
   }, [db, user]);
 
-  const { data: profile, loading: profileLoading, error: profileError } = useDoc<any>(userDocRef);
+  const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   // Tournament Collection
   const tournamentsQuery = useMemoFirebase(() => {
@@ -61,14 +61,12 @@ export default function AdminDashboard() {
   // Admin Check Logic
   const isAdmin = profile?.role === 'admin';
 
+  // Handle Redirection if not logged in at all
   useEffect(() => {
-    if (userLoading || profileLoading) return;
-
-    if (!user) {
+    if (!userLoading && !user) {
       router.replace('/login');
-      return;
     }
-  }, [user, profile, userLoading, profileLoading, router, isAdmin]);
+  }, [user, userLoading, router]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,17 +123,19 @@ export default function AdminDashboard() {
     }
   };
 
+  // 1. Show Loading State
   if (userLoading || profileLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-          Checking Admin Status...
+          Authenticating Admin...
         </p>
       </div>
     );
   }
 
+  // 2. Show Access Denied if not admin
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background text-center gap-6">
@@ -154,17 +154,17 @@ export default function AdminDashboard() {
           <AlertTitle className="text-xs font-bold uppercase tracking-wider">Debug Info</AlertTitle>
           <AlertDescription className="mt-2 space-y-1">
             <p className="text-[10px] font-mono break-all text-white bg-black/40 p-2 rounded select-all">UID: {user?.uid}</p>
-            <p className="text-[10px] font-mono">Status: Role in DB is "{profile?.role || 'not found'}"</p>
+            <p className="text-[10px] font-mono">Current Role: "{profile?.role || 'null'}"</p>
           </AlertDescription>
         </Alert>
 
-        <p className="text-[10px] text-muted-foreground italic">
-          Tip: Firebase Console-এ 'users' কালেকশনে গিয়ে এই UID-তে 'role' ফিল্ডটি 'admin' লিখে সেট করুন।
+        <p className="text-[10px] text-muted-foreground italic max-w-[250px]">
+          Firebase Console-এ 'users' কালেকশনে গিয়ে এই UID-তে 'role' ফিল্ডটি 'admin' লিখে সেট করুন।
         </p>
 
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
-            <RefreshCcw className="w-4 h-4" /> Try Again
+            <RefreshCcw className="w-4 h-4" /> Refresh Now
           </Button>
           <Button onClick={() => router.push('/')} variant="ghost">
             Back to Home
@@ -174,6 +174,7 @@ export default function AdminDashboard() {
     );
   }
 
+  // 3. Show Dashboard if Admin
   return (
     <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
       <header className="space-y-2 pt-4 mb-8">
