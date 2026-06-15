@@ -23,14 +23,18 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "matchId": { "type": "string", "description": "Custom Match ID like #26429" },
         "title": { "type": "string" },
-        "mode": { "type": "string", "enum": ["BR", "CS", "LW"] },
+        "mode": { "type": "string", "enum": ["Solo", "Duo", "Squad"] },
+        "map": { "type": "string" },
+        "version": { "type": "string", "enum": ["TPP", "FPP"] },
         "entryFee": { "type": "number" },
-        "prizePool": { "type": "string" },
+        "prizePool": { "type": "number" },
+        "perKill": { "type": "number" },
         "maxPlayers": { "type": "number" },
         "currentPlayers": { "type": "number" },
         "startTime": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["open", "live", "completed"] }
+        "status": { "type": "string", "enum": ["open", "full", "live", "completed"] }
       }
     }
   },
