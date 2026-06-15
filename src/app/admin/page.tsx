@@ -39,9 +39,9 @@ export default function AdminDashboard() {
     return doc(db, 'users', user.uid);
   }, [db, user]);
 
-  const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+  const { data: profile, loading: profileLoading, error: profileError } = useDoc<any>(userDocRef);
 
-  // Tournament Collection - Real-time monitoring
+  // Tournament Collection
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(20));
@@ -56,9 +56,12 @@ export default function AdminDashboard() {
   const [prizePool, setPrizePool] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Robust protection logic
   useEffect(() => {
-    // Wait until both user and profile are loaded
+    // Debugging current role
+    if (profile) {
+      console.log("Current User Role:", profile.role);
+    }
+
     if (userLoading || profileLoading) return;
 
     if (!user) {
@@ -66,16 +69,14 @@ export default function AdminDashboard() {
       return;
     }
 
-    // If profile is loaded but role is not admin, redirect
-    if (profile && profile.role !== 'admin') {
+    // Check if role is missing or not admin
+    if (!profile || profile.role !== 'admin') {
+      console.warn("Access Denied: Not an admin or profile not found.");
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: "You do not have administrative privileges.",
+        description: profile ? "You are not an admin." : "Profile data not found.",
       });
-      router.replace('/');
-    } else if (!profile && !profileLoading) {
-      // If no profile document exists at all
       router.replace('/');
     }
   }, [user, profile, userLoading, profileLoading, router, toast]);
@@ -139,12 +140,12 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Authenticating Admin...</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Checking Credentials...</p>
       </div>
     );
   }
 
-  // Only render if user is confirmed admin
+  // Final check to prevent rendering if redirecting
   if (!user || profile?.role !== 'admin') return null;
 
   return (
@@ -238,11 +239,11 @@ export default function AdminDashboard() {
              <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground px-1">Active Matches</h3>
              {tournamentsLoading ? (
                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-             ) : tournaments.length === 0 ? (
+             ) : tournaments && tournaments.length === 0 ? (
                <div className="text-center py-8 text-muted-foreground text-xs uppercase font-bold tracking-widest border border-dashed border-white/10 rounded-xl">No matches found</div>
              ) : (
                <div className="space-y-3">
-                 {tournaments.map((match: any) => (
+                 {tournaments?.map((match: any) => (
                    <Card key={match.id} className="border-white/5 bg-card/40 p-4">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
