@@ -1,164 +1,125 @@
+
 "use client";
 
-import { Settings, Shield, Flame, Swords, LogOut, ChevronRight, LayoutGrid, Clock, Target, Trophy, User } from 'lucide-react';
+import { 
+  Settings, 
+  Flame, 
+  Swords, 
+  LogOut, 
+  ChevronRight, 
+  Wallet, 
+  Trophy, 
+  User, 
+  FileText, 
+  Plus,
+  BarChart3,
+  CreditCard
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Link from 'next/link';
 
 export default function ProfilePage() {
   const avatarUrl = PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
 
   const stats = [
-    { label: 'Level', value: '42', icon: Shield, color: 'text-primary', subValue: 'PRO' },
-    { label: 'Win Rate', value: '18%', icon: Trophy, color: 'text-yellow-500', subValue: 'Top 5%' },
-    { label: 'K/D Ratio', value: '2.4', icon: Swords, color: 'text-red-500', subValue: '+0.2' },
+    { label: 'Total Matches', value: '124' },
+    { label: 'Coin Balance', value: '450', highlight: true },
+    { label: 'Total Won', value: '28' },
   ];
 
-  const matchHistory = [
-    { id: 1, tournament: 'Bermuda King', result: 'Rank #4', kills: 12, date: 'Yesterday', type: 'BR' },
-    { id: 2, tournament: 'CS Squad Rush', result: 'Victory', kills: 4, date: '2 days ago', type: 'CS' },
-    { id: 3, tournament: 'Lone Wolf 1v1', result: 'Defeat', kills: 5, date: '3 days ago', type: 'LW' },
+  const menuItems = [
+    { icon: Wallet, label: 'Wallet', href: '#', color: 'text-red-500' },
+    { icon: FileText, label: 'All Rules', href: '#', color: 'text-red-500' },
+    { icon: BarChart3, label: 'Leaderboard', href: '/results', color: 'text-red-500' },
+    { icon: Swords, label: 'My Matches', href: '/joined', color: 'text-red-500' },
+    { icon: Settings, label: 'Account Settings', href: '#', color: 'text-red-500' },
   ];
 
   return (
-    <div className="pb-28">
-      {/* Cinematic Header Background */}
-      <div className="h-44 magma-gradient relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 magma-overlay opacity-80" />
-        <div className="absolute top-6 right-6 flex gap-2 z-20">
-          <button className="p-2.5 rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 transition-all shadow-xl">
-            <Settings className="w-5 h-5" />
+    <div className="min-h-screen pb-32 bg-background pt-10">
+      {/* Top Header / Avatar Area */}
+      <div className="flex flex-col items-center space-y-6 px-6">
+        <div className="relative">
+          {/* Glowing Outer Ring */}
+          <div className="absolute inset-[-8px] rounded-full border-2 border-dashed border-primary/40 animate-[spin_10s_linear_infinite]" />
+          <div className="absolute inset-[-4px] rounded-full border-2 border-primary pulse-glow" />
+          
+          <Avatar className="w-32 h-32 border-4 border-background rounded-full relative z-10">
+            <AvatarImage src={avatarUrl} className="object-cover" />
+            <AvatarFallback className="bg-muted text-2xl font-bold italic">VE</AvatarFallback>
+          </Avatar>
+
+          {/* Add/Edit Badge */}
+          <button className="absolute bottom-0 right-0 z-20 bg-primary p-2 rounded-full shadow-lg border-4 border-background hover:scale-110 transition-transform">
+            <Plus className="w-4 h-4 text-white" />
           </button>
         </div>
-      </div>
-      
-      <div className="px-6 -mt-16 space-y-6 relative z-10">
-        {/* Profile Info Header */}
-        <header className="space-y-4">
-          <div className="flex items-end gap-5">
-            <div className="relative group">
-              <Avatar className="w-28 h-28 border-4 border-background rounded-3xl shadow-2xl overflow-hidden ring-4 ring-primary/20">
-                <AvatarImage src={avatarUrl} className="object-cover" />
-                <AvatarFallback className="bg-muted text-2xl font-bold">VE</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-2 -right-2 bg-primary p-2 rounded-xl shadow-lg border-4 border-background animate-pulse">
-                <Flame className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            
-            <div className="pb-2 space-y-1.5">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-headline font-bold tracking-tight text-glow uppercase italic">ViperElite_99</h1>
-                <Badge variant="outline" className="border-primary/50 text-primary text-[10px] bg-primary/5">LVL 42</Badge>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Master III Tier</span>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className={`w-1 h-3 rounded-full ${i <= 3 ? 'bg-primary' : 'bg-white/10'}`} />
-                  ))}
-                </div>
-              </div>
-            </div>
+
+        <div className="text-center space-y-1">
+          <Button variant="outline" size="sm" className="h-8 rounded-full border-primary/30 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-widest px-4">
+            <User className="w-3 h-3 mr-2" /> Edit Profile
+          </Button>
+          <div className="pt-4">
+            <h1 className="text-3xl font-headline font-bold tracking-tight text-glow uppercase italic">ViperElite_99</h1>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] mt-1">IGNITE ID #93350</p>
           </div>
-          
-          <Card className="bg-card/40 border-white/5 backdrop-blur-sm p-4 overflow-hidden">
-             <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Season Pass Progress</span>
-                  <span className="text-[10px] font-bold text-primary uppercase">Tier 64 / 100</span>
-                </div>
-                <div className="relative h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div className="absolute top-0 left-0 h-full magma-gradient rounded-full shadow-[0_0_15px_hsl(var(--primary)/0.5)]" style={{ width: '64%' }} />
-                </div>
-             </div>
-          </Card>
-        </header>
-
-        {/* Elite Stats Grid */}
-        <section className="grid grid-cols-3 gap-3">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="bg-card/60 border-white/5 text-center p-3 relative group hover:border-primary/30 transition-all card-glow overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
-              <div className="flex flex-col items-center gap-1.5 py-1">
-                <stat.icon className={`w-4 h-4 ${stat.color} mb-1`} />
-                <span className="text-xl font-headline font-bold tracking-tighter">{stat.value}</span>
-                <div className="space-y-0.5">
-                  <span className="text-[9px] block font-bold uppercase text-muted-foreground tracking-tight">{stat.label}</span>
-                  <span className="text-[8px] block font-bold text-primary/80 tracking-widest">{stat.subValue}</span>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </section>
-
-        {/* Content Tabs */}
-        <Tabs defaultValue="matches" className="w-full">
-          <TabsList className="w-full bg-white/5 border border-white/5 p-1 rounded-2xl h-12">
-            <TabsTrigger value="matches" className="flex-1 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-xl transition-all">
-              History
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex-1 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-xl transition-all">
-              Vault
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="matches" className="space-y-3 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {matchHistory.map((match) => (
-              <div key={match.id} className="bg-card/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between hover:bg-card/80 hover:border-primary/20 transition-all group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-primary/20 transition-all">
-                    <Target className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{match.tournament}</h4>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Badge variant="outline" className="text-[8px] h-4 py-0 font-bold uppercase border-white/10 px-1.5">{match.type}</Badge>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{match.date} • {match.kills} KILLS</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <span className={`font-headline font-bold text-sm ${match.result === 'Victory' || match.result.includes('#1') || match.result.includes('#4') ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {match.result}
-                    </span>
-                    <p className="text-[9px] font-bold text-muted-foreground/50 uppercase">RESULT</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary/50 transition-all group-hover:translate-x-0.5" />
-                </div>
-              </div>
-            ))}
-            <Button variant="ghost" className="w-full py-6 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all">
-              Access Full Archives <LayoutGrid className="w-3 h-3 ml-2" />
-            </Button>
-          </TabsContent>
-          
-          <TabsContent value="inventory" className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <div className="bg-card/30 border-2 border-dashed border-white/5 rounded-3xl h-44 flex flex-col items-center justify-center text-center p-8">
-               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                 <Shield className="w-8 h-8 text-muted-foreground opacity-20" />
-               </div>
-               <h4 className="text-xs font-bold uppercase tracking-widest mb-1">Vault Locked</h4>
-               <p className="text-[10px] font-medium text-muted-foreground max-w-[180px]">Participate in Elite tournaments to unlock rare weapon skins and character items.</p>
-             </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Actions */}
-        <div className="pt-4 grid grid-cols-2 gap-3">
-          <Button variant="outline" className="border-white/5 bg-card/40 font-bold uppercase text-[10px] tracking-widest h-12 rounded-xl hover:bg-white/5 transition-all">
-            <User className="w-4 h-4 mr-2" /> Edit Profile
-          </Button>
-          <Button variant="outline" className="border-destructive/20 text-destructive bg-destructive/5 font-bold uppercase text-[10px] tracking-widest h-12 rounded-xl hover:bg-destructive hover:text-white transition-all">
-            <LogOut className="w-4 h-4 mr-2" /> Logout
-          </Button>
+          <div className="w-12 h-1 bg-primary mx-auto mt-2 rounded-full" />
         </div>
+      </div>
+
+      {/* Stats Cards Section */}
+      <section className="grid grid-cols-3 gap-3 px-6 mt-10">
+        {stats.map((stat) => (
+          <Card 
+            key={stat.label} 
+            className={`bg-card/40 text-center p-4 border-white/5 relative overflow-hidden transition-all group ${
+              stat.highlight ? 'border-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.2)] scale-105 z-10' : ''
+            }`}
+          >
+            <div className="space-y-1 flex flex-col items-center justify-center min-h-[70px]">
+              <span className={`text-2xl font-headline font-bold tracking-tighter ${stat.highlight ? 'text-primary text-glow' : 'text-foreground'}`}>
+                {stat.value}
+              </span>
+              <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest leading-tight max-w-[50px]">
+                {stat.label}
+              </span>
+            </div>
+            {stat.highlight && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />
+            )}
+          </Card>
+        ))}
+      </section>
+
+      {/* Action List Section */}
+      <section className="px-6 mt-10 space-y-3">
+        {menuItems.map((item) => (
+          <Link href={item.href} key={item.label} className="block">
+            <Card className="bg-card/40 border-white/5 hover:border-primary/30 transition-all group overflow-hidden">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary/20 transition-colors">
+                    <item.icon className={`w-5 h-5 ${item.color}`} />
+                  </div>
+                  <span className="font-bold text-sm uppercase tracking-wide group-hover:text-primary transition-colors">
+                    {item.label}
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </section>
+
+      {/* Logout Action */}
+      <div className="px-6 mt-8">
+        <Button variant="ghost" className="w-full h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive font-bold uppercase text-xs tracking-[0.2em] border border-destructive/10">
+          <LogOut className="w-4 h-4 mr-2" /> Logout Session
+        </Button>
       </div>
     </div>
   );
