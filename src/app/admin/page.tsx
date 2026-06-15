@@ -53,14 +53,14 @@ export default function AdminDashboard() {
   // Admin Check Logic
   const isAdmin = profile?.role === 'admin';
 
-  // Security Redirect: If not admin after loading, send to home
+  // Security Redirect: Only redirect if loading is finished AND user is definitively not an admin
   useEffect(() => {
     if (!userLoading && !profileLoading) {
-      if (!user || !isAdmin) {
+      if (!user || profile?.role !== 'admin') {
         router.replace('/');
       }
     }
-  }, [user, userLoading, profileLoading, isAdmin, router]);
+  }, [user, userLoading, profileLoading, profile, router]);
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,8 +117,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // 1. Show Loading State or nothing while redirecting
-  if (userLoading || profileLoading || !isAdmin) {
+  // 1. Show Loading State while verifying
+  if (userLoading || profileLoading || (user && !isAdmin)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
     );
   }
 
-  // 2. Show Dashboard only if Admin
+  // 2. Show Dashboard ONLY if user is verified admin
   return (
     <div className="min-h-screen bg-background p-6 pb-24 animate-in fade-in duration-500">
       <header className="space-y-2 pt-4 mb-8">
