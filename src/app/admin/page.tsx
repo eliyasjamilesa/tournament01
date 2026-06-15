@@ -170,11 +170,11 @@ export default function AdminDashboard() {
               <form onSubmit={handleAddMatch} className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Tournament Title</Label>
-                  <Input 
+                  <input 
                     placeholder="e.g. Bermuda King Pro" 
                     value={matchTitle}
                     onChange={(e) => setMatchTitle(e.target.value)}
-                    className="input-simple"
+                    className="input-simple w-full"
                     required
                   />
                 </div>
@@ -193,23 +193,23 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Entry Fee (Coins)</Label>
-                    <Input 
+                    <input 
                       type="number" 
                       placeholder="0 for Free" 
                       value={entryFee}
                       onChange={(e) => setEntryFee(e.target.value)}
-                      className="input-simple"
+                      className="input-simple w-full"
                       required
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Prize Pool</Label>
-                  <Input 
+                  <input 
                     placeholder="e.g. $500 or 1000 Coins" 
                     value={prizePool}
                     onChange={(e) => setPrizePool(e.target.value)}
-                    className="input-simple"
+                    className="input-simple w-full"
                     required
                   />
                 </div>
