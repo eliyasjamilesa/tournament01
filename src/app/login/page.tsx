@@ -44,17 +44,17 @@ export default function LoginPage() {
     } catch (error: any) {
       let message = error.message;
       if (error.code === 'auth/user-not-found') {
-        message = "No account found with this email. Please sign up first.";
+        message = "এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সাইন আপ করুন।";
       } else if (error.code === 'auth/wrong-password') {
-        message = "Incorrect password. Please try again.";
+        message = "ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।";
       } else if (error.code === 'auth/invalid-credential') {
-        message = "Invalid email or password. Please check your credentials.";
+        message = "ইমেইল বা পাসওয়ার্ড সঠিক নয়।";
       }
       
       setErrorMsg(message);
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
+        title: 'লগইন ব্যর্থ হয়েছে',
         description: message,
       });
     } finally {
@@ -71,7 +71,6 @@ export default function LoginPage() {
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
 
-      // Check if user profile exists, if not create it (auto-signup)
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
 
@@ -96,7 +95,7 @@ export default function LoginPage() {
     } catch (error: any) {
       if (error.code === 'auth/unauthorized-domain') {
         const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
-        const message = `ডোমেইনটি অনুমোদিত নয়। অনুগ্রহ করে Firebase কনসোলে "${domain}" ডোমেইনটি অথোরাইজ করুন।`;
+        const message = `এই ডোমেইনটি (${domain}) Firebase-এ অনুমোদিত নয়। অনুগ্রহ করে Firebase কনসোলে এই ডোমেইনটি 'Authorized Domains' তালিকায় যোগ করুন।`;
         setErrorMsg(message);
         toast({
           variant: 'destructive',
@@ -107,7 +106,7 @@ export default function LoginPage() {
         setErrorMsg(error.message);
         toast({
           variant: 'destructive',
-          title: 'Google Login Failed',
+          title: 'গুগল লগইন ব্যর্থ',
           description: error.message,
         });
       }
@@ -121,7 +120,7 @@ export default function LoginPage() {
       <div className="absolute top-6 right-6 z-10">
         <Button variant="outline" size="sm" className="bg-[#1a1a1a]/80 border-white/5 rounded-full text-[10px] font-bold uppercase tracking-wider h-8 px-4 gap-2">
           <Globe className="w-3.5 h-3.5 text-primary" />
-          বাংল।
+          বাংলা
         </Button>
       </div>
 
@@ -141,18 +140,18 @@ export default function LoginPage() {
 
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-headline font-bold text-primary text-glow-red uppercase italic">
-            Welcome Back
+            Arena তে স্বাগতম
           </h1>
           <p className="text-muted-foreground text-sm font-medium tracking-tight">
-            Log in to access the arena
+            লগইন করে যুদ্ধ শুরু করুন
           </p>
         </div>
 
         {errorMsg && (
           <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle className="text-xs font-bold uppercase">Error</AlertTitle>
-            <AlertDescription className="text-xs">{errorMsg}</AlertDescription>
+            <AlertTitle className="text-xs font-bold uppercase italic">Error Found</AlertTitle>
+            <AlertDescription className="text-xs font-medium">{errorMsg}</AlertDescription>
           </Alert>
         )}
 
@@ -163,7 +162,7 @@ export default function LoginPage() {
               <Mail className="input-icon-red" />
               <Input 
                 type="email"
-                placeholder="Enter your email" 
+                placeholder="আপনার ইমেইল দিন" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -175,7 +174,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
-              <Link href="/forgot-password" title="Forgot Password" className="text-[10px] font-bold uppercase text-primary hover:underline">
+              <Link href="/forgot-password" title="পাসওয়ার্ড ভুলে গেছেন?" className="text-[10px] font-bold uppercase text-primary hover:underline">
                 Forgot?
               </Link>
             </div>
@@ -183,7 +182,7 @@ export default function LoginPage() {
               <Lock className="input-icon-red" />
               <Input 
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password" 
+                placeholder="পাসওয়ার্ড দিন" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -199,13 +198,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox id="remember" className="border-white/20 data-[state=checked]:bg-primary" />
-            <Label htmlFor="remember" className="text-xs font-medium text-muted-foreground leading-none">
-              Remember me
-            </Label>
-          </div>
-
           <Button type="submit" disabled={isLoading} className="w-full h-14 magma-gradient font-bold uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-primary/20 mt-4">
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Log In'}
           </Button>
@@ -216,7 +208,7 @@ export default function LoginPage() {
             <span className="w-full border-t border-white/5" />
           </div>
           <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
-            <span className="bg-background px-4 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-4 text-muted-foreground">অথবা কন্টিনিউ করুন</span>
           </div>
         </div>
 
@@ -233,9 +225,9 @@ export default function LoginPage() {
         </Button>
 
         <p className="text-center text-xs font-medium text-muted-foreground pt-4 pb-12">
-          Don't have an account?{' '}
+          অ্যাকাউন্ট নেই?{' '}
           <Link href="/signup" className="text-primary font-bold hover:underline">
-            Sign Up
+            সাইন আপ করুন
           </Link>
         </p>
       </div>

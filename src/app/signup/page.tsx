@@ -66,15 +66,15 @@ export default function SignupPage() {
     } catch (error: any) {
       let message = error.message;
       if (error.code === 'auth/email-already-in-use') {
-        message = "This email is already registered. Try logging in instead.";
+        message = "এই ইমেইলটি আগে থেকেই নিবন্ধিত। লগইন করার চেষ্টা করুন।";
       } else if (error.code === 'auth/weak-password') {
-        message = "Password is too weak. Please use at least 6 characters.";
+        message = "পাসওয়ার্ডটি খুবই দুর্বল। অন্তত ৬টি অক্ষর ব্যবহার করুন।";
       }
       
       setErrorMsg(message);
       toast({
         variant: 'destructive',
-        title: 'Signup Failed',
+        title: 'সাইন আপ ব্যর্থ',
         description: message,
       });
     } finally {
@@ -115,7 +115,7 @@ export default function SignupPage() {
     } catch (error: any) {
       if (error.code === 'auth/unauthorized-domain') {
         const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
-        const message = `ডোমেইনটি অনুমোদিত নয়। অনুগ্রহ করে Firebase কনসোলে "${domain}" ডোমেইনটি অথোরাইজ করুন।`;
+        const message = `এই ডোমেইনটি (${domain}) Firebase-এ অনুমোদিত নয়। অনুগ্রহ করে Firebase কনসোলে এই ডোমেইনটি 'Authorized Domains' তালিকায় যোগ করুন।`;
         setErrorMsg(message);
         toast({
           variant: 'destructive',
@@ -126,7 +126,7 @@ export default function SignupPage() {
         setErrorMsg(error.message);
         toast({
           variant: 'destructive',
-          title: 'Google Signup Failed',
+          title: 'গুগল সাইন আপ ব্যর্থ',
           description: error.message,
         });
       }
@@ -140,7 +140,7 @@ export default function SignupPage() {
       <div className="absolute top-6 right-6 z-10">
         <Button variant="outline" size="sm" className="bg-[#1a1a1a]/80 border-white/5 rounded-full text-[10px] font-bold uppercase tracking-wider h-8 px-4 gap-2">
           <Globe className="w-3.5 h-3.5 text-primary" />
-          বাংল।
+          বাংলা
         </Button>
       </div>
 
@@ -160,18 +160,18 @@ export default function SignupPage() {
 
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-headline font-bold text-primary text-glow-red uppercase italic">
-            Create an account
+            অ্যাকাউন্ট তৈরি করুন
           </h1>
           <p className="text-muted-foreground text-sm font-medium tracking-tight">
-            Start your journey with us
+            আজই আপনার যাত্রা শুরু করুন
           </p>
         </div>
 
         {errorMsg && (
           <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle className="text-xs font-bold uppercase">Error</AlertTitle>
-            <AlertDescription className="text-xs">{errorMsg}</AlertDescription>
+            <AlertTitle className="text-xs font-bold uppercase italic">Error Found</AlertTitle>
+            <AlertDescription className="text-xs font-medium">{errorMsg}</AlertDescription>
           </Alert>
         )}
 
@@ -181,7 +181,7 @@ export default function SignupPage() {
             <div className="input-container-custom">
               <User className="input-icon-red" />
               <Input 
-                placeholder="Enter your username" 
+                placeholder="আপনার নাম লিখুন" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -196,7 +196,7 @@ export default function SignupPage() {
               <Mail className="input-icon-red" />
               <Input 
                 type="email"
-                placeholder="Enter your email" 
+                placeholder="আপনার ইমেইল দিন" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -211,7 +211,7 @@ export default function SignupPage() {
               <span className="text-primary font-bold text-xs mr-3">+88</span>
               <Input 
                 type="tel"
-                placeholder="Enter 11-digit number" 
+                placeholder="১১ ডিজিটের নম্বর দিন" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -226,7 +226,7 @@ export default function SignupPage() {
               <Lock className="input-icon-red" />
               <Input 
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password" 
+                placeholder="পাসওয়ার্ড দিন" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-transparent border-none focus-visible:ring-0 p-0 h-10 text-sm font-medium"
@@ -252,7 +252,7 @@ export default function SignupPage() {
             <span className="w-full border-t border-white/5" />
           </div>
           <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
-            <span className="bg-background px-4 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-4 text-muted-foreground">অথবা কন্টিনিউ করুন</span>
           </div>
         </div>
 
@@ -269,9 +269,9 @@ export default function SignupPage() {
         </Button>
 
         <p className="text-center text-xs font-medium text-muted-foreground pt-4 pb-12">
-          Already have an account?{' '}
+          অ্যাকাউন্ট আছে?{' '}
           <Link href="/login" className="text-primary font-bold hover:underline">
-            Log In
+            লগইন করুন
           </Link>
         </p>
       </div>
