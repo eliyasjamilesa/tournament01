@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +16,8 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,6 +27,7 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -58,20 +63,45 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    if (!auth) return;
+    if (!auth || !db) return;
     setIsLoading(true);
     setErrorMsg(null);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+
+      // Check if user profile exists, if not create it (auto-signup)
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        setDoc(userRef, {
+          uid: user.uid,
+          displayName: user.displayName || 'Player',
+          email: user.email,
+          photoURL: user.photoURL || '',
+          coins: 100,
+          level: 1,
+        }, { merge: true }).catch(async (err) => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: { uid: user.uid },
+          }));
+        });
+      }
+
       router.push('/');
     } catch (error: any) {
-      setErrorMsg(error.message);
-      toast({
-        variant: 'destructive',
-        title: 'Google Login Failed',
-        description: error.message,
-      });
+      if (error.code !== 'auth/popup-closed-by-user') {
+        setErrorMsg(error.message);
+        toast({
+          variant: 'destructive',
+          title: 'Google Login Failed',
+          description: error.message,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -189,12 +219,12 @@ export default function LoginPage() {
           variant="outline" 
           onClick={handleGoogleLogin} 
           disabled={isLoading}
-          className="w-full h-14 bg-[#1a1a1a] border-white/5 rounded-2xl font-bold uppercase tracking-widest text-[11px] gap-3"
+          className="w-full h-14 bg-[#1a1a1a] border-white/5 rounded-2xl font-bold uppercase tracking-widest text-[11px] gap-3 hover:bg-white/5 transition-colors"
         >
           <svg className="h-5 w-5" viewBox="0 0 488 512">
             <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
           </svg>
-          Google
+          Continue with Google
         </Button>
 
         <p className="text-center text-xs font-medium text-muted-foreground pt-4 pb-12">
