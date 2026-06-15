@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'IgniteArena | Free Fire Tournament App',
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased pb-20 selection:bg-primary/30">
-        <div className="max-w-md mx-auto min-h-screen bg-background border-x border-border/50 relative">
-          {children}
-          <BottomNav />
-        </div>
-        <Toaster />
+        <FirebaseClientProvider>
+          <div className="max-w-md mx-auto min-h-screen bg-background border-x border-border/50 relative">
+            {children}
+            <BottomNav />
+          </div>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
