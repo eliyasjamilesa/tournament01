@@ -12,9 +12,26 @@
         "photoURL": { "type": "string" },
         "phone": { "type": "string" },
         "coins": { "type": "number", "description": "Virtual currency for tournament entry." },
-        "level": { "type": "number", "description": "User's experience level." }
+        "level": { "type": "number", "description": "User's experience level." },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role in the platform." }
       },
       "required": ["uid", "email"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "A match or tournament event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "mode": { "type": "string", "enum": ["BR", "CS", "LW"] },
+        "entryFee": { "type": "number" },
+        "prizePool": { "type": "string" },
+        "maxPlayers": { "type": "number" },
+        "currentPlayers": { "type": "number" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["open", "live", "completed"] }
+      }
     }
   },
   "auth": {
@@ -24,6 +41,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Individual user profiles."
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": "Tournament",
+      "description": "Tournament listings managed by admin."
     }
   }
 }

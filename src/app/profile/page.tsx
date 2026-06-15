@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -13,7 +14,8 @@ import {
   Bell,
   CreditCard,
   UserCircle,
-  Loader2
+  Loader2,
+  ShieldAlert
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -58,6 +60,8 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  const isAdmin = profile?.role === 'admin';
 
   const stats = [
     { label: 'MATCHES', value: '124', icon: Swords },
@@ -108,7 +112,7 @@ export default function ProfilePage() {
               {profile?.displayName || user?.displayName || 'Unknown Player'}
             </h1>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-              Pro Arena Member
+              {isAdmin ? 'ADMIN COMMANDER' : 'Pro Arena Member'}
             </p>
           </div>
           
@@ -136,6 +140,28 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
+
+      {/* Admin Panel Link */}
+      {isAdmin && (
+        <div className="px-6 mt-8">
+          <Link href="/admin">
+            <Card className="border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer">
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <ShieldAlert className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block text-sm font-black uppercase italic text-primary">Admin Control Panel</span>
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase">Manage Matches & Users</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-primary" />
+              </div>
+            </Card>
+          </Link>
+        </div>
+      )}
 
       <div className="px-6 mt-10 space-y-8">
         {sections.map((section) => (
