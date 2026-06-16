@@ -9,7 +9,9 @@ import {
   Loader2,
   Trash2,
   Trophy,
-  Skull
+  Skull,
+  Plus,
+  Info
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@
 import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function AdminDashboard() {
   const { user, loading: userLoading } = useUser();
@@ -62,11 +65,14 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Wait until both user and profile are loaded before making a redirection decision
+    // Debugging logs
     if (!userLoading && !profileLoading) {
+      console.log("Auth User:", user?.uid);
+      console.log("Profile Role:", profile?.role);
+      
       if (!user) {
         router.replace('/login');
-      } else if (profile?.role !== 'admin') {
+      } else if (profile && profile.role !== 'admin') {
         router.replace('/');
       }
     }
@@ -114,7 +120,7 @@ export default function AdminDashboard() {
       setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to create match." });
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -126,12 +132,28 @@ export default function AdminDashboard() {
     deleteDoc(doc(db, 'tournaments', id));
   };
 
-  // Show loading state while checking permissions
-  if (userLoading || profileLoading || !profile || profile.role !== 'admin') {
+  // While loading, show a centered spinner
+  if (userLoading || profileLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Verifying Admin Access...</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Authenticating Commander...</p>
+      </div>
+    );
+  }
+
+  // If data loaded but not admin, show a small debug message before redirect effect kicks in
+  if (!profile || profile.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <Alert variant="destructive" className="max-w-xs border-primary/20 bg-primary/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-xs font-bold uppercase tracking-tight">
+            Administrative Privileges Required
+            <span className="block mt-2 opacity-50 text-[10px]">UID: {user?.uid}</span>
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => window.location.reload()} variant="link" className="mt-4 text-[10px] uppercase font-bold tracking-widest">Retry Connection</Button>
       </div>
     );
   }
@@ -140,12 +162,12 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background p-6 pb-24">
       <header className="flex items-center justify-between mb-8 pt-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
             <ShieldAlert className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-xl font-headline font-black uppercase italic tracking-tight">Admin <span className="text-primary">Panel</span></h1>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase tracking-widest">Exit</Button>
+        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase tracking-widest h-8 border border-white/5 rounded-lg">Exit</Button>
       </header>
 
       <Tabs defaultValue="create" className="space-y-6">
@@ -155,21 +177,23 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="create">
-          <Card className="border-white/5 bg-card/60">
-            <CardHeader>
-              <CardTitle className="text-lg font-headline font-bold uppercase italic">Launch Tournament</CardTitle>
+          <Card className="border-white/5 bg-card/60 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-headline font-bold uppercase italic flex items-center gap-2">
+                <Plus className="w-4 h-4 text-primary" /> Launch Tournament
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddMatch} className="space-y-6">
                 <div className="grid gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Title</Label>
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Title</Label>
                     <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="input-simple" required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mode</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Mode</Label>
                       <Select value={matchMode} onValueChange={setMatchMode}>
                         <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -180,7 +204,7 @@ export default function AdminDashboard() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Map</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Map</Label>
                       <Select value={matchMap} onValueChange={setMatchMap}>
                         <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -194,7 +218,7 @@ export default function AdminDashboard() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Version</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Version</Label>
                       <Select value={matchVersion} onValueChange={setMatchVersion}>
                         <SelectTrigger className="input-simple"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -204,56 +228,56 @@ export default function AdminDashboard() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Start Time</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Start Time</Label>
                       <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="input-simple" required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Fee (TK)</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fee (TK)</Label>
                       <Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="input-simple" required />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Total Prize</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Total Prize</Label>
                       <Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="input-simple" required />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Per Kill</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Per Kill</Label>
                       <Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="input-simple" required />
                     </div>
                   </div>
 
-                  <div className="p-4 border border-white/5 rounded-xl bg-background/40 space-y-4">
+                  <div className="p-4 border border-white/5 rounded-2xl bg-background/40 space-y-4">
                     <h4 className="text-[10px] font-bold uppercase text-primary tracking-widest flex items-center gap-2">
                       <Trophy className="w-3 h-3" /> Position Prize Pool
                     </h4>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-[8px] uppercase">1st Winner</Label>
-                        <Input type="number" value={p1} onChange={(e) => setP1(e.target.value)} className="input-simple h-9 text-xs" required />
+                        <Label className="text-[8px] uppercase font-bold text-muted-foreground">1st Winner</Label>
+                        <Input type="number" value={p1} onChange={(e) => setP1(e.target.value)} className="input-simple h-10 text-xs" required />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[8px] uppercase">2nd Winner</Label>
-                        <Input type="number" value={p2} onChange={(e) => setP2(e.target.value)} className="input-simple h-9 text-xs" required />
+                        <Label className="text-[8px] uppercase font-bold text-muted-foreground">2nd Position</Label>
+                        <Input type="number" value={p2} onChange={(e) => setP2(e.target.value)} className="input-simple h-10 text-xs" required />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[8px] uppercase">3rd Winner</Label>
-                        <Input type="number" value={p3} onChange={(e) => setP3(e.target.value)} className="input-simple h-9 text-xs" required />
+                        <Label className="text-[8px] uppercase font-bold text-muted-foreground">3rd Position</Label>
+                        <Input type="number" value={p3} onChange={(e) => setP3(e.target.value)} className="input-simple h-10 text-xs" required />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[8px] uppercase">4th Winner</Label>
-                        <Input type="number" value={p4} onChange={(e) => setP4(e.target.value)} className="input-simple h-9 text-xs" required />
+                        <Label className="text-[8px] uppercase font-bold text-muted-foreground">4th Position</Label>
+                        <Input type="number" value={p4} onChange={(e) => setP4(e.target.value)} className="input-simple h-10 text-xs" required />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[8px] uppercase">5th Winner</Label>
-                        <Input type="number" value={p5} onChange={(e) => setP5(e.target.value)} className="input-simple h-9 text-xs" required />
+                        <Label className="text-[8px] uppercase font-bold text-muted-foreground">5th Position</Label>
+                        <Input type="number" value={p5} onChange={(e) => setP5(e.target.value)} className="input-simple h-10 text-xs" required />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg active:scale-95 transition-all">
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Launch Match'}
                 </Button>
               </form>
@@ -264,20 +288,24 @@ export default function AdminDashboard() {
         <TabsContent value="manage">
           <div className="space-y-4">
             {tournamentsLoading ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+              <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" /></div>
+            ) : tournaments?.length === 0 ? (
+              <div className="text-center py-20 bg-card/20 rounded-3xl border border-white/5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No Active Matches</p>
+              </div>
             ) : tournaments?.map((match: any) => (
-              <Card key={match.id} className="border-white/5 bg-card/40 p-4">
+              <Card key={match.id} className="border-white/5 bg-card/40 p-4 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                       <Swords className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <span className="block text-sm font-bold">{match.title} <span className="text-primary">{match.matchId}</span></span>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map}</span>
+                      <span className="block text-sm font-black uppercase italic">{match.title} <span className="text-primary">{match.matchId}</span></span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map} • {match.entryFee} TK</span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => handleDeleteMatch(match.id)}>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive rounded-xl" onClick={() => handleDeleteMatch(match.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

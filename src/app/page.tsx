@@ -85,7 +85,7 @@ export default function Home() {
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Victory Awaits the Elite</p>
         </div>
 
-        {/* Game Types Section */}
+        {/* Game Types Section - Always Shown */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
             Tournament Categories
