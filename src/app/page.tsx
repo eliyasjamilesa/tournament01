@@ -3,14 +3,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Menu, Gamepad2, Loader2, Trophy, Swords, Zap, ChevronRight } from 'lucide-react';
+import { Flame, Menu, Loader2, Zap, ChevronRight, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, limit, orderBy } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
@@ -23,13 +24,6 @@ export default function Home() {
   }, [db, user]);
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
-
-  const tournamentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(5));
-  }, [db]);
-
-  const { data: tournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,26 +43,46 @@ export default function Home() {
 
   const userAvatar = profile?.photoURL || user?.photoURL || PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
 
-  const gameTypes = [
-    { id: 'br-solo', title: 'Solo War', players: 'Solo', icon: Swords, color: 'text-blue-500' },
-    { id: 'br-duo', title: 'Duo Combat', players: 'Duo', icon: Gamepad2, color: 'text-green-500' },
-    { id: 'br-squad', title: 'Squad Chaos', players: 'Squad', icon: Zap, color: 'text-yellow-500' },
+  const gameSections = [
+    {
+      title: 'BATTLE ROYALE',
+      types: [
+        { id: 'br-solo', title: 'BR SOLO', image: 'br-solo' },
+        { id: 'br-duo', title: 'BR DUO', image: 'br-duo' },
+        { id: 'br-squad', title: 'BR SQUAD', image: 'br-squad' },
+      ]
+    },
+    {
+      title: 'CLASH SQUAD',
+      types: [
+        { id: 'cs-rank', title: 'CS RANK', image: 'cs-rank' },
+        { id: 'cs-hs', title: 'CS HEADSHOT', image: 'cs-headshot' },
+      ]
+    },
+    {
+      title: 'LONE WOLF',
+      types: [
+        { id: 'lw-1v1', title: 'LW 1V1', image: 'lw-1v1' },
+        { id: 'lw-2v2', title: 'LW 2V2', image: 'lw-2v2' },
+        { id: 'lw-hs', title: 'LW HEADSHOT', image: 'lw-hs' },
+      ]
+    }
   ];
 
   return (
-    <div className="min-h-screen pb-32">
-      <header className="px-6 pt-6 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-        <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-full transition-colors">
-          <Menu className="w-6 h-6" />
+    <div className="min-h-screen pb-32 bg-background">
+      <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+        <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-xl transition-colors">
+          <LayoutGrid className="w-6 h-6" />
         </button>
         
-        <div className="flex items-center gap-2 bg-red-950/20 border border-red-500/20 px-3 py-1.5 rounded-full">
-          <Flame className="w-4 h-4 text-primary animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Ignite Live</span>
+        <div className="flex items-center gap-2 bg-[#1a0505] border border-primary/20 px-4 py-2 rounded-full">
+          <Zap className="w-4 h-4 text-primary fill-primary animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary italic">Live Status</span>
         </div>
 
         <Link href="/profile">
-          <Avatar className="w-9 h-9 border border-white/10 ring-2 ring-primary/20">
+          <Avatar className="w-10 h-10 border-2 border-primary shadow-[0_0_15px_rgba(255,0,0,0.3)]">
             <AvatarImage src={userAvatar} className="object-cover" />
             <AvatarFallback className="bg-muted font-bold">
               {profile?.displayName?.[0] || user?.displayName?.[0] || 'U'}
@@ -77,91 +91,81 @@ export default function Home() {
         </Link>
       </header>
 
-      <main className="px-6 space-y-8">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-headline font-black uppercase italic tracking-tight text-glow-red">
-            IGNITE <span className="text-primary">ARENA</span>
-          </h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Victory Awaits the Elite</p>
-        </div>
-
-        {/* Game Types Section - Always Shown */}
-        <section className="space-y-4">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-            Tournament Categories
-          </h2>
-          <div className="grid grid-cols-1 gap-3">
-            {gameTypes.map((type) => (
-              <Link href="/play" key={type.id}>
-                <Card className="bg-card/40 border-white/5 p-4 rounded-2xl hover:bg-card hover:border-primary/20 transition-all flex items-center justify-between group">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center ${type.color}`}>
-                      <type.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <span className="block text-sm font-black uppercase italic">{type.title}</span>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{type.players} Mode</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </Card>
-              </Link>
-            ))}
-          </div>
+      <main className="px-6 space-y-8 mt-4">
+        {/* Hero Banner Section */}
+        <section>
+          <Card className="overflow-hidden border-none relative group cursor-pointer rounded-[2.5rem] h-52 shadow-2xl">
+            <Image 
+              src="https://picsum.photos/seed/telegram-promo/800/600" 
+              alt="Promo Banner" 
+              fill 
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              data-ai-hint="gaming banner"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="absolute inset-0 flex flex-col justify-end p-8 space-y-3">
+              <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white leading-tight">
+                JOIN OUR <br /> <span className="text-primary">TELEGRAM CHANNEL</span>
+              </h3>
+              <button className="bg-primary text-white text-[10px] font-black uppercase italic px-6 py-2.5 rounded-full w-fit flex items-center gap-2 shadow-lg shadow-primary/20">
+                TS TOUR TELEGRAM <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              </button>
+            </div>
+          </Card>
         </section>
 
-        {/* Dynamic Latest Matches */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black uppercase italic tracking-widest text-primary flex items-center gap-2">
-              <Zap className="w-4 h-4 fill-primary" /> Active Matches
-            </h2>
-            <Link href="/play" className="text-[10px] font-bold text-muted-foreground uppercase hover:text-primary">View All</Link>
-          </div>
+        {/* Game Sections */}
+        {gameSections.map((section) => (
+          <section key={section.title} className="space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-[1px] flex-1 bg-white/10" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground italic">
+                {section.title}
+              </h2>
+              <div className="h-[1px] flex-1 bg-white/10" />
+            </div>
 
-          <div className="space-y-3">
-            {tournamentsLoading ? (
-              <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-            ) : tournaments?.length === 0 ? (
-              <div className="text-center py-10 bg-white/5 rounded-2xl border border-white/5 border-dashed">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">No Matches Scheduled</p>
-              </div>
-            ) : tournaments?.map((match: any) => (
-              <Link href="/play" key={match.id}>
-                <Card className="bg-card border-white/5 p-4 rounded-2xl hover:bg-white/5 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center">
-                        <Gamepad2 className="w-5 h-5 text-white" />
+            <div className="grid grid-cols-2 gap-4">
+              {section.types.map((type) => (
+                <Link href="/play" key={type.id} className="group">
+                  <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
+                    <Image 
+                      src={PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || ''} 
+                      alt={type.title} 
+                      fill 
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      data-ai-hint="game mode"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black uppercase italic text-white tracking-tight">{type.title}</span>
+                        <div className="w-6 h-6 rounded-lg bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/20">
+                          <Zap className="w-3 h-3 text-primary fill-primary" />
+                        </div>
                       </div>
-                      <div>
-                        <span className="block text-xs font-black uppercase italic truncate max-w-[150px]">{match.title}</span>
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase">{match.mode} • {match.map}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="block text-xs font-black text-primary italic">{match.prizePool} TK</span>
-                      <span className="text-[8px] font-bold text-muted-foreground uppercase">Prize Pool</span>
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
 
         {/* AI Tactical Scout CTA */}
-        <section>
+        <section className="pb-10">
           <Link href="/scout">
-            <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer rounded-2xl">
+            <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer rounded-[2.5rem] shadow-xl">
               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-              <CardContent className="p-6 relative z-10 flex items-center justify-between">
-                <div className="space-y-1">
-                  <Badge className="bg-white/20 text-white border-white/20 mb-2 font-black italic">ELITE AI</Badge>
-                  <h3 className="text-xl font-headline font-bold uppercase text-white tracking-tight italic">Tactical Scout</h3>
-                  <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">Master the next drop zone.</p>
+              <CardContent className="p-8 relative z-10 flex items-center justify-between">
+                <div className="space-y-2">
+                  <Badge className="bg-white/20 text-white border-white/20 mb-2 font-black italic tracking-widest text-[8px]">ELITE AI</Badge>
+                  <h3 className="text-2xl font-black uppercase text-white tracking-tighter italic leading-none">Tactical <br /> Scout</h3>
+                  <p className="text-white/80 text-[8px] font-bold uppercase tracking-[0.2em] mt-1">Master the drop zone.</p>
                 </div>
-                <Zap className="w-12 h-12 text-white/30 group-hover:scale-125 transition-transform" />
+                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
+                   <Zap className="w-8 h-8 text-white fill-white/20" />
+                </div>
               </CardContent>
             </Card>
           </Link>
