@@ -352,7 +352,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
             </Button>
           ) : (
             <Button 
-              onClick={() => router.push(`/play/join/${tournament.id}`)}
+              onClick={() => router.push(`/play/join?id=${tournament.id}`)}
               disabled={tournament.currentPlayers >= tournament.maxPlayers} 
               className={cn(
                 "w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg transition-all active:scale-95 magma-gradient"
