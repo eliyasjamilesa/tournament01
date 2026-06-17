@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, ListChecks, Play, Trophy, User } from 'lucide-react';
+import { ListChecks, Play, Trophy, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 
@@ -18,9 +18,8 @@ export function BottomNav() {
   if (isAuthPage || isJoiningFlow || !user) return null;
 
   const navItems = [
-    { label: 'স্টোর', icon: ShoppingBag, href: '#' },
-    { label: 'রেজাল্ট', icon: ListChecks, href: '/results' },
     { label: 'খেলুন', icon: Play, href: '/', isMain: true },
+    { label: 'রেজাল্ট', icon: ListChecks, href: '/results' },
     { label: 'আমার ম্যাচ', icon: Trophy, href: '/joined' },
     { label: 'প্রোফাইল', icon: User, href: '/profile' },
   ];
@@ -38,7 +37,7 @@ export function BottomNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 transition-all duration-300 relative",
+                  "flex flex-col items-center gap-1.5 transition-all duration-300 relative flex-1",
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
