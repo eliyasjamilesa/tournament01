@@ -11,7 +11,6 @@ import {
   Trophy,
   Plus,
   Key,
-  LogOut,
   ChevronLeft
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +30,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
   
-  // Use a status state to manage the flow strictly
+  // Auth state management
   const [status, setStatus] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
 
   const userDocRef = useMemoFirebase(() => {
@@ -42,7 +41,6 @@ export default function AdminDashboard() {
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
-    // Wait until both auth and profile are done loading
     if (userLoading || profileLoading) return;
 
     if (!user) {
@@ -52,12 +50,9 @@ export default function AdminDashboard() {
 
     if (profile?.role === 'admin') {
       setStatus('authorized');
-    } else {
-      // Only redirect if we are SURE they are not an admin
-      if (profile && profile.role !== 'admin') {
-        setStatus('unauthorized');
-        router.replace('/');
-      }
+    } else if (profile) {
+      setStatus('unauthorized');
+      router.replace('/');
     }
   }, [user, userLoading, profile, profileLoading, router]);
 
@@ -94,7 +89,7 @@ export default function AdminDashboard() {
     
     try {
       const matchId = '#' + Math.floor(10000 + Math.random() * 90000);
-      addDoc(collection(db, 'tournaments'), {
+      await addDoc(collection(db, 'tournaments'), {
         matchId,
         title: matchTitle,
         mode: matchMode,
@@ -125,7 +120,7 @@ export default function AdminDashboard() {
   const handleUpdateRoom = async () => {
     if (!db || !editingRoom) return;
     const ref = doc(db, 'tournaments', editingRoom.id);
-    updateDoc(ref, {
+    await updateDoc(ref, {
       roomId: editingRoom.rid,
       roomPassword: editingRoom.rpass
     });
@@ -136,7 +131,7 @@ export default function AdminDashboard() {
   const handleDeleteMatch = async (id: string) => {
     if (!db) return;
     if (confirm('Delete this tournament?')) {
-      deleteDoc(doc(db, 'tournaments', id));
+      await deleteDoc(doc(db, 'tournaments', id));
     }
   };
 
