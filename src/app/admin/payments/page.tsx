@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle } from 'lucide-react';
+import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
@@ -16,10 +16,9 @@ export default function PaymentsPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  // Simplified query first to check if index is the issue
   const pendingPaymentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    // Keeping only where clause first to ensure basic functionality
+    // Querying all pending transactions ordered by time
     return query(
       collection(db, 'transactions'), 
       where('status', '==', 'pending'),
@@ -70,22 +69,30 @@ export default function PaymentsPage() {
     }
   };
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
+        <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center border border-destructive/20">
+          <ShieldAlert className="w-10 h-10 text-destructive" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-black uppercase italic tracking-tighter">অনুমতি <span className="text-destructive">নেই</span></h2>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[280px]">
+            আপনি সম্ভবত অ্যাডমিন হিসেবে ভেরিফাইড নন অথবা ডাটাবেস পারমিশনে সমস্যা হচ্ছে।
+          </p>
+          <p className="text-[8px] text-muted-foreground mt-4 font-mono">Error: {error.message}</p>
+        </div>
+        <Button variant="outline" onClick={() => window.location.reload()} className="h-10 rounded-xl uppercase font-black text-[10px] tracking-widest">পেজ রিফ্রেশ করুন</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
         <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট <span className="text-primary">চেক</span></h2>
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট ও উইথড্র ম্যানেজ করুন</p>
       </div>
-
-      {error && (
-        <Card className="border-destructive/20 bg-destructive/5 p-4 flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 text-destructive" />
-          <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase text-destructive">Data Sync Error</p>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase">ফায়ারস্টোর ইনডেক্স তৈরি না হওয়া পর্যন্ত ডেটা লোড হতে সমস্যা হতে পারে।</p>
-          </div>
-        </Card>
-      )}
 
       <div className="space-y-4">
         {loading ? (

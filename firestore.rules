@@ -10,6 +10,7 @@ service cloud.firestore {
     // Helper function to check if user is admin
     function isAdmin() {
       return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
@@ -37,9 +38,11 @@ service cloud.firestore {
 
     // Transaction rules
     match /transactions/{transactionId} {
-      // Allow users to read their own transactions, and admins to read all
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      // Allow admins to read all, users to read only their own
+      allow read: if isSignedIn() && (isAdmin() || (resource != null && resource.data.userId == request.auth.uid));
+      // Anyone signed in can create a transaction (deposit/withdraw request)
       allow create: if isSignedIn();
+      // Only admins can update or delete
       allow update, delete: if isAdmin();
     }
 
