@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState } from 'react';
-import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert, RefreshCcw } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Wallet, Loader2, Clock, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert, RefreshCcw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
-import { doc, updateDoc, writeBatch, increment, query, where, orderBy, collection } from 'firebase/firestore';
+import { doc, updateDoc, writeBatch, increment, query, where, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,7 @@ export default function PaymentsPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  // Fetch current user profile to verify admin role locally before querying
+  // Fetch current user profile to verify admin role locally
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, 'users', user.uid);
@@ -28,15 +28,25 @@ export default function PaymentsPage() {
     // CRITICAL: Only run query if profile is loaded AND user is confirmed admin
     if (!db || !user || profileLoading || profile?.role !== 'admin') return null;
     
-    // This query requires a composite index: transactions (status == ASC, timestamp == DESC)
+    // REMOVED orderBy to avoid mandatory composite index
+    // We will sort client-side instead
     return query(
       collection(db, 'transactions'), 
-      where('status', '==', 'pending'),
-      orderBy('timestamp', 'desc')
+      where('status', '==', 'pending')
     );
   }, [db, user, profile?.role, profileLoading]);
 
-  const { data: pendingPayments, loading, error } = useCollection<any>(pendingPaymentsQuery);
+  const { data: rawPayments, loading, error } = useCollection<any>(pendingPaymentsQuery);
+
+  // Client-side sorting: Newest first
+  const pendingPayments = useMemo(() => {
+    if (!rawPayments) return [];
+    return [...rawPayments].sort((a, b) => {
+      const timeA = a.timestamp?.toMillis?.() || 0;
+      const timeB = b.timestamp?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+  }, [rawPayments]);
 
   const handleApprove = async (tx: any) => {
     if (!db) return;
@@ -95,9 +105,9 @@ export default function PaymentsPage() {
           <ShieldAlert className="w-10 h-10 text-destructive" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-black uppercase italic tracking-tighter">অ্যাডমিন এক্সেস <span className="text-destructive">নেই</span></h2>
+          <h2 className="text-xl font-black uppercase italic tracking-tighter">অ্যাডমিন এক্সেস নেই</h2>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[280px]">
-            আপনার প্রোফাইল অ্যাডমিন হিসেবে ভেরিফাইড নয়। অ্যাডমিন প্যানেল থেকে পাওয়ার নিন।
+            আপনার প্রোফাইল অ্যাডমিন হিসেবে ভেরিফাইড নয়।
           </p>
         </div>
       </div>
@@ -105,16 +115,15 @@ export default function PaymentsPage() {
   }
 
   if (error) {
-    const isIndexError = error.message.toLowerCase().includes('index');
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
         <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center border border-destructive/20">
           <AlertTriangle className="w-10 h-10 text-destructive" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">লোডিং <span className="text-destructive">এরর</span></h2>
+          <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">লোডিং এরর</h2>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            {isIndexError ? "ফায়ারস্টোর ইনডেক্স তৈরি হচ্ছে। দয়া করে ৫ মিনিট অপেক্ষা করুন।" : "ডাটাবেস কানেকশনে সমস্যা হচ্ছে।"}
+            ডাটাবেস কানেকশনে সমস্যা হচ্ছে।
           </p>
           <p className="text-[7px] font-mono text-muted-foreground opacity-50 mt-4 break-all bg-black/40 p-3 rounded-lg">
             {error.message}
@@ -130,7 +139,7 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট <span className="text-primary">চেক</span></h2>
+        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট চেক</h2>
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট ও উইথড্র ম্যানেজ করুন</p>
       </div>
 
@@ -140,14 +149,14 @@ export default function PaymentsPage() {
             <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">পেমেন্ট লিস্ট লোড হচ্ছে...</p>
           </div>
-        ) : pendingPayments?.length === 0 ? (
+        ) : pendingPayments.length === 0 ? (
           <div className="text-center py-24 border border-dashed border-white/5 rounded-[2.5rem] space-y-3">
              <div className="w-16 h-16 rounded-full bg-muted/5 flex items-center justify-center mx-auto">
                <Wallet className="w-8 h-8 text-muted-foreground opacity-20" />
              </div>
              <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">কোন পেন্ডিং রিকোয়েস্ট নেই</p>
           </div>
-        ) : pendingPayments?.map((tx: any) => (
+        ) : pendingPayments.map((tx: any) => (
           <Card key={tx.id} className="border-white/5 bg-[#0a0a0a] p-6 rounded-[2rem] overflow-hidden relative shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
