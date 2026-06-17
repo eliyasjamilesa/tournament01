@@ -76,7 +76,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
       <SheetTrigger asChild>
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-6 pb-10 overflow-y-auto">
+      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-6 pb-10 overflow-y-auto no-scrollbar">
         <SheetHeader className="sr-only">
           <SheetTitle>Tournament Slots - {tournament.matchId}</SheetTitle>
           <SheetDescription>View registered players for this match.</SheetDescription>
@@ -170,6 +170,12 @@ function SlotsSheet({ tournament }: { tournament: any }) {
 
 function PrizeDistributionSheet({ tournament }: { tournament: any }) {
   const prizes = tournament.prizes || {};
+  
+  // Filter only prizes that have a value greater than 0
+  const activePrizes = [1, 2, 3, 4, 5]
+    .map(pos => ({ pos, amount: (prizes as any)[`p${pos}`] || 0 }))
+    .filter(item => item.amount > 0);
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -181,16 +187,18 @@ function PrizeDistributionSheet({ tournament }: { tournament: any }) {
           <SheetDescription className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Rank-wise distribution of the total pool.</SheetDescription>
         </SheetHeader>
         <div className="grid grid-cols-2 gap-3 mb-6">
-          {[1, 2, 3, 4, 5].map((pos) => (
-            <div key={pos} className="p-3 rounded-xl bg-muted/50 border border-white/5 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">Pos {pos}</span>
-              <span className="font-bold text-sm">{(prizes as any)[`p${pos}`] || 0} TK</span>
+          {activePrizes.map((item) => (
+            <div key={item.pos} className="p-3 rounded-xl bg-muted/50 border border-white/5 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">Pos {item.pos}</span>
+              <span className="font-bold text-sm">{item.amount} TK</span>
             </div>
           ))}
-          <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase text-primary">Per Kill</span>
-            <span className="font-bold text-sm text-primary">{tournament.perKill || 0} TK</span>
-          </div>
+          {Number(tournament.perKill || 0) > 0 && (
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase text-primary">Per Kill</span>
+              <span className="font-bold text-sm text-primary">{tournament.perKill || 0} TK</span>
+            </div>
+          )}
         </div>
         <div className="p-5 rounded-2xl bg-primary flex items-center justify-between shadow-lg"><span className="text-sm font-black uppercase italic text-white">Total Prize</span><span className="text-xl font-black text-white">{tournament.prizePool || 0} TK</span></div>
       </SheetContent>
