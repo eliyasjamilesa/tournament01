@@ -69,13 +69,15 @@ export default function JoinMatchFlow() {
   }, [registrations]);
 
   const slotConfig = useMemo(() => {
-    if (!tournament) return { total: 48, layout: 'single' };
+    if (!tournament) return { total: 48, perGroup: 1, type: 'SOLO' };
     const mode = (tournament.mode || '').toUpperCase();
-    if (mode.includes('BR')) return { total: 48, layout: 'single' };
-    if (mode.includes('CS')) return { total: 8, layout: 'team' };
-    if (mode.includes('LW 1V1') || mode === 'LW HEADSHOT') return { total: 2, layout: 'single' };
-    if (mode.includes('LW 2V2')) return { total: 4, layout: 'team' };
-    return { total: 48, layout: 'single' };
+    if (mode === 'BR SOLO') return { total: 48, perGroup: 1, type: 'SOLO' };
+    if (mode === 'BR DUO') return { total: 48, perGroup: 2, type: 'DUO' };
+    if (mode === 'BR SQUAD') return { total: 48, perGroup: 4, type: 'SQUAD' };
+    if (mode.includes('CS')) return { total: 8, perGroup: 4, type: 'TEAM' };
+    if (mode.includes('LW 1V1') || mode === 'LW HEADSHOT') return { total: 2, perGroup: 1, type: 'TEAM' };
+    if (mode.includes('LW 2V2')) return { total: 4, perGroup: 2, type: 'TEAM' };
+    return { total: 48, perGroup: 1, type: 'SOLO' };
   }, [tournament]);
 
   const handleProceed = async () => {
@@ -183,26 +185,45 @@ export default function JoinMatchFlow() {
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Available Battle Slots</span>
               <span className="text-[10px] font-black text-primary uppercase italic">{tournament.mode}</span>
             </div>
-            <div className={cn("grid gap-3", slotConfig.total <= 8 ? "grid-cols-4" : "grid-cols-5")}>
-              {Array.from({ length: slotConfig.total }).map((_, i) => {
-                const slotNum = i + 1;
-                const isOccupied = occupiedSlots.has(slotNum);
-                const isSelected = selectedSlot === slotNum;
-                return (
-                  <button
-                    key={slotNum}
-                    disabled={isOccupied}
-                    onClick={() => setSelectedSlot(slotNum)}
-                    className={cn(
-                      "aspect-square rounded-xl flex items-center justify-center transition-all border relative",
-                      isOccupied ? "bg-red-950/20 border-red-900/30 text-muted-foreground/30" : 
-                      isSelected ? "bg-primary border-primary text-white shadow-lg" : "bg-muted/30 border-white/5"
-                    )}
-                  >
-                    <span className={cn("text-xs font-black", isOccupied && "line-through")}>{isOccupied ? '-' : slotNum}</span>
-                  </button>
-                );
-              })}
+            
+            <div className="space-y-4">
+              {Array.from({ length: Math.ceil(slotConfig.total / slotConfig.perGroup) }).map((_, groupIndex) => (
+                <div key={groupIndex} className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                      {slotConfig.type} {groupIndex + 1}
+                    </span>
+                    <div className="h-px flex-1 bg-white/5 ml-3" />
+                  </div>
+                  <div className={cn(
+                    "grid gap-2 p-3 rounded-2xl bg-white/5 border border-white/5",
+                    slotConfig.perGroup === 1 ? "grid-cols-4" : 
+                    slotConfig.perGroup === 2 ? "grid-cols-2" : 
+                    "grid-cols-4"
+                  )}>
+                    {Array.from({ length: slotConfig.perGroup }).map((_, i) => {
+                      const slotNum = (groupIndex * slotConfig.perGroup) + i + 1;
+                      if (slotNum > slotConfig.total) return null;
+                      const isOccupied = occupiedSlots.has(slotNum);
+                      const isSelected = selectedSlot === slotNum;
+                      return (
+                        <button
+                          key={slotNum}
+                          disabled={isOccupied}
+                          onClick={() => setSelectedSlot(slotNum)}
+                          className={cn(
+                            "aspect-square rounded-xl flex items-center justify-center transition-all border relative",
+                            isOccupied ? "bg-red-950/20 border-red-900/30 text-muted-foreground/30" : 
+                            isSelected ? "bg-primary border-primary text-white shadow-lg" : "bg-muted/30 border-white/5"
+                          )}
+                        >
+                          <span className={cn("text-xs font-black", isOccupied && "line-through")}>{isOccupied ? '-' : slotNum}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

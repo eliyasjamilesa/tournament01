@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
 } from 'lucide-react';
@@ -55,6 +55,22 @@ function SlotsSheet({ tournament }: { tournament: any }) {
 
   const { data: slots, loading: slotsLoading } = useCollection<any>(registrationsQuery);
 
+  const slotConfig = useMemo(() => {
+    if (!tournament) return { total: 48, perGroup: 1, type: 'SOLO' };
+    const mode = (tournament.mode || '').toUpperCase();
+    if (mode === 'BR SOLO') return { total: 48, perGroup: 1, type: 'SOLO' };
+    if (mode === 'BR DUO') return { total: 48, perGroup: 2, type: 'DUO' };
+    if (mode === 'BR SQUAD') return { total: 48, perGroup: 4, type: 'SQUAD' };
+    if (mode.includes('CS')) return { total: 8, perGroup: 4, type: 'TEAM' };
+    if (mode.includes('LW 1V1') || mode === 'LW HEADSHOT') return { total: 2, perGroup: 1, type: 'TEAM' };
+    if (mode.includes('LW 2V2')) return { total: 4, perGroup: 2, type: 'TEAM' };
+    return { total: 48, perGroup: 1, type: 'SOLO' };
+  }, [tournament]);
+
+  const findSlotData = (slotNum: number) => {
+    return slots?.find((s: any) => s.slotNumber === slotNum);
+  };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -94,7 +110,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
            <span className="text-[10px] font-bold text-muted-foreground uppercase">{tournament.currentPlayers} Joined</span>
         </div>
 
-        <div className="min-h-[400px] border border-white/5 rounded-[2rem] bg-card/20 flex flex-col p-6">
+        <div className="min-h-[400px] border border-white/5 rounded-[2rem] bg-card/20 flex flex-col p-6 space-y-6">
           {!isJoined ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-20">
               <div className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-2">
@@ -103,24 +119,47 @@ function SlotsSheet({ tournament }: { tournament: any }) {
               <h4 className="text-2xl font-black uppercase italic text-red-600 tracking-tight">Not Joined</h4>
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Join match to view players</p>
             </div>
+          ) : slotsLoading ? (
+            <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-red-500" /></div>
           ) : (
-            <div className="grid grid-cols-1 gap-2.5">
-              {slotsLoading ? (
-                 <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-red-500" /></div>
-              ) : (
-                slots?.map((slot: any, index: number) => (
-                  <div key={slot.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                    <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-red-500 w-6">#{slot.slotNumber || index + 1}</span>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white uppercase tracking-tight">{slot.ingameName || slot.displayName}</span>
-                        <span className="text-[8px] text-muted-foreground font-mono">ID: {slot.ingameId || '---'}</span>
-                      </div>
-                    </div>
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <div className="space-y-6">
+              {Array.from({ length: Math.ceil(slotConfig.total / slotConfig.perGroup) }).map((_, groupIndex) => (
+                <div key={groupIndex} className="space-y-3">
+                  <div className="flex items-center justify-between px-2">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                      {slotConfig.type} {groupIndex + 1}
+                    </span>
+                    <div className="h-px flex-1 bg-white/5 ml-3" />
                   </div>
-                ))
-              )}
+                  <div className="grid grid-cols-1 gap-2 p-1">
+                    {Array.from({ length: slotConfig.perGroup }).map((_, i) => {
+                      const slotNum = (groupIndex * slotConfig.perGroup) + i + 1;
+                      if (slotNum > slotConfig.total) return null;
+                      const player = findSlotData(slotNum);
+                      
+                      return (
+                        <div key={slotNum} className={cn(
+                          "flex items-center justify-between p-4 rounded-xl border transition-all",
+                          player ? "bg-white/5 border-white/10" : "bg-black/20 border-white/5 opacity-40"
+                        )}>
+                          <div className="flex items-center gap-4">
+                            <span className="text-[10px] font-black text-red-500 w-6">#{slotNum}</span>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-white uppercase tracking-tight">
+                                {player ? (player.ingameName || player.displayName) : 'Empty Slot'}
+                              </span>
+                              {player && (
+                                <span className="text-[8px] text-muted-foreground font-mono">ID: {player.ingameId || '---'}</span>
+                              )}
+                            </div>
+                          </div>
+                          {player && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
