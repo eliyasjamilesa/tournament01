@@ -38,8 +38,12 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
     try {
       const snap = await getDocs(collection(db, 'tournaments', tournament.id, 'registrations'));
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort by won amount descending
-      setRegistrations(data.sort((a, b) => (Number(b.wonAmount || 0)) - (Number(a.wonAmount || 0))));
+      // Sort by won amount descending, then by kills
+      setRegistrations(data.sort((a, b) => {
+        const winDiff = Number(b.wonAmount || 0) - Number(a.wonAmount || 0);
+        if (winDiff !== 0) return winDiff;
+        return Number(b.kills || 0) - Number(a.kills || 0);
+      }));
     } catch (err) {
       console.error(err);
     } finally {
@@ -81,7 +85,7 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
             <CardContent className="p-6 space-y-6">
               <div className="text-center space-y-2">
                 <h3 className="text-[13px] font-black text-white uppercase leading-tight">
-                  {tournament.mode} | NORMAL | 🚫ম্যাচ এ জয়েন করার আগে রুলস পরে নেন। 🚫রুলস ফলো না করলে রিওয়ার্ড দেয়া হবে না & রিফান্ড পাবেন না
+                  {tournament.title} | {tournament.mode} | Normal
                 </h3>
                 <p className="text-[11px] font-bold text-red-600 uppercase tracking-widest">
                   Organised on {tournament.startTime ? format(new Date(tournament.startTime), 'dd, MMM yyyy | hh:mm a') : 'TBA'}
@@ -105,6 +109,7 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
             </CardContent>
           </Card>
 
+          {/* Booyah Section - Can show multiple people for Duo/Squad */}
           <div className="space-y-2">
             <div className="bg-red-600 py-3 rounded-t-2xl text-center">
               <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">BOOYAH</h4>
@@ -123,7 +128,7 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                    {loading ? (
                      <tr><td colSpan={4} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-red-500" /></td></tr>
                    ) : booyahPlayers.length > 0 ? (
-                     booyahPlayers.map((player, idx) => (
+                     booyahPlayers.map((player) => (
                        <tr key={player.id} className="text-white border-b border-white/5 last:border-none">
                           <td className="px-4 py-4 text-[11px] font-bold text-gray-500">1</td>
                           <td className="px-2 py-4 text-[13px] font-black uppercase">{player.ingameName || player.displayName}</td>
@@ -132,13 +137,14 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                        </tr>
                      ))
                    ) : (
-                     <tr><td colSpan={4} className="py-6 text-center text-[10px] font-bold text-muted-foreground uppercase">No Winner Listed</td></tr>
+                     <tr><td colSpan={4} className="py-6 text-center text-[10px] font-bold text-muted-foreground uppercase">No Winner Data</td></tr>
                    )}
                  </tbody>
                </table>
             </div>
           </div>
 
+          {/* Full Result Section */}
           <div className="space-y-2">
             <div className="bg-red-600 py-3 rounded-t-2xl text-center">
               <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">FULL RESULT</h4>
@@ -165,10 +171,8 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                          <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{player.wonAmount || 0} TK</td>
                        </tr>
                      ))
-                   ) : registrations.length === 0 ? (
-                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">No data found</td></tr>
                    ) : (
-                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">End of list</td></tr>
+                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">End of history</td></tr>
                    )}
                  </tbody>
                </table>
