@@ -7,7 +7,8 @@ import {
   Wallet, 
   Zap, 
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Medal
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
@@ -19,7 +20,7 @@ export default function AdminMenu() {
       title: "Tournament Control",
       items: [
         { icon: PlusCircle, label: 'Match Upload', sub: 'Launch BR or CS matches', href: '/admin/matches?tab=deploy', color: 'text-primary' },
-        { icon: Trophy, label: 'Result Publish', sub: 'Add winners & prizes', href: '/admin/matches?tab=manage', color: 'text-yellow-500' },
+        { icon: Medal, label: 'Result Publish', sub: 'Add winners & prizes', href: '/admin/results', color: 'text-yellow-500' },
       ]
     },
     {

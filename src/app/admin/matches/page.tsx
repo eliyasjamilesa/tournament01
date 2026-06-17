@@ -9,17 +9,10 @@ import {
   Loader2, 
   Trash2, 
   Key, 
-  Medal, 
-  User,
   Calendar,
-  Layers,
-  Monitor,
-  Trophy,
   Map as MapIcon,
   Users,
-  Target,
-  Clock,
-  CheckCircle
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -56,9 +49,6 @@ export default function MatchesPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRoom, setEditingRoom] = useState<{id: string, rid: string, rpass: string} | null>(null);
-  const [editingResultsMatchId, setEditingResultsMatchId] = useState<string | null>(null);
-  const [registrations, setRegistrations] = useState<any[]>([]);
-  const [isPublishing, setIsPublishing] = useState(false);
 
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -118,37 +108,6 @@ export default function MatchesPage() {
     toast({ title: "Updated", description: "Room credentials pushed." });
     setEditingRoom(null);
   };
-
-  const fetchRegistrations = async (tournamentId: string) => {
-    if (!db) return;
-    setEditingResultsMatchId(tournamentId);
-    const snap = await getDocs(collection(db, 'tournaments', tournamentId, 'registrations'));
-    setRegistrations(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
-
-  const handlePublishResults = async () => {
-    if (!db || !editingResultsMatchId) return;
-    setIsPublishing(true);
-    try {
-      for (const reg of registrations) {
-        const regRef = doc(db, 'tournaments', editingResultsMatchId, 'registrations', reg.id);
-        await updateDoc(regRef, { 
-          wonAmount: Number(reg.wonAmount || 0),
-          kills: Number(reg.kills || 0)
-        });
-      }
-      
-      await updateDoc(doc(db, 'tournaments', editingResultsMatchId), { status: 'completed' });
-      toast({ title: "Results Published", description: "Archive updated successfully." });
-      setEditingResultsMatchId(null);
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Publish Failed", description: err.message });
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
-  const currentMatch = tournaments?.find(t => t.id === editingResultsMatchId);
 
   return (
     <div className="space-y-8 pb-32">
@@ -347,84 +306,9 @@ export default function MatchesPage() {
                     </DialogContent>
                   </Dialog>
                   
-                  <Dialog open={editingResultsMatchId === match.id} onOpenChange={(open) => !open && setEditingResultsMatchId(null)}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => fetchRegistrations(match.id)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 transition-all">
-                        <Medal className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Results
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-card border-white/10 rounded-[2rem] max-h-[85vh] overflow-y-auto max-w-[360px]">
-                      <DialogHeader>
-                        <DialogTitle className="text-sm uppercase font-black italic tracking-widest text-center">Warrior Ranking</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 py-6">
-                        <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 mb-4">
-                           <p className="text-[9px] font-black text-primary uppercase text-center">Squad matches support multiple Booyah winners (Top Rankers)</p>
-                        </div>
-                        {registrations.length === 0 ? (
-                           <div className="text-center py-10 opacity-50 flex flex-col items-center gap-2">
-                             <User className="w-8 h-8" />
-                             <p className="text-[10px] font-black uppercase tracking-widest">No registrations detected</p>
-                           </div>
-                        ) : registrations.map((reg) => (
-                          <div key={reg.id} className="p-4 bg-muted/30 rounded-2xl space-y-3 border border-white/5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                                  <User className="w-4 h-4 text-primary" />
-                                </div>
-                                <div>
-                                  <p className="text-[10px] font-black uppercase tracking-tight text-white">{reg.ingameName || reg.displayName}</p>
-                                  <p className="text-[8px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber}</p>
-                                </div>
-                              </div>
-                              {Number(reg.wonAmount || 0) > 0 && Number(reg.wonAmount || 0) === Number(currentMatch?.prizes?.p1 || 0) && (
-                                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30 text-[7px] font-black uppercase">BOOYAH Candidate</Badge>
-                              )}
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="space-y-1">
-                                <Label className="text-[7px] font-black text-muted-foreground uppercase ml-1">Kills</Label>
-                                <div className="relative">
-                                  <Target className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                  <Input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    value={reg.kills || ''} 
-                                    onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, kills: e.target.value } : r))} 
-                                    className="w-full h-8 pl-7 text-[10px] font-black bg-background border-none rounded-lg" 
-                                  />
-                                </div>
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[7px] font-black text-primary uppercase ml-1">Winnings</Label>
-                                <div className="relative">
-                                  <Trophy className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-primary" />
-                                  <Input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    value={reg.wonAmount || ''} 
-                                    onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, wonAmount: e.target.value } : r))} 
-                                    className="w-full h-8 pl-7 text-[10px] font-black bg-background border-none rounded-lg" 
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {registrations.length > 0 && (
-                          <Button 
-                            disabled={isPublishing}
-                            onClick={handlePublishResults} 
-                            className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-6 shadow-xl shadow-primary/20"
-                          >
-                            {isPublishing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : 'PUBLISH ARCHIVE'}
-                          </Button>
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button variant="outline" size="sm" asChild className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 transition-all">
+                    <Link href="/admin/results"> Declare Results <ChevronRight className="w-3.5 h-3.5 ml-1" /></Link>
+                  </Button>
                 </div>
               </Card>
             ))}
