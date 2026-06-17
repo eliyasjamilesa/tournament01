@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const db = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -29,22 +29,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
+    // Wait until both auth and profile are done loading
     if (authLoading || profileLoading) return;
-    if (!user || profile?.role !== 'admin') {
-      router.replace('/');
-    } else {
+
+    // Check if user exists and has admin role
+    if (user && profile?.role === 'admin') {
       setIsAuthorized(true);
+    } else {
+      // Only redirect if we are CERTAIN they are not an admin
+      setIsAuthorized(false);
+      router.replace('/');
     }
   }, [user, authLoading, profile, profileLoading, router]);
 
-  if (authLoading || profileLoading || !isAuthorized) {
+  // Show loading while we are verifying permissions
+  if (authLoading || profileLoading || isAuthorized === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Checking Permissions...</p>
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          <ShieldAlert className="w-6 h-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Security Clearance</p>
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Verifying Administrator Access...</p>
+        </div>
       </div>
     );
   }
+
+  // Final safety check to prevent rendering children if unauthorized
+  if (!isAuthorized) return null;
 
   const isMainAdmin = pathname === '/admin';
 
@@ -63,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           )}
           <div>
-            <h1 className="text-lg font-black uppercase italic tracking-tighter">Command <span className="text-primary">Center</span></h1>
+            <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">Command <span className="text-primary">Center</span></h1>
             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Administrator Access</p>
           </div>
         </div>
