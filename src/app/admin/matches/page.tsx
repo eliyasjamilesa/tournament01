@@ -24,6 +24,7 @@ import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, delete
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import Link from 'next/link';
 
 export default function MatchesPage() {
   const db = useFirestore();
@@ -59,7 +60,7 @@ export default function MatchesPage() {
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !startTime) {
-      toast({ variant: "destructive", title: "Missing Data", description: "Please select a start time." });
+      toast({ variant: "destructive", title: "Missing Data", description: "টাইম সেট করুন।" });
       return;
     }
     setIsSubmitting(true);
@@ -89,7 +90,7 @@ export default function MatchesPage() {
         },
         createdAt: serverTimestamp(),
       });
-      toast({ title: "Arena Deployed", description: "Match is now live for warriors." });
+      toast({ title: "সফল", description: "নতুন টুর্নামেন্ট চালু হয়েছে।" });
       setMatchTitle(''); setEntryFee(''); setPrizePool(''); setPerKill(''); setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (err: any) {
@@ -105,7 +106,7 @@ export default function MatchesPage() {
       roomId: editingRoom.rid,
       roomPassword: editingRoom.rpass
     });
-    toast({ title: "Updated", description: "Room credentials pushed." });
+    toast({ title: "আপডেট সফল", description: "রুম আইডি ও পাসওয়ার্ড সেভ হয়েছে।" });
     setEditingRoom(null);
   };
 
@@ -114,7 +115,7 @@ export default function MatchesPage() {
       <Tabs defaultValue={initialTab} className="space-y-6">
         <TabsList className="bg-muted/30 h-11 p-1 rounded-xl border border-white/5 w-full">
           <TabsTrigger value="manage" className="flex-1 rounded-lg font-black text-[10px] uppercase tracking-widest">Manage</TabsTrigger>
-          <TabsTrigger value="deploy" className="flex-1 rounded-lg font-black text-[10px] uppercase tracking-widest">Deploy</TabsTrigger>
+          <TabsTrigger value="deploy" className="flex-1 rounded-lg font-black text-[10px] uppercase tracking-widest">Match Upload</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deploy" className="animate-in fade-in zoom-in-95 duration-300">
@@ -123,13 +124,13 @@ export default function MatchesPage() {
               <form onSubmit={handleAddMatch} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Match Title</Label>
-                    <Input placeholder="E.g. Sunday Night Rush" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold" required />
+                    <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">টুর্নামেন্টের নাম</Label>
+                    <Input placeholder="E.g. Sunday Night Match" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold" required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Mode</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">গেম মোড</Label>
                       <Select value={matchMode} onValueChange={setMatchMode}>
                         <SelectTrigger className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -146,7 +147,7 @@ export default function MatchesPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> Start Time
+                        <Calendar className="w-3 h-3" /> সময় ও তারিখ
                       </Label>
                       <Input 
                         type="datetime-local" 
@@ -160,7 +161,7 @@ export default function MatchesPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Map</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">ম্যাপ</Label>
                       <Select value={matchMap} onValueChange={setMatchMap}>
                         <SelectTrigger className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -173,7 +174,7 @@ export default function MatchesPage() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Version</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">ভার্সন</Label>
                       <Select value={matchVersion} onValueChange={setMatchVersion}>
                         <SelectTrigger className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -186,28 +187,28 @@ export default function MatchesPage() {
 
                   <div className="grid grid-cols-4 gap-2">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Entry</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">এন্ট্রি</Label>
                       <Input type="number" placeholder="50" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-black text-center" required />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Total</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">টোটাল</Label>
                       <Input type="number" placeholder="1000" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-black text-center" required />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Kill</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">কিল</Label>
                       <Input type="number" placeholder="10" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-black text-center" required />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Max</Label>
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">প্লেয়ার</Label>
                       <Input type="number" placeholder="48" value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-black text-center" required />
                     </div>
                   </div>
 
                   <div className="pt-4 space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-3">Prize Distribution</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-3">পুরস্কারের তালিকা</h3>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-[9px] font-bold uppercase ml-1 text-muted-foreground">Pos 1 (Winner)</Label>
+                        <Label className="text-[9px] font-bold uppercase ml-1 text-muted-foreground">Pos 1 (বিজেতা)</Label>
                         <Input type="number" placeholder="500" value={p1} onChange={(e) => setP1(e.target.value)} className="bg-primary/5 border-primary/20 h-11 rounded-xl font-bold" />
                       </div>
                       <div className="space-y-1.5">
@@ -231,7 +232,7 @@ export default function MatchesPage() {
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 magma-gradient font-black uppercase italic rounded-2xl shadow-xl shadow-primary/20 text-sm tracking-widest">
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'DEPLOY TO ARENA'}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'ম্যাচ চালু করুন'}
                 </Button>
               </form>
             </CardContent>
@@ -243,11 +244,11 @@ export default function MatchesPage() {
             {tournamentsLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Loading Arenas...</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">লোডিং হচ্ছে...</p>
               </div>
             ) : tournaments?.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-white/10 rounded-3xl">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No Active Arenas</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">কোন ম্যাচ নেই</p>
               </div>
             ) : tournaments?.map((match: any) => (
               <Card key={match.id} className="border-white/5 bg-card/40 p-5 rounded-2xl overflow-hidden shadow-lg">
@@ -263,7 +264,7 @@ export default function MatchesPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all" onClick={() => {
-                      if(confirm('Warning: This will permanently delete this arena. Proceed?')) deleteDoc(doc(db, 'tournaments', match.id));
+                      if(confirm('সাবধান: এই টুর্নামেন্টটি ডিলিট হয়ে যাবে। ডিলিট করবেন?')) deleteDoc(doc(db, 'tournaments', match.id));
                     }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -273,7 +274,7 @@ export default function MatchesPage() {
                 <div className="grid grid-cols-2 gap-3 mb-5">
                    <div className="p-2.5 rounded-xl bg-black/20 border border-white/5 flex items-center gap-2">
                       <Users className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-[9px] font-black text-white">{match.currentPlayers}/{match.maxPlayers} Joined</span>
+                      <span className="text-[9px] font-black text-white">{match.currentPlayers}/{match.maxPlayers} জয়েন করেছে</span>
                    </div>
                    <div className="p-2.5 rounded-xl bg-black/20 border border-white/5 flex items-center gap-2">
                       <MapIcon className="w-3 h-3 text-muted-foreground" />
@@ -285,29 +286,29 @@ export default function MatchesPage() {
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 transition-all">
-                        <Key className="w-3.5 h-3.5 mr-2 text-primary" /> Room Info
+                        <Key className="w-3.5 h-3.5 mr-2 text-primary" /> রুম আইডি দিন
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="bg-card border-white/10 rounded-[2rem] max-w-[340px]">
                       <DialogHeader>
-                        <DialogTitle className="text-sm uppercase font-black italic tracking-widest text-center">Room Credentials</DialogTitle>
+                        <DialogTitle className="text-sm uppercase font-black italic tracking-widest text-center">রুম আইডি ও পাসওয়ার্ড</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 py-6">
                         <div className="space-y-1.5">
-                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Room ID</Label>
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">রুম আইডি</Label>
                           <Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted/50 border-none h-12 rounded-xl font-black font-mono text-center text-lg" placeholder="1234567" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">পাসওয়ার্ড</Label>
                           <Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted/50 border-none h-12 rounded-xl font-black font-mono text-center text-lg" placeholder="ABC@123" />
                         </div>
-                        <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-4 shadow-lg shadow-primary/20">PUSH TO PLAYERS</Button>
+                        <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-4 shadow-lg shadow-primary/20">ইউজারদের পাঠান</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
                   
                   <Button variant="outline" size="sm" asChild className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 transition-all">
-                    <Link href="/admin/results"> Declare Results <ChevronRight className="w-3.5 h-3.5 ml-1" /></Link>
+                    <Link href="/admin/results"> রেজাল্ট পাবলিশ <ChevronRight className="w-3.5 h-3.5 ml-1" /></Link>
                   </Button>
                 </div>
               </Card>

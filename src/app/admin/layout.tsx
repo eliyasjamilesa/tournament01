@@ -40,7 +40,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsAuthorized(true);
     } else {
       setIsAuthorized(false);
-      // We don't redirect immediately anymore to prevent the "kicking out" feeling
     }
   }, [user, authLoading, profile, profileLoading, router]);
 
@@ -51,16 +50,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       await updateDoc(doc(db, 'users', user.uid), {
         role: 'admin'
       });
-      toast({ title: "Authorized", description: "You are now an administrator." });
+      toast({ title: "সফল", description: "আপনি এখন অ্যাডমিন।" });
       setIsAuthorized(true);
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to claim admin status." });
+      toast({ variant: "destructive", title: "Error", description: "অ্যাডমিন হতে ব্যর্থ হয়েছে।" });
     } finally {
       setIsClaiming(false);
     }
   };
 
-  // 1. Loading State
   if (authLoading || profileLoading || (isAuthorized === null && user)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -69,14 +67,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ShieldAlert className="w-6 h-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
         <div className="text-center space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Security Clearance</p>
-          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Verifying Administrator Access...</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">নিরাপত্তা চেক</p>
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">অ্যাডমিন চেক করা হচ্ছে...</p>
         </div>
       </div>
     );
   }
 
-  // 2. Denied State (With Claim Option for Devs)
   if (isAuthorized === false) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-8 text-center gap-6">
@@ -84,24 +81,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ShieldX className="w-10 h-10 text-destructive" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black uppercase italic tracking-tighter">Access <span className="text-destructive">Denied</span></h2>
+          <h2 className="text-2xl font-black uppercase italic tracking-tighter">অনুমতি <span className="text-destructive">নেই</span></h2>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[240px]">
-            Your current profile does not have administrator privileges.
+            আপনার প্রোফাইল অ্যাডমিন হিসেবে সেট করা নেই।
           </p>
         </div>
         
         <div className="flex flex-col gap-3 w-full max-w-[240px]">
           <Button onClick={handleClaimAdmin} disabled={isClaiming} className="w-full h-12 magma-gradient font-black uppercase italic rounded-xl">
-            {isClaiming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Unlock className="w-4 h-4 mr-2" /> Claim Admin Access</>}
+            {isClaiming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Unlock className="w-4 h-4 mr-2" /> অ্যাডমিন পাওয়ার নিন</>}
           </Button>
           <Button variant="ghost" asChild className="text-[10px] font-bold uppercase">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">হোম পেজে যান</Link>
           </Button>
         </div>
-
-        <p className="text-[8px] font-bold text-muted-foreground uppercase mt-8 opacity-40">
-          Note: Claiming admin is enabled for prototype testing.
-        </p>
       </div>
     );
   }
@@ -122,13 +115,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           )}
           <div>
-            <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">Command <span className="text-primary">Center</span></h1>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Administrator Access</p>
+            <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">অ্যাডমিন <span className="text-primary">প্যানেল</span></h1>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Admin Control</p>
           </div>
         </div>
         {isMainAdmin && (
            <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase" asChild>
-             <Link href="/profile">Back to Profile</Link>
+             <Link href="/profile">প্রোফাইলে যান</Link>
            </Button>
         )}
       </header>

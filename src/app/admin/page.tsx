@@ -17,17 +17,17 @@ import { cn } from '@/lib/utils';
 export default function AdminMenu() {
   const adminSections = [
     {
-      title: "Tournament Control",
+      title: "ম্যাচ কন্ট্রোল",
       items: [
-        { icon: PlusCircle, label: 'Match Upload', sub: 'Launch BR or CS matches', href: '/admin/matches?tab=deploy', color: 'text-primary' },
-        { icon: Medal, label: 'Result Publish', sub: 'Add winners & prizes', href: '/admin/results', color: 'text-yellow-500' },
+        { icon: PlusCircle, label: 'Match Upload', sub: 'নতুন ম্যাচ চালু করুন', href: '/admin/matches?tab=deploy', color: 'text-primary' },
+        { icon: Medal, label: 'Result Publish', sub: 'বিজেতা এবং প্রাইজ দিন', href: '/admin/results', color: 'text-yellow-500' },
       ]
     },
     {
-      title: "Finance & Wallet",
+      title: "টাকা ও ওয়ালেট",
       items: [
-        { icon: Wallet, label: 'Payment Receive', sub: 'Approve user deposits', href: '/admin/payments', color: 'text-green-500' },
-        { icon: Zap, label: 'Payment Send', sub: 'Direct coin recharge', href: '/admin/recharge', color: 'text-orange-500' },
+        { icon: Wallet, label: 'Payment Receive', sub: 'ইউজারদের পেমেন্ট চেক করুন', href: '/admin/payments', color: 'text-green-500' },
+        { icon: Zap, label: 'Payment Send', sub: 'কয়েন রিচার্জ করে দিন', href: '/admin/recharge', color: 'text-orange-500' },
       ]
     }
   ];
@@ -35,8 +35,8 @@ export default function AdminMenu() {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter">Operations <span className="text-primary">Menu</span></h2>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Administrative Control</p>
+        <h2 className="text-2xl font-black uppercase italic tracking-tighter">অ্যাডমিন <span className="text-primary">মেনু</span></h2>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Admin Control</p>
       </div>
 
       <div className="space-y-8">
@@ -73,7 +73,7 @@ export default function AdminMenu() {
         <ShieldCheck className="w-6 h-6 text-primary" />
         <div>
           <p className="text-[9px] font-black text-primary uppercase">Elite Access Enabled</p>
-          <p className="text-[8px] font-bold text-muted-foreground uppercase">System integrity verified.</p>
+          <p className="text-[8px] font-bold text-muted-foreground uppercase">সিস্টেম নিরাপদ আছে।</p>
         </div>
       </div>
     </div>

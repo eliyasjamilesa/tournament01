@@ -8,21 +8,19 @@ import {
   Search, 
   User, 
   Target, 
-  CheckCircle2, 
   Crown,
-  ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, orderBy, limit, updateDoc, getDocs, where } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, updateDoc, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
 
 export default function AdminResultsPage() {
   const db = useFirestore();
@@ -33,7 +31,6 @@ export default function AdminResultsPage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch all active or completed matches to manage results
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(50));
@@ -66,10 +63,10 @@ export default function AdminResultsPage() {
       }
       
       await updateDoc(doc(db, 'tournaments', selectedMatchId), { status: 'completed' });
-      toast({ title: "Results Published", description: "Match results updated and archived." });
+      toast({ title: "সফল", description: "ম্যাচ রেজাল্ট পাবলিশ হয়েছে।" });
       setSelectedMatchId(null);
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Publish Failed", description: err.message });
+      toast({ variant: "destructive", title: "ব্যর্থ হয়েছে", description: err.message });
     } finally {
       setIsPublishing(false);
     }
@@ -90,13 +87,13 @@ export default function AdminResultsPage() {
           </Button>
           <div>
             <h2 className="text-xl font-black uppercase italic tracking-tighter">{currentMatch.title}</h2>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Publishing Final Results</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ফলাফল তৈরি করুন</p>
           </div>
         </div>
 
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
            <div>
-              <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Booyah Prize (Pos 1)</p>
+              <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Booyah প্রাইজ (Pos 1)</p>
               <p className="text-lg font-black text-white">{currentMatch.prizes?.p1 || 0} TK</p>
            </div>
            <Badge variant="outline" className="border-primary/30 text-primary text-[8px] font-black uppercase italic h-fit">
@@ -107,7 +104,7 @@ export default function AdminResultsPage() {
         <div className="space-y-4">
           {registrations.length === 0 ? (
             <div className="text-center py-20 opacity-50">
-              <p className="text-[10px] font-black uppercase tracking-widest">No Warriors Detected</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">কোন প্লেয়ার পাওয়া যায়নি</p>
             </div>
           ) : registrations.map((reg) => (
             <Card key={reg.id} className="border-white/5 bg-card/40 p-4 rounded-2xl overflow-hidden">
@@ -118,7 +115,7 @@ export default function AdminResultsPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-black text-white uppercase tracking-tight">{reg.ingameName || reg.displayName}</h4>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber} • ID: {reg.ingameId || '---'}</p>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase">স্লট #{reg.slotNumber} • আইডি: {reg.ingameId || '---'}</p>
                   </div>
                 </div>
                 <Button 
@@ -135,7 +132,7 @@ export default function AdminResultsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[8px] font-black uppercase text-muted-foreground ml-1">Kills</Label>
+                  <Label className="text-[8px] font-black uppercase text-muted-foreground ml-1">কিল সংখ্যা</Label>
                   <div className="relative">
                     <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                     <Input 
@@ -148,7 +145,7 @@ export default function AdminResultsPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[8px] font-black uppercase text-primary ml-1">Winnings (TK)</Label>
+                  <Label className="text-[8px] font-black uppercase text-primary ml-1">পুরস্কার (TK)</Label>
                   <div className="relative">
                     <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
                     <Input 
@@ -170,7 +167,7 @@ export default function AdminResultsPage() {
           onClick={handlePublishResults}
           className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-2xl shadow-xl shadow-primary/20 mt-4"
         >
-          {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONFIRM & PUBLISH ARCHIVE'}
+          {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'রেজাল্ট সেভ করুন'}
         </Button>
       </div>
     );
@@ -180,13 +177,13 @@ export default function AdminResultsPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
         <h2 className="text-2xl font-black uppercase italic tracking-tighter">Result <span className="text-primary">Publish</span></h2>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select an arena to declare winners</p>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">বিজেতা ঘোষণা করার জন্য ম্যাচ সিলেক্ট করুন</p>
       </div>
 
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input 
-          placeholder="Search match title or ID..." 
+          placeholder="ম্যাচের নাম বা আইডি দিয়ে খুঁজুন..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl text-sm"
@@ -198,7 +195,7 @@ export default function AdminResultsPage() {
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" /></div>
         ) : filteredMatches?.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-white/5 rounded-3xl">
-             <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">No matches found</p>
+             <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">কোন ম্যাচ পাওয়া যায়নি</p>
           </div>
         ) : filteredMatches?.map((match) => (
           <Card 
@@ -220,7 +217,7 @@ export default function AdminResultsPage() {
                  <div className="text-right">
                     <p className="text-[8px] font-black text-primary uppercase">Status</p>
                     <p className={cn("text-[9px] font-black uppercase italic", match.status === 'completed' ? 'text-green-500' : 'text-yellow-500')}>
-                      {match.status === 'completed' ? 'ARCHIVED' : 'PENDING'}
+                      {match.status === 'completed' ? 'সেভ করা' : 'বাকি আছে'}
                     </p>
                  </div>
                  <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />

@@ -29,7 +29,7 @@ export default function PaymentsPage() {
       batch.update(doc(db, 'users', tx.userId), { coins: increment(tx.amount) });
       batch.update(doc(db, 'transactions', tx.id), { status: 'approved' });
       await batch.commit();
-      toast({ title: "Approved", description: `${tx.amount} TK credited.` });
+      toast({ title: "সফল", description: `${tx.amount} TK ইউজারের ব্যালেন্সে যোগ হয়েছে।` });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
@@ -41,7 +41,7 @@ export default function PaymentsPage() {
     if (!db) return;
     try {
       await updateDoc(doc(db, 'transactions', id), { status: 'rejected' });
-      toast({ title: "Rejected" });
+      toast({ title: "বাতিল করা হয়েছে" });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
     }
@@ -50,8 +50,8 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Payment <span className="text-primary">Receive</span></h2>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Verify recharge requests</p>
+        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট <span className="text-primary">চেক</span></h2>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট রিকোয়েস্ট চেক করুন</p>
       </div>
 
       <div className="space-y-4">
@@ -59,7 +59,7 @@ export default function PaymentsPage() {
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : pendingPayments?.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-white/5 rounded-3xl">
-             <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">No requests found</p>
+             <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">কোন রিকোয়েস্ট নেই</p>
           </div>
         ) : pendingPayments?.map((tx: any) => (
           <Card key={tx.id} className="border-white/5 bg-card/40 p-5 rounded-2xl">
@@ -78,12 +78,12 @@ export default function PaymentsPage() {
 
             <div className="p-3 bg-black/30 rounded-xl mb-4 text-[9px] font-bold text-muted-foreground uppercase space-y-1">
                <div className="flex justify-between"><span>Email</span><span className="text-white">{tx.userEmail}</span></div>
-               <div className="flex justify-between"><span>ID</span><span className="text-primary font-mono">{tx.transactionId}</span></div>
+               <div className="flex justify-between"><span>ট্রানজ্যাকশন আইডি</span><span className="text-primary font-mono">{tx.transactionId}</span></div>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleReject(tx.id)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase border-white/5 bg-white/5 text-red-500">Reject</Button>
-              <Button size="sm" disabled={isProcessing} onClick={() => handleApprove(tx)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase magma-gradient">Approve</Button>
+              <Button variant="outline" size="sm" onClick={() => handleReject(tx.id)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase border-white/5 bg-white/5 text-red-500">বাতিল করুন</Button>
+              <Button size="sm" disabled={isProcessing} onClick={() => handleApprove(tx)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase magma-gradient">অ্যাপ্রুভ করুন</Button>
             </div>
           </Card>
         ))}

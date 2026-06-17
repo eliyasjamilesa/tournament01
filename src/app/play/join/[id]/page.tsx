@@ -5,12 +5,10 @@ import { useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { 
   ArrowLeft, 
-  ChevronRight, 
-  Loader2, 
   Check, 
+  Loader2, 
   Users, 
   Gamepad2, 
-  Clock, 
   Wallet,
   CheckCircle2,
   AlertCircle,
@@ -26,7 +24,6 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, setDoc, updateDoc, increment, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 
 export default function JoinMatchFlow() {
   const params = useParams();
@@ -42,21 +39,18 @@ export default function JoinMatchFlow() {
   const [ingameId, setIngameId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch Tournament Data
   const tournamentRef = useMemoFirebase(() => {
     if (!db || !tournamentId) return null;
     return doc(db, 'tournaments', tournamentId);
   }, [db, tournamentId]);
   const { data: tournament, loading: tournamentLoading } = useDoc<any>(tournamentRef);
 
-  // Fetch User Profile for Balance Check
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, 'users', user.uid);
   }, [db, user]);
   const { data: profile, loading: profileLoading } = useDoc<any>(userRef);
 
-  // Fetch Existing Registrations
   const registrationsRef = useMemoFirebase(() => {
     if (!db || !tournamentId) return null;
     return collection(db, 'tournaments', tournamentId, 'registrations');
@@ -83,13 +77,13 @@ export default function JoinMatchFlow() {
   const handleProceed = async () => {
     if (step === 1) {
       if (selectedSlot === null) {
-        toast({ variant: "destructive", title: "Wait!", description: "Please select a slot first." });
+        toast({ variant: "destructive", title: "স্লট সিলেক্ট করুন", description: "দয়া করে একটি স্লট পছন্দ করুন।" });
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (!ingameName || !ingameId) {
-        toast({ variant: "destructive", title: "Required", description: "Please enter your Game Name and Player ID." });
+        toast({ variant: "destructive", title: "তথ্য প্রয়োজন", description: "গেমের নাম এবং আইডি দিন।" });
         return;
       }
       setStep(3);
@@ -102,8 +96,8 @@ export default function JoinMatchFlow() {
       if (userCoins < entryFee) {
         toast({ 
           variant: "destructive", 
-          title: "Insufficient Balance", 
-          description: `You need ${entryFee} TK but have only ${userCoins} TK.` 
+          title: "টাকা কম আছে", 
+          description: `আপনার কাছে ${userCoins} TK আছে, কিন্তু জয়েন করতে ${entryFee} TK লাগবে।` 
         });
         return;
       }
@@ -129,7 +123,7 @@ export default function JoinMatchFlow() {
 
         await batch.commit();
         setStep(4);
-        toast({ title: "Joined!", description: "Coins deducted and match joined successfully." });
+        toast({ title: "সফল!", description: "ম্যাচ জয়েন করা হয়েছে।" });
       } catch (err: any) {
         toast({ variant: "destructive", title: "Error", description: err.message });
       } finally {
@@ -142,7 +136,7 @@ export default function JoinMatchFlow() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Arena Initializing...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">ম্যাচ লোড হচ্ছে...</p>
       </div>
     );
   }
@@ -156,12 +150,11 @@ export default function JoinMatchFlow() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-sm font-black uppercase tracking-tight italic">
-          {step === 1 ? 'Select Slot' : step === 2 ? 'Game Profile' : step === 3 ? 'Confirm' : 'Authorized'}
+          {step === 1 ? 'স্লট সিলেক্ট করুন' : step === 2 ? 'আপনার গেম আইডি' : step === 3 ? 'নিশ্চিত করুন' : 'সফল'}
         </h1>
         <div className="w-9" />
       </header>
 
-      {/* Progress Stepper */}
       <div className="px-10 py-6 flex items-center justify-between relative">
         <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-px bg-white/10" />
         {[1, 2, 3, 4].map((s) => (
@@ -182,7 +175,7 @@ export default function JoinMatchFlow() {
         {step === 1 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Available Battle Slots</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">ফাঁকা স্লটগুলো পছন্দ করুন</span>
               <span className="text-[10px] font-black text-primary uppercase italic">{tournament.mode}</span>
             </div>
             
@@ -231,17 +224,17 @@ export default function JoinMatchFlow() {
         {step === 2 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center space-y-2">
-              <h2 className="text-xl font-black uppercase italic tracking-tight">Warrior Credentials</h2>
-              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Verify your in-game identity</p>
+              <h2 className="text-xl font-black uppercase italic tracking-tight">আপনার তথ্য দিন</h2>
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">গেমের সঠিক তথ্য দিন</p>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">In-game Name</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">গেমের নাম (In-game Name)</Label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
-                    placeholder="e.g. ShadowSlayer" 
+                    placeholder="E.g. ShadowSlayer" 
                     value={ingameName}
                     onChange={(e) => setIngameName(e.target.value)}
                     className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold"
@@ -249,11 +242,11 @@ export default function JoinMatchFlow() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">In-game Player ID (UID)</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">গেম আইডি (Player UID)</Label>
                 <div className="relative">
                   <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
-                    placeholder="e.g. 102938475" 
+                    placeholder="E.g. 102938475" 
                     value={ingameId}
                     onChange={(e) => setIngameId(e.target.value)}
                     className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold font-mono"
@@ -263,19 +256,12 @@ export default function JoinMatchFlow() {
             </div>
 
             <div className="p-5 rounded-3xl bg-primary/5 border border-primary/20 space-y-3 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:rotate-12 transition-transform">
-                  <ShieldAlert className="w-12 h-12 text-primary" />
-               </div>
                <h3 className="text-[11px] font-black uppercase italic text-primary flex items-center gap-2">
-                 <Info className="w-3.5 h-3.5" /> Tactical Instruction
+                 <Info className="w-3.5 h-3.5" /> জরুরি নিয়ম
                </h3>
                <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
-                 Warrior, ensure your <span className="text-white">In-game Name</span> and <span className="text-white">Player ID</span> exactly match your game profile. Discrepancies may lead to <span className="text-primary">Disqualification</span> from the arena without refund.
+                 দয়া করে গেমের নাম এবং আইডি চেক করে দিন। ভুল তথ্য দিলে রেজাল্ট পাবেন না এবং টাকা রিফান্ড করা হবে না।
                </p>
-               <div className="flex items-center gap-2 pt-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground">Double check before proceeding</span>
-               </div>
             </div>
           </div>
         )}
@@ -287,30 +273,30 @@ export default function JoinMatchFlow() {
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Gamepad2 className="w-5 h-5 text-primary" /></div>
                 <div>
                   <h3 className="text-sm font-black uppercase italic tracking-tight">{tournament.title}</h3>
-                  <p className="text-[9px] font-bold text-muted-foreground uppercase">Slot #{selectedSlot}</p>
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase">স্লট #{selectedSlot}</p>
                 </div>
               </div>
 
               <div className="p-4 bg-background rounded-2xl space-y-3 border border-white/5">
                 <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-                   <span className="text-muted-foreground">In-game Name</span>
+                   <span className="text-muted-foreground">গেমের নাম</span>
                    <span className="text-white">{ingameName}</span>
                 </div>
                 <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-                   <span className="text-muted-foreground">Game ID</span>
+                   <span className="text-muted-foreground">গেম আইডি</span>
                    <span className="text-white font-mono">{ingameId}</span>
                 </div>
               </div>
               
               <div className="p-4 bg-card/40 border border-white/5 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-2"><Wallet className="w-4 h-4 text-primary" /><span className="text-[10px] font-bold uppercase text-muted-foreground">Your Balance</span></div>
+                <div className="flex items-center gap-2"><Wallet className="w-4 h-4 text-primary" /><span className="text-[10px] font-bold uppercase text-muted-foreground">আপনার ব্যালেন্স</span></div>
                 <span className={cn("text-xs font-black", (profile?.coins || 0) < (tournament?.entryFee || 0) ? "text-destructive" : "text-green-500")}>
                   {profile?.coins || 0} TK
                 </span>
               </div>
 
               <div className="flex justify-between items-center px-2">
-                 <span className="text-[10px] font-black uppercase text-primary italic">Required Entry Fee</span>
+                 <span className="text-[10px] font-black uppercase text-primary italic">এন্ট্রি ফি লাগবে</span>
                  <span className="text-lg font-black">{tournament.entryFee} TK</span>
               </div>
             </div>
@@ -318,7 +304,7 @@ export default function JoinMatchFlow() {
             {(profile?.coins || 0) < (tournament?.entryFee || 0) && (
                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
                  <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
-                 <p className="text-[10px] font-bold text-destructive uppercase leading-relaxed">Insufficient coins to join this arena. Recharge your wallet to proceed.</p>
+                 <p className="text-[10px] font-bold text-destructive uppercase leading-relaxed">আপনার ব্যালেন্স কম আছে। দয়া করে রিচার্জ করুন।</p>
                </div>
             )}
           </div>
@@ -328,13 +314,12 @@ export default function JoinMatchFlow() {
           <div className="flex flex-col items-center justify-center py-10 space-y-6 animate-in zoom-in duration-500">
              <div className="w-24 h-24 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center relative">
                 <CheckCircle2 className="w-12 h-12 text-green-500" />
-                <div className="absolute inset-0 rounded-full border-2 border-green-500 animate-ping opacity-20" />
              </div>
              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-black uppercase italic text-white tracking-tight">Mission Confirmed</h2>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[240px]">Registration successful for <span className="text-primary">{tournament.title}</span>.</p>
+                <h2 className="text-2xl font-black uppercase italic text-white tracking-tight">সফলভাবে জয়েন করেছেন</h2>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[240px]">আপনি সফলভাবে <span className="text-primary">{tournament.title}</span>-এ জয়েন করেছেন।</p>
              </div>
-             <Button onClick={() => router.push('/joined')} className="w-full h-12 bg-green-600 hover:bg-green-700 font-black uppercase italic rounded-xl shadow-lg mt-4">View My Matches</Button>
+             <Button onClick={() => router.push('/joined')} className="w-full h-12 bg-green-600 hover:bg-green-700 font-black uppercase italic rounded-xl shadow-lg mt-4">আমার ম্যাচ দেখুন</Button>
           </div>
         )}
       </main>
@@ -347,7 +332,7 @@ export default function JoinMatchFlow() {
               onClick={handleProceed}
               className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-xl text-sm"
             >
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : step === 3 ? 'CONFIRM DEPLOYMENT' : 'PROCEED'}
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : step === 3 ? 'জয়েন কনফার্ম করুন' : 'সামনে যান'}
             </Button>
           </div>
         </div>

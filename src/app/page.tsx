@@ -41,11 +41,8 @@ export default function Home() {
   const getMatchCountForType = (typeTitle: string) => {
     if (!allTournaments) return 0;
     return allTournaments.filter(t => {
-      // Check if tournament is open and has slots
       const isAvailable = (t.status === 'open' || !t.status) && (t.currentPlayers < (t.maxPlayers || 48));
       if (!isAvailable) return false;
-      
-      // Match strictly by mode
       return t.mode === typeTitle;
     }).length;
   };
@@ -123,10 +120,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-8 space-y-3">
               <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white leading-tight">
-                JOIN OUR <br /> <span className="text-primary">TELEGRAM CHANNEL</span>
+                টেলিগ্রাম চ্যানেলে <br /> <span className="text-primary">জয়েন করুন</span>
               </h3>
               <button className="bg-primary text-white text-[10px] font-black uppercase italic px-6 py-2.5 rounded-full w-fit flex items-center gap-2 shadow-lg shadow-primary/20">
-                TS TOUR TELEGRAM <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                JOIN TELEGRAM <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               </button>
             </div>
           </Card>
@@ -159,7 +156,7 @@ export default function Home() {
                       
                       <div className="absolute top-3 left-3">
                         <Badge className={`${availableCount > 0 ? 'bg-primary' : 'bg-muted/80'} text-[8px] font-black italic tracking-widest px-2 py-0.5 border-none shadow-lg`}>
-                          {availableCount} AVAILABLE
+                          {availableCount} টি ম্যাচ আছে
                         </Badge>
                       </div>
 
@@ -187,7 +184,7 @@ export default function Home() {
                 <div className="space-y-2">
                   <Badge className="bg-white/20 text-white border-white/20 mb-2 font-black italic tracking-widest text-[8px]">ELITE AI</Badge>
                   <h3 className="text-2xl font-black uppercase text-white tracking-tighter italic leading-none">Tactical <br /> Scout</h3>
-                  <p className="text-white/80 text-[8px] font-bold uppercase tracking-[0.2em] mt-1">Master the drop zone.</p>
+                  <p className="text-white/80 text-[8px] font-bold uppercase tracking-[0.2em] mt-1">কোথায় নামবেন জানুন।</p>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
                    <Zap className="w-8 h-8 text-white fill-white/20" />
