@@ -1,93 +1,173 @@
-import { Trophy, Medal, Star, ArrowUpRight } from 'lucide-react';
+
+"use client";
+
+import { useState } from 'react';
+import { 
+  Loader2, 
+  Calendar, 
+  Clock, 
+  Trophy,
+  Swords,
+  Map as MapIcon,
+  Monitor,
+  LayoutGrid
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { format } from 'date-fns';
+import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { cn } from '@/lib/utils';
 
 export default function ResultsPage() {
-  const leaderboards = [
-    { rank: 1, name: 'ShadowSlayer', kills: 42, wins: 8, points: 1250 },
-    { rank: 2, name: 'PyroGamer', kills: 38, wins: 6, points: 1100 },
-    { rank: 3, name: 'FrostBite', kills: 35, wins: 5, points: 980 },
-    { rank: 4, name: 'VortexOne', kills: 31, wins: 4, points: 850 },
+  const db = useFirestore();
+  const [activeTab, setActiveTab] = useState('BR SOLO');
+
+  const tabs = [
+    { id: 'br-solo', label: 'BR Solo', value: 'BR SOLO' },
+    { id: 'br-duo', label: 'BR Duo', value: 'BR DUO' },
+    { id: 'br-squad', label: 'BR SQUAD', value: 'BR SQUAD' },
+    { id: 'cs-rank', label: 'CS Rank', value: 'CS RANK' },
+    { id: 'cs-hs', label: 'CS Headshot', value: 'CS HEADSHOT' },
   ];
 
-  const recentMatches = [
-    { id: 1, title: 'Sunday Clash', winner: 'Team Alpha', prize: '$100', date: '2h ago' },
-    { id: 2, title: 'Midnight BR', winner: 'ViperX', prize: '$50', date: '5h ago' },
-    { id: 3, title: 'Elite Duels', winner: 'KageZ', prize: '$20', date: '1d ago' },
-  ];
+  const resultsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    // Showing matches that are completed or just all past matches for this mode
+    return query(
+      collection(db, 'tournaments'),
+      where('mode', '==', activeTab),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+  }, [db, activeTab]);
+
+  const { data: matches, loading } = useCollection<any>(resultsQuery);
+
+  const getModeImage = (mode: string) => {
+    const idMap: Record<string, string> = {
+      'BR SOLO': 'br-solo',
+      'BR DUO': 'br-duo',
+      'BR SQUAD': 'br-squad',
+      'CS RANK': 'cs-rank',
+      'CS HEADSHOT': 'cs-headshot',
+      'LW 1V1': 'lw-1v1',
+      'LW 2V2': 'lw-2v2',
+      'LW HEADSHOT': 'lw-hs'
+    };
+    return PlaceHolderImages.find(img => img.id === idMap[mode])?.imageUrl || '';
+  };
 
   return (
-    <div className="p-6 space-y-8">
-      <header className="space-y-1 pt-4">
-        <h1 className="text-2xl font-headline font-bold uppercase tracking-tight">Hall of Flame</h1>
-        <p className="text-muted-foreground text-sm font-medium">Top performers and recent winners.</p>
+    <div className="min-h-screen bg-background pb-32">
+      <header className="px-6 pt-12 pb-4 text-center">
+        <h1 className="text-xl font-black uppercase tracking-tight text-white italic">Results</h1>
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-          <Medal className="w-4 h-4" /> Season Ranking
-        </h2>
-        <Card className="border-white/5 bg-card shadow-xl overflow-hidden">
-          <div className="bg-primary/10 p-4 flex items-center justify-between border-b border-white/5">
-             <div className="flex items-center gap-3">
-               <Trophy className="text-primary w-5 h-5" />
-               <span className="font-headline font-bold uppercase text-xs tracking-wider">Top Global Elites</span>
-             </div>
-             <span className="text-[10px] font-bold text-muted-foreground">REFRESHES IN 2D</span>
-          </div>
-          <CardContent className="p-0">
-            {leaderboards.map((player) => (
-              <div key={player.rank} className="p-4 flex items-center justify-between border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
-                <div className="flex items-center gap-4">
-                  <span className={`w-6 text-center font-headline font-bold ${player.rank === 1 ? 'text-primary' : player.rank === 2 ? 'text-secondary' : 'text-muted-foreground'}`}>
-                    {player.rank}
-                  </span>
-                  <Avatar className="w-8 h-8 border border-white/10">
-                    <AvatarImage src={`https://picsum.photos/seed/${player.name}/100/100`} />
-                    <AvatarFallback>{player.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-sm">{player.name}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{player.kills} KILLS • {player.wins} WINS</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1 text-primary">
-                    <Star className="w-3 h-3 fill-primary" />
-                    <span className="font-headline font-bold text-sm">{player.points}</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">PTS</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-          Recent Victories
-        </h2>
-        <div className="grid gap-3">
-          {recentMatches.map((match) => (
-            <div key={match.id} className="bg-card border border-white/5 rounded-xl p-4 flex items-center justify-between hover:border-primary/20 transition-all">
-              <div className="space-y-1">
-                <h4 className="font-bold text-sm">{match.title}</h4>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px] h-4 bg-primary/20 text-primary border-none">WINNER: {match.winner}</Badge>
-                  <span className="text-[10px] font-bold text-muted-foreground">{match.date}</span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-primary font-headline font-bold text-sm">{match.prize}</span>
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </div>
+      <div className="px-4 sticky top-0 bg-background/95 backdrop-blur-md z-40 border-b border-white/5 pb-2">
+        <div className="flex overflow-x-auto no-scrollbar gap-6 py-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.value)}
+              className={cn(
+                "whitespace-nowrap text-[11px] font-black uppercase tracking-wider transition-all relative pb-2",
+                activeTab === tab.value ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {tab.label}
+              {activeTab === tab.value && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
+            </button>
           ))}
         </div>
-      </section>
+      </div>
+
+      <main className="px-4 py-6 space-y-6">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Fetching Archives...</p>
+          </div>
+        ) : matches?.length === 0 ? (
+          <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              No results found for {activeTab}
+            </p>
+          </div>
+        ) : (
+          matches?.map((match: any) => (
+            <Card key={match.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
+              {/* Match ID Badge */}
+              <div className="absolute top-0 right-0">
+                <div className="bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-bl-xl shadow-lg">
+                  {match.matchId || '#-----'}
+                </div>
+              </div>
+
+              <CardContent className="p-5 space-y-6">
+                {/* Header Section */}
+                <div className="flex gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                    <Image 
+                      src={getModeImage(match.mode)} 
+                      alt={match.mode} 
+                      width={64} 
+                      height={64} 
+                      className="object-cover h-full w-full"
+                    />
+                  </div>
+                  <div className="space-y-1.5 pr-12">
+                    <p className="text-[12px] font-bold text-gray-200 leading-tight">
+                      {match.title} | Normal | 🚫ম্যাচ এ জয়েন করার আগে রুলস পরে নেন। 🚫রুলস ফলো না করলে রিওয়ার্ড দেয়া হবে না & রিফান্ড পাবেন না
+                    </p>
+                    <div className="flex items-center gap-2 text-primary">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-black italic">
+                        {match.startTime ? format(new Date(match.startTime), 'dd, MMM yyyy | hh:mm a') : 'TBA'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 gap-px bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                  {/* Row 1 */}
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Win Prize</span>
+                    <span className="text-[12px] font-black text-cyan-400">{match.prizePool} TK</span>
+                  </div>
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center border-x border-white/5">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Entry Type</span>
+                    <span className="text-[12px] font-black text-white">{match.mode.includes('SOLO') ? 'Solo' : match.mode.includes('DUO') ? 'Duo' : 'Squad'}</span>
+                  </div>
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Entry Fee</span>
+                    <span className="text-[12px] font-black text-white">{match.entryFee}</span>
+                  </div>
+                  {/* Row 2 */}
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center border-t border-white/5">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Per Kill</span>
+                    <span className="text-[12px] font-black text-red-600">{match.perKill}</span>
+                  </div>
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center border-t border-x border-white/5">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Map</span>
+                    <span className="text-[12px] font-black text-white">{match.map}</span>
+                  </div>
+                  <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center border-t border-white/5">
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Version</span>
+                    <span className="text-[12px] font-black text-white">{match.version}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </main>
     </div>
   );
 }
