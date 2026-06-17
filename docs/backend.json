@@ -66,7 +66,7 @@
     },
     "Transaction": {
       "title": "Transaction",
-      "description": "Financial transactions for deposits or manual recharges.",
+      "description": "Financial transactions for deposits, withdrawals or manual recharges.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
@@ -74,7 +74,9 @@
         "userEmail": { "type": "string" },
         "amount": { "type": "number" },
         "method": { "type": "string" },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "recharge"] },
         "transactionId": { "type": "string" },
+        "phoneNumber": { "type": "string", "description": "User number for withdrawal" },
         "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
         "timestamp": { "type": "string", "format": "date-time" }
       }
@@ -98,7 +100,7 @@
     },
     "/transactions/{transactionId}": {
       "schema": "Transaction",
-      "description": "Log of deposit requests and recharges."
+      "description": "Log of deposit requests, withdrawals and recharges."
     }
   }
 }

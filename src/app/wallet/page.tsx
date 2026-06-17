@@ -39,7 +39,8 @@ export default function WalletPage() {
     return query(
       collection(db, 'transactions'), 
       where('userId', '==', user.uid), 
-      where('status', '==', 'approved')
+      where('status', '==', 'approved'),
+      where('type', '==', 'deposit')
     );
   }, [db, user]);
   const { data: deposits, loading: depositsLoading } = useCollection<any>(depositsQuery);
@@ -132,6 +133,7 @@ export default function WalletPage() {
             <Plus className="w-5 h-5 mr-2" /> Add Money
           </Button>
           <Button 
+            onClick={() => router.push('/wallet/withdraw')}
             className="h-16 rounded-2xl bg-green-600 hover:bg-green-700 font-black uppercase italic tracking-widest text-xs shadow-lg shadow-green-600/20"
           >
             <ArrowUpRight className="w-5 h-5 mr-2" /> Withdraw

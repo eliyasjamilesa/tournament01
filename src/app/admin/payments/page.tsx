@@ -2,13 +2,14 @@
 "use client";
 
 import { useState } from 'react';
-import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash } from 'lucide-react';
+import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, updateDoc, writeBatch, increment, query, where, orderBy, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export default function PaymentsPage() {
   const db = useFirestore();
@@ -27,16 +28,24 @@ export default function PaymentsPage() {
     try {
       const batch = writeBatch(db);
       
-      // Update user coins
       const userRef = doc(db, 'users', tx.userId);
-      batch.update(userRef, { coins: increment(tx.amount) });
-      
-      // Update transaction status
       const txRef = doc(db, 'transactions', tx.id);
-      batch.update(txRef, { status: 'approved' });
+
+      if (tx.type === 'withdrawal') {
+        // For withdrawal, deduct coins from user balance
+        batch.update(userRef, { coins: increment(-tx.amount) });
+        batch.update(txRef, { status: 'approved' });
+      } else {
+        // For deposit (default behavior or explicit type)
+        batch.update(userRef, { coins: increment(tx.amount) });
+        batch.update(txRef, { status: 'approved' });
+      }
       
       await batch.commit();
-      toast({ title: "সফল", description: `${tx.amount} TK ইউজারের ব্যালেন্সে যোগ হয়েছে।` });
+      toast({ 
+        title: "সফল", 
+        description: tx.type === 'withdrawal' ? `${tx.amount} TK ইউজারের ব্যালেন্স থেকে কাটা হয়েছে।` : `${tx.amount} TK ইউজারের ব্যালেন্সে যোগ হয়েছে।` 
+      });
     } catch (err: any) {
       toast({ variant: "destructive", title: "ব্যর্থ হয়েছে", description: err.message });
     } finally {
@@ -58,7 +67,7 @@ export default function PaymentsPage() {
     <div className="space-y-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
         <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট <span className="text-primary">চেক</span></h2>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট রিকোয়েস্ট ম্যানেজ করুন</p>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট ও উইথড্র ম্যানেজ করুন</p>
       </div>
 
       <div className="space-y-4">
@@ -78,8 +87,11 @@ export default function PaymentsPage() {
           <Card key={tx.id} className="border-white/5 bg-[#0a0a0a] p-6 rounded-[2rem] overflow-hidden relative shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <Wallet className="w-6 h-6" />
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center border",
+                  tx.type === 'withdrawal' ? "bg-green-600/10 text-green-500 border-green-500/20" : "bg-primary/10 text-primary border-primary/20"
+                )}>
+                  {tx.type === 'withdrawal' ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}
                 </div>
                 <div>
                   <h4 className="text-lg font-black text-white italic tracking-tighter">{tx.amount} TK</h4>
@@ -87,14 +99,16 @@ export default function PaymentsPage() {
                     <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${tx.method === 'Bkash' ? 'bg-pink-600/20 text-pink-500' : 'bg-orange-600/20 text-orange-500'}`}>
                       {tx.method}
                     </span>
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {tx.timestamp ? format(tx.timestamp.toDate(), 'hh:mm a') : 'Now'}
+                    <span className="text-[7px] font-black uppercase text-muted-foreground tracking-widest">
+                      {tx.type === 'withdrawal' ? 'উইথড্র' : 'ডিপোজিট'}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                 <p className="text-[8px] font-black text-primary uppercase mb-1">Status</p>
+                 <p className="text-[9px] font-bold text-muted-foreground uppercase flex items-center gap-1 justify-end">
+                    <Clock className="w-3 h-3" /> {tx.timestamp ? format(tx.timestamp.toDate(), 'hh:mm a') : 'Now'}
+                 </p>
                  <span className="text-[9px] font-black text-yellow-500 uppercase italic">Pending</span>
               </div>
             </div>
@@ -107,13 +121,23 @@ export default function PaymentsPage() {
                   </div>
                   <span className="text-[11px] font-black text-white">{tx.userEmail}</span>
                </div>
-               <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Hash className="w-4 h-4 text-primary" />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">TXID</span>
-                  </div>
-                  <span className="text-[11px] font-black text-primary font-mono">{tx.transactionId}</span>
-               </div>
+               {tx.type === 'withdrawal' ? (
+                 <div className="p-4 bg-green-500/5 rounded-2xl border border-green-500/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-green-500" />
+                      <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">Number</span>
+                    </div>
+                    <span className="text-[11px] font-black text-white font-mono">{tx.phoneNumber}</span>
+                 </div>
+               ) : (
+                 <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Hash className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">TXID</span>
+                    </div>
+                    <span className="text-[11px] font-black text-primary font-mono">{tx.transactionId}</span>
+                 </div>
+               )}
             </div>
 
             <div className="flex gap-3">
@@ -129,7 +153,10 @@ export default function PaymentsPage() {
                 size="sm" 
                 disabled={isProcessing === tx.id} 
                 onClick={() => handleApprove(tx)} 
-                className="flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest magma-gradient shadow-lg shadow-primary/20"
+                className={cn(
+                  "flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg",
+                  tx.type === 'withdrawal' ? "bg-green-600 hover:bg-green-700 shadow-green-600/20" : "magma-gradient shadow-primary/20"
+                )}
               >
                 {isProcessing === tx.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'অ্যাপ্রুভ করুন'}
               </Button>

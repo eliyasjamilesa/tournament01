@@ -6,63 +6,65 @@ import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
   Wallet, 
-  Plus, 
+  ArrowUpRight, 
   Loader2, 
   CircleDollarSign,
   AlertCircle,
-  Copy,
-  Check
+  Phone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-export default function DepositPage() {
+export default function WithdrawPage() {
   const router = useRouter();
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
 
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+  const { data: profile } = useDoc<any>(userDocRef);
+
   const [method, setMethod] = useState<'Bkash' | 'Nagad' | null>(null);
   const [amount, setAmount] = useState('');
-  const [txId, setTxId] = useState('');
+  const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
 
-  const bkashNumber = "+8801305525266";
-  const nagadNumber = "+8801712109801";
-
-  const currentNumber = method === 'Bkash' ? bkashNumber : nagadNumber;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(currentNumber);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-    toast({ title: "Copied!", description: "Number copied to clipboard." });
-  };
-
-  const handleDeposit = async (e: React.FormEvent) => {
+  const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !user || !method || !amount || !txId) return;
+    if (!db || !user || !method || !amount || !phone || !profile) return;
+
+    const withdrawAmount = Number(amount);
+    if (withdrawAmount > (profile.coins || 0)) {
+      toast({ variant: "destructive", title: "ব্যালেন্স নেই", description: "আপনার যথেষ্ট ব্যালেন্স নেই।" });
+      return;
+    }
+
+    if (withdrawAmount < 100) {
+      toast({ variant: "destructive", title: "লিমিট", description: "সর্বনিম্ন ১০০ টাকা উইথড্র করা যাবে।" });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, 'transactions'), {
         userId: user.uid,
         userEmail: user.email,
-        amount: Number(amount),
+        amount: withdrawAmount,
         method: method,
-        type: 'deposit',
-        transactionId: txId,
+        type: 'withdrawal',
+        phoneNumber: phone,
         status: 'pending',
         timestamp: serverTimestamp()
       });
-      toast({ title: "সফল", description: "আপনার রিকোয়েস্ট পাঠানো হয়েছে। চেক করে অ্যাড করা হবে।" });
+      toast({ title: "সফল", description: "আপনার উইথড্র রিকোয়েস্ট পাঠানো হয়েছে। অ্যাডমিন চেক করে টাকা পাঠিয়ে দেবে।" });
       router.push('/wallet');
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
@@ -82,14 +84,14 @@ export default function DepositPage() {
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </Button>
-        <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Add Money</h1>
+        <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Withdraw Money</h1>
       </header>
 
       <main className="flex-1 p-6 pb-32 space-y-8 max-w-md mx-auto w-full">
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">1</span> 
-            পেমেন্ট মেথড সিলেক্ট করুন
+            <span className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px]">1</span> 
+            পেমেন্ট রিসিভ মেথড
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <button 
@@ -118,49 +120,37 @@ export default function DepositPage() {
         {method && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">2</span> 
-              টাকা পাঠিয়ে তথ্য দিন
+              <span className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px]">2</span> 
+              উইথড্র ডিটেইলস
             </h2>
 
-            <Card className="bg-primary/5 border-primary/20 rounded-3xl overflow-hidden">
-              <CardContent className="p-6 space-y-4">
-                <div className="text-center space-y-1">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Send Money to this {method} number</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl font-black text-white italic tracking-tighter">{currentNumber}</span>
-                    <Button size="icon" variant="ghost" onClick={handleCopy} className="h-8 w-8 bg-white/5">
-                      {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-primary" />}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <form onSubmit={handleDeposit} className="space-y-6">
+            <form onSubmit={handleWithdraw} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">অ্যামাউন্ট (TK)</Label>
                   <div className="relative">
-                    <CircleDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                    <CircleDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
                     <Input 
                       type="number" 
                       placeholder="E.g. 500" 
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-black"
+                      className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-black text-green-500"
                       required
                     />
                   </div>
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase ml-1">আপনার ব্যালেন্স: {profile?.coins || 0} TK</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">ট্রানজ্যাকশন আইডি (TXID)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">আপনার {method} নম্বর</Label>
                   <div className="relative">
-                    <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
                     <Input 
-                      placeholder="E.g. 8A72B3C" 
-                      value={txId}
-                      onChange={(e) => setTxId(e.target.value)}
-                      className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-black font-mono"
+                      type="tel"
+                      placeholder="01XXXXXXXXX" 
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-black"
                       required
                     />
                   </div>
@@ -168,18 +158,18 @@ export default function DepositPage() {
               </div>
 
               <div className="p-4 rounded-2xl bg-muted/20 border border-white/5 flex items-start gap-3">
-                <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                <AlertCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                 <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed">
-                  পেমেন্ট পাঠানোর পর আপনার ট্রানজ্যাকশন আইডিটি এখানে দিন। ৫-১০ মিনিটের মধ্যে আপনার ব্যালেন্স আপডেট করে দেওয়া হবে।
+                  উইথড্র রিকোয়েস্ট পাঠানোর পর অ্যাডমিন আপনার রিকোয়েস্টটি চেক করে ১-৬ ঘণ্টার মধ্যে পেমেন্ট পাঠিয়ে দেবে। পেমেন্ট পাঠানোর পর আপনার ব্যালেন্স থেকে টাকা কেটে নেওয়া হবে।
                 </p>
               </div>
 
               <Button 
                 type="submit" 
-                disabled={isSubmitting || !amount || !txId}
-                className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-2xl shadow-xl shadow-primary/20"
+                disabled={isSubmitting || !amount || !phone}
+                className="w-full h-14 bg-green-600 hover:bg-green-700 font-black uppercase italic tracking-widest rounded-2xl shadow-xl shadow-green-600/20"
               >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'রিকোয়েস্ট পাঠান'}
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'উইথড্র রিকোয়েস্ট পাঠান'}
               </Button>
             </form>
           </section>
