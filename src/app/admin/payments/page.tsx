@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert, RefreshCcw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
@@ -28,6 +28,7 @@ export default function PaymentsPage() {
     // CRITICAL: Only run query if profile is loaded AND user is confirmed admin
     if (!db || !user || profileLoading || profile?.role !== 'admin') return null;
     
+    // This query requires a composite index: transactions (status == ASC, timestamp == DESC)
     return query(
       collection(db, 'transactions'), 
       where('status', '==', 'pending'),
@@ -96,7 +97,7 @@ export default function PaymentsPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-black uppercase italic tracking-tighter">অ্যাডমিন এক্সেস <span className="text-destructive">নেই</span></h2>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[280px]">
-            আপনার প্রোফাইল অ্যাডমিন হিসেবে ভেরিফাইড নয়।
+            আপনার প্রোফাইল অ্যাডমিন হিসেবে ভেরিফাইড নয়। অ্যাডমিন প্যানেল থেকে পাওয়ার নিন।
           </p>
         </div>
       </div>
@@ -104,6 +105,7 @@ export default function PaymentsPage() {
   }
 
   if (error) {
+    const isIndexError = error.message.toLowerCase().includes('index');
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
         <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center border border-destructive/20">
@@ -111,10 +113,16 @@ export default function PaymentsPage() {
         </div>
         <div className="space-y-2">
           <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">লোডিং <span className="text-destructive">এরর</span></h2>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডাটাবেস কানেকশনে সমস্যা হচ্ছে।</p>
-          <p className="text-[7px] font-mono text-muted-foreground opacity-50 mt-4 break-all">{error.message}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            {isIndexError ? "ফায়ারস্টোর ইনডেক্স তৈরি হচ্ছে। দয়া করে ৫ মিনিট অপেক্ষা করুন।" : "ডাটাবেস কানেকশনে সমস্যা হচ্ছে।"}
+          </p>
+          <p className="text-[7px] font-mono text-muted-foreground opacity-50 mt-4 break-all bg-black/40 p-3 rounded-lg">
+            {error.message}
+          </p>
         </div>
-        <Button variant="outline" onClick={() => window.location.reload()} className="h-10 rounded-xl uppercase font-black text-[10px] tracking-widest">রিফ্রেশ করুন</Button>
+        <Button variant="outline" onClick={() => window.location.reload()} className="h-10 rounded-xl uppercase font-black text-[10px] tracking-widest gap-2">
+          <RefreshCcw className="w-3.5 h-3.5" /> রিফ্রেশ করুন
+        </Button>
       </div>
     );
   }
