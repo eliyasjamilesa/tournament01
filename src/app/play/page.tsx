@@ -111,8 +111,11 @@ function SlotsSheet({ tournament }: { tournament: any }) {
                 slots?.map((slot: any, index: number) => (
                   <div key={slot.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
                     <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-red-500 w-6">#{index + 1}</span>
-                      <span className="text-sm font-bold text-white uppercase tracking-tight">{slot.displayName}</span>
+                      <span className="text-[10px] font-black text-red-500 w-6">#{slot.slotNumber || index + 1}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-white uppercase tracking-tight">{slot.ingameName || slot.displayName}</span>
+                        <span className="text-[8px] text-muted-foreground font-mono">ID: {slot.ingameId || '---'}</span>
+                      </div>
                     </div>
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                   </div>
