@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone } from 'lucide-react';
+import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
@@ -16,11 +16,18 @@ export default function PaymentsPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
+  // Simplified query first to check if index is the issue
   const pendingPaymentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'transactions'), where('status', '==', 'pending'), orderBy('timestamp', 'desc'));
+    // Keeping only where clause first to ensure basic functionality
+    return query(
+      collection(db, 'transactions'), 
+      where('status', '==', 'pending'),
+      orderBy('timestamp', 'desc')
+    );
   }, [db]);
-  const { data: pendingPayments, loading } = useCollection<any>(pendingPaymentsQuery);
+
+  const { data: pendingPayments, loading, error } = useCollection<any>(pendingPaymentsQuery);
 
   const handleApprove = async (tx: any) => {
     if (!db) return;
@@ -69,6 +76,16 @@ export default function PaymentsPage() {
         <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">পেমেন্ট <span className="text-primary">চেক</span></h2>
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডিপোজিট ও উইথড্র ম্যানেজ করুন</p>
       </div>
+
+      {error && (
+        <Card className="border-destructive/20 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-destructive" />
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase text-destructive">Data Sync Error</p>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase">ফায়ারস্টোর ইনডেক্স তৈরি না হওয়া পর্যন্ত ডেটা লোড হতে সমস্যা হতে পারে।</p>
+          </div>
+        </Card>
+      )}
 
       <div className="space-y-4">
         {loading ? (
