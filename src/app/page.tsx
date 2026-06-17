@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Menu, Loader2, Zap, ChevronRight, LayoutGrid } from 'lucide-react';
+import { Zap, Loader2, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,13 +25,12 @@ export default function Home() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
-  // Fetch all tournaments to count them
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'tournaments'));
   }, [db]);
 
-  const { data: allTournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
+  const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -41,14 +40,13 @@ export default function Home() {
 
   const getMatchCountForType = (typeTitle: string) => {
     if (!allTournaments) return 0;
-    // Simple matching: count matches where title or mode matches the category keywords
-    const keywords = typeTitle.toLowerCase().split(' ');
     return allTournaments.filter(t => {
+      // Check if tournament is open and has slots
       const isAvailable = (t.status === 'open' || !t.status) && (t.currentPlayers < (t.maxPlayers || 48));
       if (!isAvailable) return false;
       
-      const matchText = `${t.title} ${t.mode} ${t.map}`.toLowerCase();
-      return keywords.every(k => matchText.includes(k));
+      // Match strictly by mode
+      return t.mode === typeTitle;
     }).length;
   };
 
@@ -113,7 +111,6 @@ export default function Home() {
       </header>
 
       <main className="px-6 space-y-8 mt-4">
-        {/* Hero Banner Section */}
         <section>
           <Card className="overflow-hidden border-none relative group cursor-pointer rounded-[2.5rem] h-52 shadow-2xl">
             <Image 
@@ -135,7 +132,6 @@ export default function Home() {
           </Card>
         </section>
 
-        {/* Game Sections */}
         {gameSections.map((section) => (
           <section key={section.title} className="space-y-5">
             <div className="flex items-center gap-3">
@@ -150,7 +146,7 @@ export default function Home() {
               {section.types.map((type) => {
                 const availableCount = getMatchCountForType(type.title);
                 return (
-                  <Link href="/play" key={type.id} className="group">
+                  <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group">
                     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
                       <Image 
                         src={PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || ''} 
@@ -161,7 +157,6 @@ export default function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       
-                      {/* Available Count Badge */}
                       <div className="absolute top-3 left-3">
                         <Badge className={`${availableCount > 0 ? 'bg-primary' : 'bg-muted/80'} text-[8px] font-black italic tracking-widest px-2 py-0.5 border-none shadow-lg`}>
                           {availableCount} AVAILABLE
@@ -184,7 +179,6 @@ export default function Home() {
           </section>
         ))}
 
-        {/* AI Tactical Scout CTA */}
         <section className="pb-10">
           <Link href="/scout">
             <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer rounded-[2.5rem] shadow-xl">

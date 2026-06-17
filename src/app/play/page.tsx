@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  Users, Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
+  Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescri
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useSearchParams } from 'next/navigation';
 
 function CountdownTimer({ startTime }: { startTime: string }) {
   const [timeLeft, setTimeLeft] = useState<string>('');
@@ -326,12 +327,15 @@ export default function PlayPage() {
   const db = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const modeFilter = searchParams.get('mode');
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [joining, setJoining] = useState<string | null>(null);
 
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(20));
+    return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(50));
   }, [db]);
 
   const { data: tournaments, loading } = useCollection<any>(tournamentsQuery);
@@ -358,16 +362,22 @@ export default function PlayPage() {
     }
   };
 
-  const filteredTournaments = tournaments?.filter(t => 
-    t.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.matchId?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTournaments = tournaments?.filter(t => {
+    const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         t.matchId?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesMode = modeFilter ? t.mode === modeFilter : true;
+    
+    return matchesSearch && matchesMode;
+  });
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-50 border-b border-white/5">
         <Link href="/" className="p-2 -ml-2 text-white"><ArrowLeft className="w-6 h-6" /></Link>
-        <h1 className="text-lg font-black uppercase italic tracking-tighter">Active <span className="text-primary">Arenas</span></h1>
+        <h1 className="text-lg font-black uppercase italic tracking-tighter">
+          {modeFilter ? <><span className="text-primary">{modeFilter}</span> Arenas</> : <>Active <span className="text-primary">Arenas</span></>}
+        </h1>
         <Button variant="outline" size="sm" className="bg-secondary/50 border-white/5 rounded-full text-[10px] font-bold h-7 px-3"><Globe className="w-3 h-3 mr-1.5" />বাংলা</Button>
       </header>
 
@@ -390,7 +400,9 @@ export default function PlayPage() {
             </div>
           ) : filteredTournaments?.length === 0 ? (
             <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No Battlefields Detected</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                {modeFilter ? `No ${modeFilter} Battlefields Detected` : 'No Battlefields Detected'}
+              </p>
             </div>
           ) : filteredTournaments?.map((t) => (
             <TournamentCard 
