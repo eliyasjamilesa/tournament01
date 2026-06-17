@@ -3,50 +3,50 @@
   "placeholderImages": [
     {
       "id": "br-solo",
-      "description": "Battle Royale Solo Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/dwj1Qvkz",
+      "description": "Battle Royale Solo Mode",
+      "imageUrl": "https://i.postimg.cc/RV8cq7Nh/Gemini-Generated-Image-(3).png",
       "imageHint": "gaming warrior"
     },
     {
       "id": "br-duo",
-      "description": "Battle Royale Duo Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/JFyVd3fX",
+      "description": "Battle Royale Duo Mode",
+      "imageUrl": "https://i.postimg.cc/cCz8gW1M/Gemini-Generated-Image.png",
       "imageHint": "gaming duo"
     },
     {
       "id": "br-squad",
-      "description": "Battle Royale Squad Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/YBbfCv26",
+      "description": "Battle Royale Squad Mode",
+      "imageUrl": "https://i.postimg.cc/0y2L2qKs/Gemini-Generated-Image-(9).png",
       "imageHint": "gaming squad"
     },
     {
       "id": "cs-rank",
-      "description": "Clash Squad Ranked Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/gZkFVnnR",
+      "description": "Clash Squad Ranked Mode",
+      "imageUrl": "https://i.postimg.cc/brV1xbgV/Gemini-Generated-Image-(4).png",
       "imageHint": "combat arena"
     },
     {
       "id": "cs-headshot",
-      "description": "Clash Squad Headshot Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/fYsnQCvd",
+      "description": "Clash Squad Headshot Mode",
+      "imageUrl": "https://i.postimg.cc/DwHBkVqX/Gemini-Generated-Image-(7).png",
       "imageHint": "sniper target"
     },
     {
       "id": "lw-1v1",
-      "description": "Lone Wolf 1v1 Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/FLhTS0CB",
+      "description": "Lone Wolf 1v1 Mode",
+      "imageUrl": "https://i.postimg.cc/ydXPZk25/Gemini-Generated-Image-(6).png",
       "imageHint": "lone fighter"
     },
     {
       "id": "lw-2v2",
-      "description": "Lone Wolf 2v2 Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/x8rv1pT4",
+      "description": "Lone Wolf 2v2 Mode",
+      "imageUrl": "https://i.postimg.cc/hGV8kX4V/Gemini-Generated-Image-(5).png",
       "imageHint": "duo battle"
     },
     {
       "id": "lw-hs",
-      "description": "Lone Wolf Headshot Mode - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/fYsnQCvd",
+      "description": "Lone Wolf Headshot Mode",
+      "imageUrl": "https://i.postimg.cc/DwHBkVqX/Gemini-Generated-Image-(7).png",
       "imageHint": "precision aim"
     },
     {
@@ -63,8 +63,8 @@
     },
     {
       "id": "promo-banner",
-      "description": "Telegram promotion banner - Waiting for Direct Link (.jpg/.png)",
-      "imageUrl": "https://ibb.co.com/RT6y8F8J",
+      "description": "Telegram promotion banner",
+      "imageUrl": "https://i.postimg.cc/nVGRsPJs/Gemini-Generated-Image-(8).png",
       "imageHint": "gaming promotion"
     }
   ]
