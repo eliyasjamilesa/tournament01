@@ -3,49 +3,49 @@
   "placeholderImages": [
     {
       "id": "br-solo",
-      "description": "Battle Royale Solo Mode",
+      "description": "Battle Royale Solo Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/dwj1Qvkz",
       "imageHint": "gaming warrior"
     },
     {
       "id": "br-duo",
-      "description": "Battle Royale Duo Mode",
+      "description": "Battle Royale Duo Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/JFyVd3fX",
       "imageHint": "gaming duo"
     },
     {
       "id": "br-squad",
-      "description": "Battle Royale Squad Mode",
+      "description": "Battle Royale Squad Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/YBbfCv26",
       "imageHint": "gaming squad"
     },
     {
       "id": "cs-rank",
-      "description": "Clash Squad Ranked Mode",
+      "description": "Clash Squad Ranked Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/gZkFVnnR",
       "imageHint": "combat arena"
     },
     {
       "id": "cs-headshot",
-      "description": "Clash Squad Headshot Mode",
+      "description": "Clash Squad Headshot Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/fYsnQCvd",
       "imageHint": "sniper target"
     },
     {
       "id": "lw-1v1",
-      "description": "Lone Wolf 1v1 Mode",
+      "description": "Lone Wolf 1v1 Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/FLhTS0CB",
       "imageHint": "lone fighter"
     },
     {
       "id": "lw-2v2",
-      "description": "Lone Wolf 2v2 Mode",
+      "description": "Lone Wolf 2v2 Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/x8rv1pT4",
       "imageHint": "duo battle"
     },
     {
       "id": "lw-hs",
-      "description": "Lone Wolf Headshot Mode",
+      "description": "Lone Wolf Headshot Mode - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/fYsnQCvd",
       "imageHint": "precision aim"
     },
@@ -63,7 +63,7 @@
     },
     {
       "id": "promo-banner",
-      "description": "Telegram promotion banner",
+      "description": "Telegram promotion banner - Waiting for Direct Link (.jpg/.png)",
       "imageUrl": "https://ibb.co.com/RT6y8F8J",
       "imageHint": "gaming promotion"
     }

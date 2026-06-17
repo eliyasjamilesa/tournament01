@@ -30,13 +30,13 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setError(null);
       },
       async (serverError: any) => {
-        // Log the actual error for debugging
-        console.warn("Firestore collection error:", serverError);
-
-        // Attempt to extract path
+        // Attempt to extract path for better error reporting
         let path = 'unknown';
         try {
-          path = (query as any)._query?.path?.toString() || (query as any).path || 'collection';
+          // Firebase Internal path extraction
+          path = (query as any)._query?.path?.toString() || 
+                 (query as any).path || 
+                 'collection';
         } catch (e) {
           path = 'collection';
         }
@@ -46,9 +46,11 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           operation: 'list',
         } satisfies SecurityRuleContext);
 
-        // Only emit if it's actually a permission error
+        // Only emit and show toast if it's actually a permission error
         if (serverError.code === 'permission-denied') {
           errorEmitter.emit('permission-error', permissionError);
+        } else {
+          console.warn("Firestore collection error:", serverError);
         }
         
         setError(serverError);

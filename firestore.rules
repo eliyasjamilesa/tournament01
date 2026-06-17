@@ -13,40 +13,33 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // User profile rules - Anyone signed in can read (for leaderboard/display), only owner/admin can write
+    // User profile rules
     match /users/{userId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Tournament rules - Everyone can read, only admin can write
+    // Tournament rules
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
       
-      // Individual registrations
+      // Individual registrations within a tournament
       match /registrations/{userId} {
         allow read: if isSignedIn();
         allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       }
     }
 
-    // Collection group queries for registrations (used in profile page)
-    match /{path=**}/registrations/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    // Collection group rules for registrations (Crucial for Profile/Joined pages)
+    match /{path=**}/registrations/{regDocId} {
+      allow read: if isSignedIn();
     }
     
-    // Transaction rules - Users can create deposits/withdraws and read their own, admins can do everything
+    // Transaction rules
     match /transactions/{transactionId} {
-      allow read: if isSignedIn() && (
-        isAdmin() || 
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (request.method == 'get') // Allow individual lookups
-      );
-      
+      allow read: if isSignedIn();
       allow create: if isSignedIn();
-      
-      // Only admins can update (approve/reject) or delete
       allow update, delete: if isAdmin();
     }
   }
