@@ -11,7 +11,8 @@ import {
   Trophy,
   Plus,
   Key,
-  CheckCircle2
+  LogOut,
+  ChevronLeft
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,14 +25,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-type AuthStatus = 'checking' | 'authorized' | 'unauthorized';
-
 export default function AdminDashboard() {
   const { user, loading: userLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-  const [authStatus, setAuthStatus] = useState<AuthStatus>('checking');
+  
+  // Use a status state to manage the flow strictly
+  const [status, setStatus] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -41,13 +42,22 @@ export default function AdminDashboard() {
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
+    // Wait until both auth and profile are done loading
     if (userLoading || profileLoading) return;
-    if (!user) { router.replace('/login'); return; }
+
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
+
     if (profile?.role === 'admin') {
-      setAuthStatus('authorized');
+      setStatus('authorized');
     } else {
-      setAuthStatus('unauthorized');
-      router.replace('/');
+      // Only redirect if we are SURE they are not an admin
+      if (profile && profile.role !== 'admin') {
+        setStatus('unauthorized');
+        router.replace('/');
+      }
     }
   }, [user, userLoading, profile, profileLoading, router]);
 
@@ -130,129 +140,166 @@ export default function AdminDashboard() {
     }
   };
 
-  if (authStatus === 'checking') {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verifying Authority...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Establishing Secure Connection...</p>
       </div>
     );
   }
 
+  if (status === 'unauthorized') return null;
+
   return (
-    <div className="min-h-screen bg-background p-6 pb-32">
-      <header className="flex items-center justify-between mb-8 pt-4">
+    <div className="min-h-screen bg-background pb-32">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-50 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
             <ShieldAlert className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-xl font-black uppercase italic">Admin <span className="text-primary">Panel</span></h1>
+          <div>
+            <h1 className="text-lg font-black uppercase italic tracking-tighter">Command <span className="text-primary">Center</span></h1>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Authorized Personnel Only</p>
+          </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase">Exit</Button>
+        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase gap-2">
+          <ChevronLeft className="w-3 h-3" /> Exit
+        </Button>
       </header>
 
-      <Tabs defaultValue="create" className="space-y-6">
-        <TabsList className="grid grid-cols-2 bg-muted h-12 rounded-xl p-1">
-          <TabsTrigger value="create" className="rounded-lg font-black text-[10px] uppercase">New Match</TabsTrigger>
-          <TabsTrigger value="manage" className="rounded-lg font-black text-[10px] uppercase">All Matches</TabsTrigger>
-        </TabsList>
+      <main className="p-6">
+        <Tabs defaultValue="create" className="space-y-6">
+          <TabsList className="grid grid-cols-2 bg-muted/30 h-12 rounded-2xl p-1 border border-white/5">
+            <TabsTrigger value="create" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-white transition-all">New Deployment</TabsTrigger>
+            <TabsTrigger value="manage" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Active Matches</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="create">
-          <Card className="border-white/5 bg-card/50 rounded-2xl">
-            <CardHeader><CardTitle className="text-lg font-black uppercase italic flex items-center gap-2"><Plus className="w-4 h-4 text-primary" /> Match Specs</CardTitle></CardHeader>
-            <CardContent>
-              <form onSubmit={handleAddMatch} className="space-y-6">
-                <div className="grid gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Title</Label>
-                    <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted border-none h-11" required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+          <TabsContent value="create">
+            <Card className="border-white/5 bg-card/50 rounded-[2rem] overflow-hidden">
+              <CardHeader className="border-b border-white/5 pb-4">
+                <CardTitle className="text-sm font-black uppercase italic flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-primary" /> Match Specifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleAddMatch} className="space-y-6">
+                  <div className="grid gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mode</Label>
-                      <Select value={matchMode} onValueChange={setMatchMode}>
-                        <SelectTrigger className="bg-muted border-none h-11"><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="Solo">Solo</SelectItem><SelectItem value="Duo">Duo</SelectItem><SelectItem value="Squad">Squad</SelectItem></SelectContent>
-                      </Select>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest ml-1">Match Title</Label>
+                      <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Map</Label>
-                      <Select value={matchMap} onValueChange={setMatchMap}>
-                        <SelectTrigger className="bg-muted border-none h-11"><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="Bermuda">Bermuda</SelectItem><SelectItem value="Purgatory">Purgatory</SelectItem><SelectItem value="Kalahari">Kalahari</SelectItem><SelectItem value="Alpine">Alpine</SelectItem></SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Perspective</Label>
-                      <Select value={matchVersion} onValueChange={setMatchVersion}>
-                        <SelectTrigger className="bg-muted border-none h-11"><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="TPP">TPP</SelectItem><SelectItem value="FPP">FPP</SelectItem></SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Launch Time</Label>
-                      <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted border-none h-11" required />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Fee</Label><Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted border-none h-11" required /></div>
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Total</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted border-none h-11" required /></div>
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted border-none h-11" required /></div>
-                  </div>
-                  <div className="p-4 bg-muted/30 rounded-xl space-y-4">
-                    <Label className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> Position Prizes</Label>
                     <div className="grid grid-cols-2 gap-3">
-                      {[1, 2, 3, 4, 5].map((pos) => (
-                        <div key={pos} className="space-y-1">
-                          <Label className="text-[8px] font-bold text-muted-foreground">Rank {pos}</Label>
-                          <Input type="number" value={pos === 1 ? p1 : pos === 2 ? p2 : pos === 3 ? p3 : pos === 4 ? p4 : p5} onChange={(e) => { const v = e.target.value; if(pos === 1) setP1(v); else if(pos === 2) setP2(v); else if(pos === 3) setP3(v); else if(pos === 4) setP4(v); else setP5(v); }} className="bg-muted border-none h-10 text-xs" required />
-                        </div>
-                      ))}
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Mode</Label>
+                        <Select value={matchMode} onValueChange={setMatchMode}>
+                          <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent><SelectItem value="Solo">Solo</SelectItem><SelectItem value="Duo">Duo</SelectItem><SelectItem value="Squad">Squad</SelectItem></SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Map</Label>
+                        <Select value={matchMap} onValueChange={setMatchMap}>
+                          <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent><SelectItem value="Bermuda">Bermuda</SelectItem><SelectItem value="Purgatory">Purgatory</SelectItem><SelectItem value="Kalahari">Kalahari</SelectItem><SelectItem value="Alpine">Alpine</SelectItem></SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Perspective</Label>
+                        <Select value={matchVersion} onValueChange={setMatchVersion}>
+                          <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent><SelectItem value="TPP">TPP</SelectItem><SelectItem value="FPP">FPP</SelectItem></SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Launch Time</Label>
+                        <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fee</Label><Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Total Prize</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Per Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                    </div>
+                    <div className="p-5 bg-muted/20 rounded-[1.5rem] border border-white/5 space-y-4">
+                      <Label className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> Position Rewards</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {[1, 2, 3, 4, 5].map((pos) => (
+                          <div key={pos} className="space-y-1">
+                            <Label className="text-[8px] font-bold text-muted-foreground uppercase ml-1">Rank {pos}</Label>
+                            <Input type="number" value={pos === 1 ? p1 : pos === 2 ? p2 : pos === 3 ? p3 : pos === 4 ? p4 : p5} onChange={(e) => { const v = e.target.value; if(pos === 1) setP1(v); else if(pos === 2) setP2(v); else if(pos === 3) setP3(v); else if(pos === 4) setP4(v); else setP5(v); }} className="bg-background border-white/5 h-10 text-xs rounded-lg" required />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-black uppercase italic tracking-widest rounded-xl shadow-lg">{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Deploy Match'}</Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg active:scale-[0.98] transition-all">
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Deploy Match'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="manage">
-          <div className="space-y-3">
-            {tournamentsLoading ? (
-              <div className="flex flex-col items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" /></div>
-            ) : tournaments?.map((match: any) => (
-              <Card key={match.id} className="border-white/5 bg-card/60 p-4 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Swords className="w-5 h-5" /></div>
-                  <div>
-                    <h4 className="text-[11px] font-black uppercase italic">{match.title} <span className="text-primary">{match.matchId}</span></h4>
-                    <p className="text-[8px] font-bold text-muted-foreground uppercase">{match.mode} • {match.entryFee} TK</p>
+          <TabsContent value="manage">
+            <div className="space-y-3">
+              {tournamentsLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-2">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase">Syncing Battlefield...</p>
+                </div>
+              ) : tournaments?.length === 0 ? (
+                <div className="text-center py-20 border border-white/5 border-dashed rounded-3xl">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No Active Match Operations</p>
+                </div>
+              ) : tournaments?.map((match: any) => (
+                <Card key={match.id} className="border-white/5 bg-card/60 p-5 rounded-2xl flex items-center justify-between group hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                      <Swords className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black uppercase italic">{match.title} <span className="text-primary ml-1">{match.matchId}</span></h4>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{match.mode} • {match.entryFee} TK • {match.currentPlayers}/{match.maxPlayers}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="h-8 text-[9px] font-bold uppercase"><Key className="w-3 h-3 mr-1" /> Room</Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-card border-white/5 rounded-2xl">
-                      <DialogHeader><DialogTitle className="text-sm font-black uppercase italic">Setup Room Details</DialogTitle></DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Room ID</Label><Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted border-none" /></div>
-                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground">Password</Label><Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted border-none" /></div>
-                        <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-10 text-xs font-bold uppercase">Update Room Info</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8" onClick={() => handleDeleteMatch(match.id)}><Trash2 className="w-4 h-4" /></Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <div className="flex items-center gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="h-9 rounded-lg text-[10px] font-bold uppercase border-white/10 hover:bg-primary hover:text-white hover:border-none transition-all">
+                          <Key className="w-3.5 h-3.5 mr-1.5" /> Room
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card border-white/5 rounded-3xl p-8">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-black uppercase italic tracking-tight">Access Credentials</DialogTitle>
+                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Set Room ID and Password for players</p>
+                        </DialogHeader>
+                        <div className="space-y-5 py-6">
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Room ID</Label>
+                            <Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted border-none h-12 rounded-xl text-lg font-black font-mono" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Password</Label>
+                            <Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted border-none h-12 rounded-xl text-lg font-black font-mono" />
+                          </div>
+                          <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-12 font-black uppercase italic tracking-widest rounded-xl shadow-lg mt-2">Publish Credentials</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-9 w-9 bg-muted/30 rounded-lg" onClick={() => handleDeleteMatch(match.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 }
