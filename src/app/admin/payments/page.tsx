@@ -22,18 +22,18 @@ export default function PaymentsPage() {
     if (!db || !user) return null;
     return doc(db, 'users', user.uid);
   }, [db, user]);
-  const { data: profile } = useDoc<any>(userDocRef);
+  const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   const pendingPaymentsQuery = useMemoFirebase(() => {
-    // ONLY run this query if the database is ready, user is logged in, AND confirmed as admin
-    if (!db || !user || profile?.role !== 'admin') return null;
+    // CRITICAL: Only run query if profile is loaded AND user is confirmed admin
+    if (!db || !user || profileLoading || profile?.role !== 'admin') return null;
     
     return query(
       collection(db, 'transactions'), 
       where('status', '==', 'pending'),
       orderBy('timestamp', 'desc')
     );
-  }, [db, user, profile?.role]);
+  }, [db, user, profile?.role, profileLoading]);
 
   const { data: pendingPayments, loading, error } = useCollection<any>(pendingPaymentsQuery);
 
@@ -78,6 +78,15 @@ export default function PaymentsPage() {
     }
   };
 
+  if (profileLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">অ্যাডমিন প্রোফাইল চেক হচ্ছে...</p>
+      </div>
+    );
+  }
+
   if (profile && profile.role !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
@@ -121,7 +130,7 @@ export default function PaymentsPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">লোডিং হচ্ছে...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">পেমেন্ট লিস্ট লোড হচ্ছে...</p>
           </div>
         ) : pendingPayments?.length === 0 ? (
           <div className="text-center py-24 border border-dashed border-white/5 rounded-[2.5rem] space-y-3">
