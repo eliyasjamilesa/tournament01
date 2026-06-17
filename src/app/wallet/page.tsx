@@ -12,12 +12,14 @@ import {
   HelpCircle, 
   Gamepad2,
   ChevronRight,
-  CircleDollarSign
+  CircleDollarSign,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, query, collection, where, collectionGroup } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 export default function WalletPage() {
   const router = useRouter();
@@ -31,7 +33,31 @@ export default function WalletPage() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
-  if (authLoading || profileLoading) {
+  // Fetch approved deposits for stats
+  const depositsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'transactions'), 
+      where('userId', '==', user.uid), 
+      where('status', '==', 'approved')
+    );
+  }, [db, user]);
+  const { data: deposits, loading: depositsLoading } = useCollection<any>(depositsQuery);
+
+  // Fetch winnings for stats
+  const winningsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(collectionGroup(db, 'registrations'), where('uid', '==', user.uid));
+  }, [db, user]);
+  const { data: registrations, loading: regsLoading } = useCollection<any>(winningsQuery);
+
+  const stats = useMemo(() => {
+    const totalDeposited = deposits?.reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0) || 0;
+    const totalWon = registrations?.reduce((acc, reg) => acc + (Number(reg.wonAmount) || 0), 0) || 0;
+    return { totalDeposited, totalWon };
+  }, [deposits, registrations]);
+
+  if (authLoading || profileLoading || depositsLoading || regsLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
@@ -85,15 +111,15 @@ export default function WalletPage() {
             <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-yellow-500" />
             </div>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Deposited</p>
-            <p className="text-lg font-black text-white italic tracking-tight">৳0</p>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Total Deposited</p>
+            <p className="text-lg font-black text-white italic tracking-tight">৳{stats.totalDeposited}</p>
           </Card>
           <Card className="bg-[#121212] border-white/5 p-5 rounded-2xl flex flex-col items-center text-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
               <Trophy className="w-5 h-5 text-green-500" />
             </div>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Winning</p>
-            <p className="text-lg font-black text-white italic tracking-tight">৳0</p>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Total Winnings</p>
+            <p className="text-lg font-black text-white italic tracking-tight">৳{stats.totalWon}</p>
           </Card>
         </div>
 
@@ -115,9 +141,9 @@ export default function WalletPage() {
         {/* Menu Links */}
         <div className="space-y-3 pt-4">
           {[
-            { label: 'Transaction History', sub: 'View all your transactions', icon: History, color: 'text-red-500' },
-            { label: 'How to add money?', sub: 'Learn how to deposit money', icon: HelpCircle, color: 'text-blue-500' },
-            { label: 'How to join a match?', sub: 'Learn how to join ongoing matches', icon: Gamepad2, color: 'text-orange-500' },
+            { label: 'Transaction History', sub: 'সব ট্রানজ্যাকশন দেখুন', icon: History, color: 'text-red-500', href: '#' },
+            { label: 'How to add money?', sub: 'টাকা অ্যাড করার নিয়ম', icon: HelpCircle, color: 'text-blue-500', href: '#' },
+            { label: 'How to join a match?', sub: 'ম্যাচে জয়েন করার নিয়ম', icon: Gamepad2, color: 'text-orange-500', href: '#' },
           ].map((item, idx) => (
             <Card key={idx} className="bg-[#121212] border-white/5 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
