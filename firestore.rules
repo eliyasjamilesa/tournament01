@@ -16,35 +16,30 @@ service cloud.firestore {
 
     // Tournament rules
     match /tournaments/{tournamentId} {
-      // Allow anyone to see matches (get and list)
       allow read: if true;
-      // Only admin can create or edit matches
       allow write: if isAdmin();
       
-      // Registrations inside tournaments
       match /registrations/{userId} {
-        // Logged in users can see registrations
         allow read: if isSignedIn();
-        // Users can register themselves, or admin can manage
         allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       }
+    }
+
+    // Allow collection group queries for registrations
+    match /{path=**}/registrations/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
     
     // User profile rules
     match /users/{userId} {
-      // Users can see profiles if logged in
       allow read: if isSignedIn();
-      // Only owner or admin can edit profile
       allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
     // Transaction rules
     match /transactions/{transactionId} {
-      // Only admin can see/manage all transactions
       allow read: if isAdmin();
-      // Logged in users can create a deposit request
       allow create: if isSignedIn();
-      // Only admin can update status
       allow update, delete: if isAdmin();
     }
 

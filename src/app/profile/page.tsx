@@ -14,20 +14,19 @@ import {
   Bell,
   CreditCard,
   UserCircle,
-  Loader2,
   ShieldAlert,
   User
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collectionGroup, query, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export default function ProfilePage() {
   const { user, loading: userLoading } = useUser();
@@ -42,6 +41,26 @@ export default function ProfilePage() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
+  // Fetch all registrations for this user across all tournaments
+  const registrationsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(collectionGroup(db, 'registrations'), where('uid', '==', user.uid));
+  }, [db, user]);
+
+  const { data: userRegistrations, loading: regsLoading } = useCollection<any>(registrationsQuery);
+
+  const stats = useMemo(() => {
+    if (!userRegistrations) return { matches: 0, coins: profile?.coins || 0, wins: 0 };
+    
+    const totalWinnings = userRegistrations.reduce((acc: number, reg: any) => acc + (Number(reg.wonAmount) || 0), 0);
+    
+    return {
+      matches: userRegistrations.length,
+      coins: profile?.coins || 0,
+      wins: totalWinnings
+    };
+  }, [userRegistrations, profile?.coins]);
+
   useEffect(() => {
     if (!userLoading && !user) {
       router.push('/login');
@@ -54,7 +73,7 @@ export default function ProfilePage() {
     router.push('/login');
   };
 
-  if (userLoading || profileLoading || !user) {
+  if (userLoading || profileLoading || regsLoading || !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <div className="relative">
@@ -67,12 +86,6 @@ export default function ProfilePage() {
   }
 
   const isAdmin = profile?.role === 'admin';
-
-  const stats = [
-    { label: 'MATCHES', value: '124', icon: Swords },
-    { label: 'COINS', value: profile?.coins || '0', highlight: true, icon: Wallet },
-    { label: 'WINS', value: '28', icon: Trophy },
-  ];
 
   const sections = [
     {
@@ -133,16 +146,30 @@ export default function ProfilePage() {
 
       <section className="px-6 mt-8">
         <div className="grid grid-cols-3 gap-3">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
-              <span className={`text-xl font-headline font-bold tracking-tighter ${stat.highlight ? 'text-primary' : 'text-foreground'}`}>
-                {stat.value}
-              </span>
-              <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest mt-1">
-                {stat.label}
-              </span>
-            </div>
-          ))}
+          <div className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
+            <span className="text-xl font-headline font-bold tracking-tighter text-foreground">
+              {stats.matches}
+            </span>
+            <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest mt-1">
+              MATCHES
+            </span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
+            <span className="text-xl font-headline font-bold tracking-tighter text-primary">
+              {stats.coins}
+            </span>
+            <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest mt-1">
+              COINS
+            </span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
+            <span className="text-xl font-headline font-bold tracking-tighter text-foreground">
+              ৳{stats.wins}
+            </span>
+            <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest mt-1">
+              WINS (TK)
+            </span>
+          </div>
         </div>
       </section>
 
