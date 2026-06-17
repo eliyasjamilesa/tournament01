@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Flame, Menu, Loader2, Zap, ChevronRight, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
@@ -10,8 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, query } from 'firebase/firestore';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
@@ -25,11 +25,32 @@ export default function Home() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
+  // Fetch all tournaments to count them
+  const tournamentsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'tournaments'));
+  }, [db]);
+
+  const { data: allTournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
   }, [user, authLoading, router]);
+
+  const getMatchCountForType = (typeTitle: string) => {
+    if (!allTournaments) return 0;
+    // Simple matching: count matches where title or mode matches the category keywords
+    const keywords = typeTitle.toLowerCase().split(' ');
+    return allTournaments.filter(t => {
+      const isAvailable = (t.status === 'open' || !t.status) && (t.currentPlayers < (t.maxPlayers || 48));
+      if (!isAvailable) return false;
+      
+      const matchText = `${t.title} ${t.mode} ${t.map}`.toLowerCase();
+      return keywords.every(k => matchText.includes(k));
+    }).length;
+  };
 
   if (authLoading || (user && profileLoading)) {
     return (
@@ -126,28 +147,39 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {section.types.map((type) => (
-                <Link href="/play" key={type.id} className="group">
-                  <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
-                    <Image 
-                      src={PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || ''} 
-                      alt={type.title} 
-                      fill 
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      data-ai-hint="game mode"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    <div className="absolute inset-0 flex flex-col justify-end p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase italic text-white tracking-tight">{type.title}</span>
-                        <div className="w-6 h-6 rounded-lg bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/20">
-                          <Zap className="w-3 h-3 text-primary fill-primary" />
+              {section.types.map((type) => {
+                const availableCount = getMatchCountForType(type.title);
+                return (
+                  <Link href="/play" key={type.id} className="group">
+                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
+                      <Image 
+                        src={PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || ''} 
+                        alt={type.title} 
+                        fill 
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        data-ai-hint="game mode"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      
+                      {/* Available Count Badge */}
+                      <div className="absolute top-3 left-3">
+                        <Badge className={`${availableCount > 0 ? 'bg-primary' : 'bg-muted/80'} text-[8px] font-black italic tracking-widest px-2 py-0.5 border-none shadow-lg`}>
+                          {availableCount} AVAILABLE
+                        </Badge>
+                      </div>
+
+                      <div className="absolute inset-0 flex flex-col justify-end p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black uppercase italic text-white tracking-tight">{type.title}</span>
+                          <div className="w-6 h-6 rounded-lg bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/20">
+                            <Zap className="w-3 h-3 text-primary fill-primary" />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </section>
         ))}
