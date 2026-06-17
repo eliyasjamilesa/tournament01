@@ -11,17 +11,163 @@ import {
   Swords,
   Map as MapIcon,
   Monitor,
-  LayoutGrid
+  LayoutGrid,
+  ArrowLeft,
+  Target,
+  Wallet,
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
+
+function MatchResultsSheet({ tournament }: { tournament: any }) {
+  const db = useFirestore();
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchDetails = async () => {
+    if (!db || !tournament.id) return;
+    setLoading(true);
+    try {
+      const snap = await getDocs(collection(db, 'tournaments', tournament.id, 'registrations'));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort by slot or winning amount? Let's sort by winning amount descending
+      setRegistrations(data.sort((a, b) => (b.wonAmount || 0) - (a.wonAmount || 0)));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const booyahPlayer = registrations.length > 0 ? registrations[0] : null;
+  const otherPlayers = registrations.slice(1);
+
+  return (
+    <Sheet onOpenChange={(open) => open && fetchDetails()}>
+      <SheetTrigger asChild>
+        <div className="absolute inset-0 cursor-pointer z-10" />
+      </SheetTrigger>
+      <SheetContent side="bottom" className="h-[95vh] rounded-t-[2.5rem] bg-black border-t border-red-900/30 p-0 overflow-y-auto no-scrollbar">
+        <SheetHeader className="px-6 pt-10 pb-4 text-center sticky top-0 bg-black z-50">
+          <div className="flex items-center gap-4 mb-2">
+             <SheetTrigger asChild>
+                <button className="p-2 -ml-2 text-white bg-white/5 rounded-full"><ArrowLeft className="w-5 h-5" /></button>
+             </SheetTrigger>
+             <SheetTitle className="text-lg font-black uppercase text-white tracking-tight">Match Results</SheetTitle>
+          </div>
+          <SheetDescription className="sr-only">Detailed scores and rankings for {tournament.title}</SheetDescription>
+        </SheetHeader>
+
+        <div className="px-4 pb-20 space-y-6">
+          {/* Match Header Info Card */}
+          <Card className="bg-[#121212] border border-red-900/30 rounded-3xl overflow-hidden shadow-2xl">
+            <CardContent className="p-6 space-y-6">
+              <div className="text-center space-y-2">
+                <h3 className="text-[13px] font-black text-white uppercase leading-tight">
+                  {tournament.mode} | NORMAL | 🚫ম্যাচ এ জয়েন করার আগে রুলস পরে নেন। 🚫রুলস ফলো না করলে রিওয়ার্ড দেয়া হবে না & রিফান্ড পাবেন না
+                </h3>
+                <p className="text-[11px] font-bold text-red-600 uppercase tracking-widest">
+                  Organised on {tournament.startTime ? format(new Date(tournament.startTime), 'dd, MMM yyyy | hh:mm a') : 'TBA'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+                <div className="text-center space-y-1">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Win Prize</span>
+                  <p className="text-[14px] font-black text-white">{tournament.prizePool} TK</p>
+                </div>
+                <div className="text-center space-y-1">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Per Kill</span>
+                  <p className="text-[14px] font-black text-white">{tournament.perKill} TK</p>
+                </div>
+                <div className="text-center space-y-1">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Entry Fee</span>
+                  <p className="text-[14px] font-black text-white">{tournament.entryFee} TK</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Booyah Section */}
+          <div className="space-y-2">
+            <div className="bg-red-600 py-3 rounded-t-2xl text-center">
+              <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">BOOYAH</h4>
+            </div>
+            <div className="bg-[#121212] border border-white/5 rounded-b-2xl overflow-hidden">
+               <table className="w-full text-left">
+                 <thead>
+                   <tr className="bg-red-900/40 text-[9px] font-black text-white uppercase tracking-widest border-b border-white/5">
+                     <th className="px-4 py-3 w-12">#</th>
+                     <th className="px-2 py-3">Player Name</th>
+                     <th className="px-2 py-3 text-center">Kills</th>
+                     <th className="px-4 py-3 text-right">Winning</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {loading ? (
+                     <tr><td colSpan={4} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-red-500" /></td></tr>
+                   ) : booyahPlayer ? (
+                     <tr className="text-white">
+                        <td className="px-4 py-4 text-[11px] font-bold text-gray-500">1</td>
+                        <td className="px-2 py-4 text-[13px] font-black">{booyahPlayer.ingameName || booyahPlayer.displayName}</td>
+                        <td className="px-2 py-4 text-[13px] font-black text-center">{booyahPlayer.kills || 0}</td>
+                        <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{booyahPlayer.wonAmount || 0}</td>
+                     </tr>
+                   ) : (
+                     <tr><td colSpan={4} className="py-6 text-center text-[10px] font-bold text-muted-foreground uppercase">No Winner Listed</td></tr>
+                   )}
+                 </tbody>
+               </table>
+            </div>
+          </div>
+
+          {/* Full Result Section */}
+          <div className="space-y-2">
+            <div className="bg-red-600 py-3 rounded-t-2xl text-center">
+              <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">FULL RESULT</h4>
+            </div>
+            <div className="bg-[#121212] border border-white/5 rounded-b-2xl overflow-hidden">
+               <table className="w-full text-left">
+                 <thead>
+                   <tr className="bg-red-900/40 text-[9px] font-black text-white uppercase tracking-widest border-b border-white/5">
+                     <th className="px-4 py-3 w-12">#</th>
+                     <th className="px-2 py-3">Player Name</th>
+                     <th className="px-2 py-3 text-center">Kills</th>
+                     <th className="px-4 py-3 text-right">Winning</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-white/5">
+                   {loading ? (
+                      <tr><td colSpan={4} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-red-500" /></td></tr>
+                   ) : otherPlayers.length > 0 ? (
+                     otherPlayers.map((player, idx) => (
+                       <tr key={player.id} className="text-white">
+                         <td className="px-4 py-4 text-[11px] font-bold text-gray-500">{idx + 2}</td>
+                         <td className="px-2 py-4 text-[13px] font-bold text-gray-300">{player.ingameName || player.displayName}</td>
+                         <td className="px-2 py-4 text-[13px] font-black text-center">{player.kills || 0}</td>
+                         <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{player.wonAmount || 0}</td>
+                       </tr>
+                     ))
+                   ) : (
+                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">Waiting for full results...</td></tr>
+                   )}
+                 </tbody>
+               </table>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
 export default function ResultsPage() {
   const { user, loading: authLoading } = useUser();
@@ -45,10 +191,10 @@ export default function ResultsPage() {
 
   const resultsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    // Showing matches that are completed or just all past matches for this mode
     return query(
       collection(db, 'tournaments'),
       where('mode', '==', activeTab),
+      where('status', '==', 'completed'),
       orderBy('createdAt', 'desc'),
       limit(20)
     );
@@ -121,6 +267,7 @@ export default function ResultsPage() {
         ) : (
           matches?.map((match: any) => (
             <Card key={match.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
+              <MatchResultsSheet tournament={match} />
               <div className="absolute top-0 right-0">
                 <div className="bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-bl-xl shadow-lg">
                   {match.matchId || '#-----'}

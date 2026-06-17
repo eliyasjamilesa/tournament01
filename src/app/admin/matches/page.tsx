@@ -16,7 +16,8 @@ import {
   Monitor,
   Trophy,
   Map as MapIcon,
-  Users
+  Users,
+  Target
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -267,11 +268,19 @@ export default function MatchesPage() {
                       <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{match.matchId} • {match.mode}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all" onClick={() => {
-                    if(confirm('Warning: This will permanently delete this arena. Proceed?')) deleteDoc(doc(db, 'tournaments', match.id));
-                  }}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 text-[9px] font-black uppercase tracking-widest text-green-500 hover:bg-green-500/10" onClick={async () => {
+                      if(confirm('Mark this match as COMPLETED? Warriors will see this in Results.')) {
+                        await updateDoc(doc(db, 'tournaments', match.id), { status: 'completed' });
+                        toast({ title: "Archived", description: "Match marked as completed." });
+                      }
+                    }}>Complete</Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all" onClick={() => {
+                      if(confirm('Warning: This will permanently delete this arena. Proceed?')) deleteDoc(doc(db, 'tournaments', match.id));
+                    }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 mb-5">
@@ -316,44 +325,68 @@ export default function MatchesPage() {
                         <Medal className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Results
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-card border-white/10 rounded-[2rem] max-h-[80vh] overflow-y-auto max-w-[340px]">
+                    <DialogContent className="bg-card border-white/10 rounded-[2rem] max-h-[85vh] overflow-y-auto max-w-[360px]">
                       <DialogHeader>
                         <DialogTitle className="text-sm uppercase font-black italic tracking-widest text-center">Warrior Ranking</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-3 py-6">
+                      <div className="space-y-4 py-6">
                         {registrations.length === 0 ? (
                            <div className="text-center py-10 opacity-50 flex flex-col items-center gap-2">
                              <User className="w-8 h-8" />
                              <p className="text-[10px] font-black uppercase tracking-widest">No registrations detected</p>
                            </div>
                         ) : registrations.map((reg) => (
-                          <div key={reg.id} className="p-4 bg-muted/30 rounded-2xl flex items-center justify-between border border-white/5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                                <User className="w-4 h-4 text-primary" />
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-black uppercase tracking-tight text-white">{reg.ingameName || reg.displayName}</p>
-                                <p className="text-[8px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber}</p>
+                          <div key={reg.id} className="p-4 bg-muted/30 rounded-2xl space-y-3 border border-white/5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                  <User className="w-4 h-4 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-black uppercase tracking-tight text-white">{reg.ingameName || reg.displayName}</p>
+                                  <p className="text-[8px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber}</p>
+                                </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col items-end">
-                                <span className="text-[7px] font-black text-primary uppercase mb-0.5">Winnings</span>
-                                <Input 
-                                  type="number" 
-                                  placeholder="0" 
-                                  value={reg.wonAmount || ''} 
-                                  onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, wonAmount: e.target.value } : r))} 
-                                  className="w-16 h-8 text-[11px] font-black bg-background border-none text-right rounded-lg" 
-                                />
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-[7px] font-black text-muted-foreground uppercase ml-1">Kills</Label>
+                                <div className="relative">
+                                  <Target className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                                  <Input 
+                                    type="number" 
+                                    placeholder="0" 
+                                    value={reg.kills || ''} 
+                                    onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, kills: e.target.value } : r))} 
+                                    className="w-full h-8 pl-7 text-[10px] font-black bg-background border-none rounded-lg" 
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[7px] font-black text-primary uppercase ml-1">Winnings</Label>
+                                <div className="relative">
+                                  <Trophy className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-primary" />
+                                  <Input 
+                                    type="number" 
+                                    placeholder="0" 
+                                    value={reg.wonAmount || ''} 
+                                    onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, wonAmount: e.target.value } : r))} 
+                                    className="w-full h-8 pl-7 text-[10px] font-black bg-background border-none rounded-lg" 
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
                         ))}
                         {registrations.length > 0 && (
                           <Button onClick={async () => {
-                            for (const reg of registrations) await updateDoc(doc(db, 'tournaments', match.id, 'registrations', reg.id), { wonAmount: Number(reg.wonAmount || 0) });
+                            for (const reg of registrations) {
+                              await updateDoc(doc(db, 'tournaments', match.id, 'registrations', reg.id), { 
+                                wonAmount: Number(reg.wonAmount || 0),
+                                kills: Number(reg.kills || 0)
+                              });
+                            }
                             toast({ title: "Results Published", description: "Warriors can now see their rewards." });
                           }} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-6 shadow-xl shadow-primary/20">PUBLISH ARCHIVE</Button>
                         )}

@@ -60,6 +60,7 @@
         "ingameId": { "type": "string", "description": "The unique ID used in the game." },
         "slotNumber": { "type": "number" },
         "wonAmount": { "type": "number", "description": "The amount won by the user in this match." },
+        "kills": { "type": "number", "description": "The number of kills by the user in this match." },
         "timestamp": { "type": "string", "format": "date-time" }
       }
     },
