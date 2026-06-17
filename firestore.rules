@@ -38,7 +38,8 @@ service cloud.firestore {
 
     // Transaction rules
     match /transactions/{transactionId} {
-      allow read: if isAdmin();
+      // Allow users to read their own transactions, and admins to read all
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
