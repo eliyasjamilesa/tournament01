@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  Users, Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check
+  Users, Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,92 @@ function CountdownTimer({ startTime }: { startTime: string }) {
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [startTime]);
-  return <div className="w-full bg-green-600 py-2.5 flex items-center justify-center"><span className="text-white text-[10px] font-black uppercase tracking-widest">{timeLeft}</span></div>;
+  return <div className="w-full bg-green-600 py-2 flex items-center justify-center border-t border-white/5"><span className="text-white text-[10px] font-black uppercase tracking-widest">{timeLeft}</span></div>;
+}
+
+function SlotsSheet({ tournament }: { tournament: any }) {
+  const { user } = useUser();
+  const db = useFirestore();
+  
+  const regDocRef = useMemoFirebase(() => {
+    if (!db || !user || !tournament.id) return null;
+    return doc(db, 'tournaments', tournament.id, 'registrations', user.uid);
+  }, [db, user, tournament.id]);
+
+  const { data: registration } = useDoc<any>(regDocRef);
+  const isJoined = !!registration;
+
+  const registrationsQuery = useMemoFirebase(() => {
+    if (!db || !tournament.id) return null;
+    return collection(db, 'tournaments', tournament.id, 'registrations');
+  }, [db, tournament.id]);
+
+  const { data: slots, loading: slotsLoading } = useCollection<any>(registrationsQuery);
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
+      </SheetTrigger>
+      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-6 pb-10 overflow-y-auto">
+        <div className="flex justify-center mb-6 pt-4">
+          <div className="bg-red-600 text-white px-6 py-1.5 rounded-full text-xs font-black tracking-widest shadow-lg shadow-red-600/20">
+            {tournament.matchId || '#-----'}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-px bg-red-500/10 border border-red-500/20 rounded-2xl overflow-hidden mb-8">
+          {[
+            { label: 'Match Type', val: tournament.mode, icon: Gamepad2 },
+            { label: 'Date', val: tournament.startTime ? format(new Date(tournament.startTime), 'dd MMM yyyy') : 'TBA', icon: Calendar },
+            { label: 'Time', val: tournament.startTime ? format(new Date(tournament.startTime), 'hh:mm a') : 'TBA', icon: Clock },
+            { label: 'Entry Fee', val: `${tournament.entryFee} TK`, icon: Wallet }
+          ].map((item, i) => (
+            <div key={i} className="bg-black/40 p-5 flex flex-col items-center justify-center gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <item.icon className="w-3.5 h-3.5 text-red-500" />
+                <span className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">{item.label}</span>
+              </div>
+              <span className="text-xs font-black uppercase text-white tracking-tight">{item.val}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between mb-6 px-2">
+           <h3 className="text-lg font-black uppercase italic text-white">Slots List</h3>
+           <span className="text-[10px] font-bold text-muted-foreground uppercase">{tournament.currentPlayers} Joined</span>
+        </div>
+
+        <div className="min-h-[400px] border border-white/5 rounded-[2rem] bg-card/20 flex flex-col p-6">
+          {!isJoined ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-20">
+              <div className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-2">
+                <Lock className="w-10 h-10 text-red-600" />
+              </div>
+              <h4 className="text-2xl font-black uppercase italic text-red-600 tracking-tight">Not Joined</h4>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Join match to view players</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2.5">
+              {slotsLoading ? (
+                 <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-red-500" /></div>
+              ) : (
+                slots?.map((slot: any, index: number) => (
+                  <div key={slot.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-red-500 w-6">#{index + 1}</span>
+                      <span className="text-sm font-bold text-white uppercase tracking-tight">{slot.displayName}</span>
+                    </div>
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
 }
 
 function PrizeDistributionSheet({ tournament }: { tournament: any }) {
@@ -144,17 +229,17 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
   const isJoined = !!registration;
 
   return (
-    <Card key={tournament.id} className="border-white/5 bg-card overflow-hidden rounded-2xl shadow-xl">
+    <Card key={tournament.id} className="border-white/5 bg-[#0a0a0a] overflow-hidden rounded-2xl shadow-xl">
       <div className="p-5 space-y-5">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/10">
-              <Gamepad2 className="text-white w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Gamepad2 className="text-primary w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase italic tracking-tight leading-none mb-1">{tournament.title} <span className="text-primary ml-1">{tournament.mode}</span></h3>
-              <div className="flex items-center gap-1.5 text-[9px] font-bold text-green-500 uppercase">
-                <Calendar className="w-3 h-3" />
+              <h3 className="text-sm font-black uppercase italic tracking-tight leading-none mb-1">{tournament.title}</h3>
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase">
+                <Calendar className="w-3 h-3 text-primary" />
                 {tournament.startTime ? format(new Date(tournament.startTime), 'dd MMM, hh:mm a') : 'TBA'}
               </div>
             </div>
@@ -173,9 +258,9 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
             { label: 'VER', val: tournament.version, icon: Monitor }, 
             { label: 'TYPE', val: tournament.mode, icon: Layers } 
           ].map((stat, i) => (
-            <div key={i} className="bg-muted/30 rounded-lg p-2 flex flex-col items-center justify-center border border-white/5">
-              <span className="text-[7px] font-bold uppercase text-muted-foreground mb-0.5">{stat.label}</span>
-              <span className="text-[10px] font-black truncate w-full text-center">{stat.val}</span>
+            <div key={i} className="bg-muted/10 rounded-xl p-2.5 flex flex-col items-center justify-center border border-white/5">
+              <span className="text-[7px] font-bold uppercase text-muted-foreground mb-1">{stat.label}</span>
+              <span className="text-[9px] font-black truncate w-full text-center text-white">{stat.val}</span>
             </div>
           ))}
         </div>
@@ -185,7 +270,7 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
             <span className="text-[9px] font-bold uppercase text-muted-foreground">Registered Players</span>
             <span className="text-[10px] font-black">{tournament.currentPlayers}/{tournament.maxPlayers}</span>
           </div>
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-muted/20 rounded-full overflow-hidden">
             <div 
               className="h-full bg-primary transition-all duration-500" 
               style={{ width: `${Math.min(100, (tournament.currentPlayers / (tournament.maxPlayers || 48)) * 100)}%` }} 
@@ -213,7 +298,7 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
             )}
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
+            <SlotsSheet tournament={tournament} />
             <RoomDetailsSheet tournament={tournament} />
             <PrizeDistributionSheet tournament={tournament} />
           </div>
@@ -280,7 +365,7 @@ export default function PlayPage() {
             placeholder="Search by ID or Title..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
-            className="pl-11 bg-muted/30 border-white/5 h-11 rounded-xl text-sm" 
+            className="pl-11 bg-muted/10 border-white/5 h-11 rounded-xl text-sm" 
           />
         </div>
 
@@ -291,7 +376,7 @@ export default function PlayPage() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Syncing Arenas...</p>
             </div>
           ) : filteredTournaments?.length === 0 ? (
-            <div className="text-center py-20 bg-muted/10 rounded-3xl border border-white/5 border-dashed">
+            <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No Battlefields Detected</p>
             </div>
           ) : filteredTournaments?.map((t) => (
@@ -307,3 +392,4 @@ export default function PlayPage() {
     </div>
   );
 }
+

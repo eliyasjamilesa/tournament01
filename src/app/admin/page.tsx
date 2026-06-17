@@ -25,13 +25,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function AdminDashboard() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   
-  // Auth state management
-  const [status, setStatus] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
+  // High-level authorization state
+  const [status, setStatus] = useState<'checking' | 'authorized' | 'unauthorized'>('checking');
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -41,20 +41,22 @@ export default function AdminDashboard() {
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
-    if (userLoading || profileLoading) return;
+    // Wait until both auth and profile are loaded
+    if (authLoading || profileLoading) return;
 
     if (!user) {
       router.replace('/login');
       return;
     }
 
-    if (profile?.role === 'admin') {
+    if (profile && profile.role === 'admin') {
       setStatus('authorized');
     } else if (profile) {
+      // Profile exists but role is not admin
       setStatus('unauthorized');
       router.replace('/');
     }
-  }, [user, userLoading, profile, profileLoading, router]);
+  }, [user, authLoading, profile, profileLoading, router]);
 
   // Form states
   const [matchTitle, setMatchTitle] = useState('');
@@ -135,7 +137,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (status === 'loading') {
+  if (status === 'checking') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
