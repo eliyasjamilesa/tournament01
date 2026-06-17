@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -34,10 +33,13 @@ export default function DepositPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  const adminNumber = "+8801700000000"; // Placeholder
+  const bkashNumber = "+8801305525266";
+  const nagadNumber = "+8801712109801";
+
+  const currentNumber = method === 'Bkash' ? bkashNumber : nagadNumber;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(adminNumber);
+    navigator.clipboard.writeText(currentNumber);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
     toast({ title: "Copied!", description: "Number copied to clipboard." });
@@ -82,7 +84,6 @@ export default function DepositPage() {
       </header>
 
       <main className="flex-1 p-6 pb-32 space-y-8 max-w-md mx-auto w-full">
-        {/* Step 1: Select Method */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">1</span> 
@@ -112,7 +113,6 @@ export default function DepositPage() {
           </div>
         </section>
 
-        {/* Step 2: Payment Details */}
         {method && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
@@ -123,9 +123,9 @@ export default function DepositPage() {
             <Card className="bg-primary/5 border-primary/20 rounded-3xl overflow-hidden">
               <CardContent className="p-6 space-y-4">
                 <div className="text-center space-y-1">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Send Money to this number</p>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Send Money to this {method} number</p>
                   <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl font-black text-white italic tracking-tighter">{adminNumber}</span>
+                    <span className="text-2xl font-black text-white italic tracking-tighter">{currentNumber}</span>
                     <Button size="icon" variant="ghost" onClick={handleCopy} className="h-8 w-8 bg-white/5">
                       {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-primary" />}
                     </Button>
