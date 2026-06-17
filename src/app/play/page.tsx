@@ -9,13 +9,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { collection, query, orderBy, limit, doc, setDoc, increment, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 function CountdownTimer({ startTime }: { startTime: string }) {
   const [timeLeft, setTimeLeft] = useState<string>('');
@@ -231,9 +231,11 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
   );
 }
 
-function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJoin: (t: any) => void, joining: string | null }) {
+function TournamentCard({ tournament }: { tournament: any }) {
   const { user } = useUser();
   const db = useFirestore();
+  const router = useRouter();
+  
   const regDocRef = useMemoFirebase(() => {
     if (!db || !user || !tournament.id) return null;
     return doc(db, 'tournaments', tournament.id, 'registrations', user.uid);
@@ -293,24 +295,27 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
         </div>
 
         <div className="flex flex-col gap-2">
-          <Button 
-            onClick={() => !isJoined && onJoin(tournament)} 
-            disabled={(!isJoined && tournament.currentPlayers >= tournament.maxPlayers) || joining === tournament.id} 
-            className={cn(
-              "w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg transition-all active:scale-95",
-              isJoined ? "bg-green-600 hover:bg-green-700 border-none cursor-default" : "magma-gradient"
-            )}
-          >
-            {joining === tournament.id ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : isJoined ? (
-              <><Check className="w-4 h-4 mr-2" /> JOINED</>
-            ) : tournament.currentPlayers >= tournament.maxPlayers ? (
-              <><Lock className="w-3.5 h-3.5 mr-2" /> Match Full</>
-            ) : (
-              'Join Match'
-            )}
-          </Button>
+          {isJoined ? (
+            <Button 
+              className="w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg bg-green-600 hover:bg-green-700 border-none cursor-default"
+            >
+              <Check className="w-4 h-4 mr-2" /> JOINED
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => router.push(`/play/join/${tournament.id}`)}
+              disabled={tournament.currentPlayers >= tournament.maxPlayers} 
+              className={cn(
+                "w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg transition-all active:scale-95 magma-gradient"
+              )}
+            >
+              {tournament.currentPlayers >= tournament.maxPlayers ? (
+                <><Lock className="w-3.5 h-3.5 mr-2" /> Match Full</>
+              ) : (
+                'Join Match'
+              )}
+            </Button>
+          )}
           <div className="flex gap-2">
             <SlotsSheet tournament={tournament} />
             <RoomDetailsSheet tournament={tournament} />
@@ -325,13 +330,10 @@ function TournamentCard({ tournament, onJoin, joining }: { tournament: any, onJo
 
 export default function PlayPage() {
   const db = useFirestore();
-  const { user } = useUser();
-  const { toast } = useToast();
   const searchParams = useSearchParams();
   const modeFilter = searchParams.get('mode');
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [joining, setJoining] = useState<string | null>(null);
 
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -339,28 +341,6 @@ export default function PlayPage() {
   }, [db]);
 
   const { data: tournaments, loading } = useCollection<any>(tournamentsQuery);
-
-  const handleJoin = async (tournament: any) => {
-    if (!db || !user) { 
-      toast({ title: "Login Required", description: "Please login to join matches." }); 
-      return; 
-    }
-    
-    setJoining(tournament.id);
-    try {
-      const regRef = doc(db, 'tournaments', tournament.id, 'registrations', user.uid);
-      await setDoc(regRef, {
-        uid: user.uid,
-        displayName: user.displayName || 'Player',
-        timestamp: serverTimestamp()
-      });
-      const tRef = doc(db, 'tournaments', tournament.id);
-      await updateDoc(tRef, { currentPlayers: increment(1) });
-      toast({ title: "Joined Successfully!", description: "Check My Arena for match updates." });
-    } finally {
-      setJoining(null);
-    }
-  };
 
   const filteredTournaments = tournaments?.filter(t => {
     const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -408,8 +388,6 @@ export default function PlayPage() {
             <TournamentCard 
               key={t.id} 
               tournament={t} 
-              onJoin={handleJoin} 
-              joining={joining} 
             />
           ))}
         </div>
