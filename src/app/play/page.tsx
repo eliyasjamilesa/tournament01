@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
+  Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock, Swords
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -229,7 +229,7 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
         
         <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" />
         <div className="flex items-center gap-4 mb-10">
-          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+          <div className="w-12 h-12 rounded-2xl bg-primary items-center justify-center shadow-lg shadow-primary/20 flex">
              <Key className="w-6 h-6 text-white" />
           </div>
           <h2 className="text-2xl font-black uppercase italic tracking-tight">Room Details</h2>
@@ -408,10 +408,14 @@ export default function PlayPage() {
     return matchesSearch && matchesMode;
   });
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          <Swords className="w-5 h-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Syncing Battlefields...</p>
       </div>
     );
   }
@@ -440,12 +444,7 @@ export default function PlayPage() {
         </div>
 
         <div className="space-y-6">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Syncing Arenas...</p>
-            </div>
-          ) : filteredTournaments?.length === 0 ? (
+          {filteredTournaments?.length === 0 ? (
             <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 {modeFilter ? `No ${modeFilter} Battlefields Detected` : 'No Battlefields Detected'}

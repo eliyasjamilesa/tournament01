@@ -15,7 +15,8 @@ import {
   CreditCard,
   UserCircle,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  User
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -55,8 +56,12 @@ export default function ProfilePage() {
 
   if (userLoading || profileLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          <User className="w-5 h-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Accessing Profile...</p>
       </div>
     );
   }

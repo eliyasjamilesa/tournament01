@@ -8,6 +8,7 @@ import {
   Calendar, 
   Trophy,
   ArrowLeft,
+  ListChecks
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -30,7 +31,6 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
       const snap = await getDocs(collection(db, 'tournaments', tournament.id, 'registrations'));
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Sort: Highest Win Amount first, then Highest Kills
       const sorted = data.sort((a, b) => {
         const winDiff = Number(b.wonAmount || 0) - Number(a.wonAmount || 0);
         if (winDiff !== 0) return winDiff;
@@ -218,10 +218,14 @@ export default function ResultsPage() {
     return PlaceHolderImages.find(img => img.id === idMap[mode])?.imageUrl || '';
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          <ListChecks className="w-5 h-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Fetching Records...</p>
       </div>
     );
   }
@@ -254,12 +258,7 @@ export default function ResultsPage() {
       </div>
 
       <main className="px-4 py-6 space-y-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Loading Records...</p>
-          </div>
-        ) : matches?.length === 0 ? (
+        {matches?.length === 0 ? (
           <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               No results for {activeTab} yet.
