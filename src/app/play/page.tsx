@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, orderBy, limit, doc, setDoc, increment, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -60,6 +60,11 @@ function SlotsSheet({ tournament }: { tournament: any }) {
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-6 pb-10 overflow-y-auto">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Tournament Slots - {tournament.matchId}</SheetTitle>
+          <SheetDescription>View registered players for this match.</SheetDescription>
+        </SheetHeader>
+        
         <div className="flex justify-center mb-6 pt-4">
           <div className="bg-red-600 text-white px-6 py-1.5 rounded-full text-xs font-black tracking-widest shadow-lg shadow-red-600/20">
             {tournament.matchId || '#-----'}
@@ -128,7 +133,10 @@ function PrizeDistributionSheet({ tournament }: { tournament: any }) {
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Trophy className="w-3 h-3 mr-1.5" /> Prizes</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-6 pb-10">
-        <SheetHeader className="mb-6"><SheetTitle className="text-xl font-black uppercase italic text-center">Prize Pool Details</SheetTitle></SheetHeader>
+        <SheetHeader className="mb-6">
+          <SheetTitle className="text-xl font-black uppercase italic text-center">Prize Pool Details</SheetTitle>
+          <SheetDescription className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Rank-wise distribution of the total pool.</SheetDescription>
+        </SheetHeader>
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[1, 2, 3, 4, 5].map((pos) => (
             <div key={pos} className="p-3 rounded-xl bg-muted/50 border border-white/5 flex items-center justify-between">
@@ -164,6 +172,11 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Key className="w-3 h-3 mr-1.5" /> Room</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-8 pb-12">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Room ID & Password</SheetTitle>
+          <SheetDescription>Access credentials for joined players.</SheetDescription>
+        </SheetHeader>
+        
         <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" />
         <div className="flex items-center gap-4 mb-10">
           <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -392,4 +405,3 @@ export default function PlayPage() {
     </div>
   );
 }
-

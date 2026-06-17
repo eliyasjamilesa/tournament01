@@ -23,7 +23,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@
 import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -330,7 +330,7 @@ export default function AdminDashboard() {
                       <DialogContent className="bg-card border-white/5 rounded-3xl p-8">
                         <DialogHeader>
                           <DialogTitle className="text-xl font-black uppercase italic tracking-tight">Access Credentials</DialogTitle>
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Set Room ID and Password for players</p>
+                          <DialogDescription className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Set Room ID and Password for players</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-5 py-6">
                           <div className="space-y-1.5">
