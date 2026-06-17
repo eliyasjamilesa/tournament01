@@ -59,6 +59,7 @@
         "ingameName": { "type": "string", "description": "The name used in the actual game." },
         "ingameId": { "type": "string", "description": "The unique ID used in the game." },
         "slotNumber": { "type": "number" },
+        "wonAmount": { "type": "number", "description": "The amount won by the user in this match." },
         "timestamp": { "type": "string", "format": "date-time" }
       }
     }

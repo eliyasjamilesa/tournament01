@@ -12,7 +12,10 @@ import {
   Plus,
   Key,
   ChevronLeft,
-  CalendarDays
+  CalendarDays,
+  Medal,
+  Save,
+  User
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -31,7 +34,6 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
   
-  // High-level authorization state
   const [status, setStatus] = useState<'checking' | 'authorized' | 'unauthorized'>('checking');
 
   const userDocRef = useMemoFirebase(() => {
@@ -42,24 +44,20 @@ export default function AdminDashboard() {
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
-    // Wait until both auth and profile are fully loaded
     if (authLoading || profileLoading) return;
-
     if (!user) {
       router.replace('/login');
       return;
     }
-
     if (profile && profile.role === 'admin') {
       setStatus('authorized');
     } else if (profile) {
-      // Profile exists but role is not admin
       setStatus('unauthorized');
       router.replace('/');
     }
   }, [user, authLoading, profile, profileLoading, router]);
 
-  // Form states
+  // Create Match States
   const [matchTitle, setMatchTitle] = useState('');
   const [matchMode, setMatchMode] = useState('BR SOLO');
   const [matchMap, setMatchMap] = useState('Bermuda');
@@ -76,7 +74,11 @@ export default function AdminDashboard() {
   const [p5, setP5] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Manage States
   const [editingRoom, setEditingRoom] = useState<{id: string, rid: string, rpass: string} | null>(null);
+  const [managingResults, setManagingResults] = useState<{id: string, title: string} | null>(null);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [isSavingResults, setIsSavingResults] = useState(false);
 
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -88,22 +90,14 @@ export default function AdminDashboard() {
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
-    
     if (!startTime) {
       toast({ variant: "destructive", title: "Error", description: "Please select a launch time." });
       return;
     }
-
     setIsSubmitting(true);
-    
     try {
       const matchId = '#' + Math.floor(10000 + Math.random() * 90000);
       const launchDate = new Date(startTime);
-      
-      if (isNaN(launchDate.getTime())) {
-        throw new Error("Invalid date format.");
-      }
-
       await addDoc(collection(db, 'tournaments'), {
         matchId,
         title: matchTitle,
@@ -124,14 +118,11 @@ export default function AdminDashboard() {
         },
         createdAt: serverTimestamp(),
       });
-      
       toast({ title: "Success", description: `Match ${matchId} deployed.` });
-      
-      // Reset form
       setMatchTitle(''); setEntryFee(''); setPrizePool(''); setPerKill(''); setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Deployment Failed", description: err.message });
+      toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -144,22 +135,46 @@ export default function AdminDashboard() {
       roomId: editingRoom.rid,
       roomPassword: editingRoom.rpass
     });
-    toast({ title: "Updated", description: "Room ID & Password shared with players." });
+    toast({ title: "Updated", description: "Room credentials updated." });
     setEditingRoom(null);
   };
 
-  const handleDeleteMatch = async (id: string) => {
+  const fetchRegistrations = async (tournamentId: string) => {
     if (!db) return;
-    if (confirm('Delete this tournament?')) {
-      await deleteDoc(doc(db, 'tournaments', id));
+    const q = collection(db, 'tournaments', tournamentId, 'registrations');
+    const snap = await getDocs(q);
+    const regs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setRegistrations(regs);
+  };
+
+  const handleSaveResults = async () => {
+    if (!db || !managingResults) return;
+    setIsSavingResults(true);
+    try {
+      for (const reg of registrations) {
+        const regRef = doc(db, 'tournaments', managingResults.id, 'registrations', reg.uid);
+        await updateDoc(regRef, {
+          wonAmount: Number(reg.wonAmount || 0)
+        });
+      }
+      toast({ title: "Results Saved", description: "Winner amounts updated successfully." });
+      setManagingResults(null);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setIsSavingResults(false);
     }
+  };
+
+  const updateRegWonAmount = (uid: string, amount: string) => {
+    setRegistrations(prev => prev.map(r => r.uid === uid ? { ...r, wonAmount: amount } : r));
   };
 
   if (status === 'checking') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Verifying Command Authority...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Verifying Authority...</p>
       </div>
     );
   }
@@ -175,7 +190,7 @@ export default function AdminDashboard() {
           </div>
           <div>
             <h1 className="text-lg font-black uppercase italic tracking-tighter">Command <span className="text-primary">Center</span></h1>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Authorized Personnel Only</p>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Administrator</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-[10px] font-bold uppercase gap-2">
@@ -187,21 +202,21 @@ export default function AdminDashboard() {
         <Tabs defaultValue="create" className="space-y-6">
           <TabsList className="grid grid-cols-2 bg-muted/30 h-12 rounded-2xl p-1 border border-white/5">
             <TabsTrigger value="create" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-white transition-all">New Deployment</TabsTrigger>
-            <TabsTrigger value="manage" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Active Matches</TabsTrigger>
+            <TabsTrigger value="manage" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Manage Active</TabsTrigger>
           </TabsList>
 
           <TabsContent value="create">
             <Card className="border-white/5 bg-card/50 rounded-[2rem] overflow-hidden">
               <CardHeader className="border-b border-white/5 pb-4">
                 <CardTitle className="text-sm font-black uppercase italic flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-primary" /> Match Specifications
+                  <Plus className="w-4 h-4 text-primary" /> Match Specs
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleAddMatch} className="space-y-6">
                   <div className="grid gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest ml-1">Match Title</Label>
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest ml-1">Title</Label>
                       <Input placeholder="e.g. Bermuda Night Fight" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -237,60 +252,21 @@ export default function AdminDashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Perspective</Label>
-                        <Select value={matchVersion} onValueChange={setMatchVersion}>
-                          <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="TPP">TPP</SelectItem><SelectItem value="FPP">FPP</SelectItem></SelectContent>
-                        </Select>
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Launch Time</Label>
+                        <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 flex items-center gap-1.5">
-                          <CalendarDays className="w-3 h-3" /> Launch Time
-                        </Label>
-                        <Input 
-                          type="datetime-local" 
-                          value={startTime} 
-                          onChange={(e) => setStartTime(e.target.value)} 
-                          className="bg-muted/50 border-white/5 h-11 rounded-xl block w-full" 
-                          required 
-                        />
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fee</Label>
+                        <Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fee</Label><Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
-                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Total Prize</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
-                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Per Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
-                    </div>
-                    <div className="p-5 bg-muted/20 rounded-[1.5rem] border border-white/5 space-y-4">
-                      <Label className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> Position Rewards</Label>
-                      <div className="grid grid-cols-2 gap-4">
-                        {[1, 2, 3, 4, 5].map((pos) => (
-                          <div key={pos} className="space-y-1">
-                            <Label className="text-[8px] font-bold text-muted-foreground uppercase ml-1">Rank {pos}</Label>
-                            <Input 
-                              type="number" 
-                              value={pos === 1 ? p1 : pos === 2 ? p2 : pos === 3 ? p3 : pos === 4 ? p4 : p5} 
-                              onChange={(e) => { 
-                                const v = e.target.value; 
-                                if(pos === 1) setP1(v); 
-                                else if(pos === 2) setP2(v); 
-                                else if(pos === 3) setP3(v); 
-                                else if(pos === 4) setP4(v); 
-                                else setP5(v); 
-                              }} 
-                              className="bg-background border-white/5 h-10 text-xs rounded-lg" 
-                              required 
-                            />
-                          </div>
-                        ))}
-                        <div className="space-y-1">
-                          <Label className="text-[8px] font-bold text-muted-foreground uppercase ml-1">Max Players</Label>
-                          <Input type="number" value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} className="bg-background border-white/5 h-10 text-xs rounded-lg" required />
-                        </div>
-                      </div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Prize</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Max Players</Label><Input type="number" value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
                     </div>
                   </div>
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-lg active:scale-[0.98] transition-all">
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest rounded-xl">
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Deploy Match'}
                   </Button>
                 </form>
@@ -301,53 +277,84 @@ export default function AdminDashboard() {
           <TabsContent value="manage">
             <div className="space-y-3">
               {tournamentsLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-2">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase">Syncing Battlefield...</p>
-                </div>
-              ) : tournaments?.length === 0 ? (
-                <div className="text-center py-20 border border-white/5 border-dashed rounded-3xl">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No Active Match Operations</p>
-                </div>
+                <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
               ) : tournaments?.map((match: any) => (
-                <Card key={match.id} className="border-white/5 bg-card/60 p-5 rounded-2xl flex items-center justify-between group hover:border-primary/30 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                      <Swords className="w-6 h-6" />
+                <Card key={match.id} className="border-white/5 bg-card/60 p-4 rounded-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Swords className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="text-xs font-black uppercase italic">{match.title}</h4>
+                        <p className="text-[8px] font-bold text-muted-foreground uppercase">{match.matchId} • {match.currentPlayers}/{match.maxPlayers}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-black uppercase italic">{match.title} <span className="text-primary ml-1">{match.matchId}</span></h4>
-                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{match.mode} • {match.entryFee} TK • {match.currentPlayers}/{match.maxPlayers}</p>
-                    </div>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8" onClick={() => deleteDoc(doc(db, 'tournaments', match.id))}><Trash2 className="w-4 h-4" /></Button>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="h-9 rounded-lg text-[10px] font-bold uppercase border-white/10 hover:bg-primary hover:text-white hover:border-none transition-all">
+                        <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="flex-1 h-9 rounded-lg text-[10px] font-bold uppercase border-white/10">
                           <Key className="w-3.5 h-3.5 mr-1.5" /> Room
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-card border-white/5 rounded-3xl p-8">
+                      <DialogContent className="bg-card border-white/5 rounded-3xl">
                         <DialogHeader>
-                          <DialogTitle className="text-xl font-black uppercase italic tracking-tight">Access Credentials</DialogTitle>
-                          <DialogDescription className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Set Room ID and Password for players</DialogDescription>
+                          <DialogTitle>Access Credentials</DialogTitle>
+                          <DialogDescription>Set Room ID and Password</DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-5 py-6">
-                          <div className="space-y-1.5">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Room ID</Label>
-                            <Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted border-none h-12 rounded-xl text-lg font-black font-mono" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Password</Label>
-                            <Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted border-none h-12 rounded-xl text-lg font-black font-mono" />
-                          </div>
-                          <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-12 font-black uppercase italic tracking-widest rounded-xl shadow-lg mt-2">Publish Credentials</Button>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-1.5"><Label>Room ID</Label><Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted border-none h-11" /></div>
+                          <div className="space-y-1.5"><Label>Password</Label><Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted border-none h-11" /></div>
+                          <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-11 font-black uppercase italic">Save Room</Button>
                         </div>
                       </DialogContent>
                     </Dialog>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-9 w-9 bg-muted/30 rounded-lg" onClick={() => handleDeleteMatch(match.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => { setManagingResults({id: match.id, title: match.title}); fetchRegistrations(match.id); }} className="flex-1 h-9 rounded-lg text-[10px] font-bold uppercase border-white/10">
+                          <Medal className="w-3.5 h-3.5 mr-1.5" /> Results
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card border-white/5 rounded-3xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Award Winnings</DialogTitle>
+                          <DialogDescription>Set Won Amount for players in {managingResults?.title}</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          {registrations.length === 0 ? (
+                            <p className="text-center text-[10px] text-muted-foreground font-bold uppercase py-10">No players registered</p>
+                          ) : (
+                            registrations.map((reg) => (
+                              <div key={reg.uid} className="p-3 bg-muted/30 rounded-xl border border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><User className="w-4 h-4 text-primary" /></div>
+                                  <div>
+                                    <p className="text-xs font-black uppercase tracking-tight">{reg.ingameName || reg.displayName}</p>
+                                    <p className="text-[8px] font-bold text-muted-foreground font-mono">ID: {reg.ingameId}</p>
+                                  </div>
+                                </div>
+                                <div className="w-24">
+                                  <Input 
+                                    type="number" 
+                                    placeholder="Won TK" 
+                                    value={reg.wonAmount || ''} 
+                                    onChange={(e) => updateRegWonAmount(reg.uid, e.target.value)}
+                                    className="h-8 text-xs bg-background border-white/10"
+                                  />
+                                </div>
+                              </div>
+                            ))
+                          )}
+                          {registrations.length > 0 && (
+                            <Button onClick={handleSaveResults} disabled={isSavingResults} className="w-full magma-gradient h-11 font-black uppercase italic flex items-center gap-2">
+                              {isSavingResults ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                              Save Results
+                            </Button>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </Card>
               ))}
