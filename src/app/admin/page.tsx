@@ -2,31 +2,31 @@
 "use client";
 
 import { 
-  Swords, 
+  PlusCircle, 
+  Trophy, 
   Wallet, 
   Zap, 
-  Trophy, 
   ChevronRight,
-  PlusCircle,
-  FileCheck
+  ShieldCheck
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export default function AdminMenu() {
   const adminSections = [
     {
       title: "Tournament Control",
       items: [
-        { icon: PlusCircle, label: 'Deploy New Match', sub: 'Launch BR or CS matches', href: '/admin/matches?tab=deploy', color: 'text-primary' },
-        { icon: Trophy, label: 'Publish Results', sub: 'Add winners & prizes', href: '/admin/matches?tab=manage', color: 'text-yellow-500' },
+        { icon: PlusCircle, label: 'Match Upload', sub: 'Launch BR or CS matches', href: '/admin/matches?tab=deploy', color: 'text-primary' },
+        { icon: Trophy, label: 'Result Publish', sub: 'Add winners & prizes', href: '/admin/matches?tab=manage', color: 'text-yellow-500' },
       ]
     },
     {
       title: "Finance & Wallet",
       items: [
-        { icon: Wallet, label: 'Payment Requests', sub: 'Approve user deposits', href: '/admin/payments', color: 'text-green-500' },
-        { icon: Zap, label: 'Manual Recharge', sub: 'Direct coin injection', href: '/admin/recharge', color: 'text-orange-500' },
+        { icon: Wallet, label: 'Payment Receive', sub: 'Approve user deposits', href: '/admin/payments', color: 'text-green-500' },
+        { icon: Zap, label: 'Payment Send', sub: 'Direct coin recharge', href: '/admin/recharge', color: 'text-orange-500' },
       ]
     }
   ];
@@ -35,7 +35,7 @@ export default function AdminMenu() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
         <h2 className="text-2xl font-black uppercase italic tracking-tighter">Operations <span className="text-primary">Menu</span></h2>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select an action to proceed</p>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Administrative Control</p>
       </div>
 
       <div className="space-y-8">
@@ -44,31 +44,37 @@ export default function AdminMenu() {
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">
               {section.title}
             </h3>
-            <div className="space-y-3">
-              {section.items.map((item) => (
-                <Link href={item.href} key={item.label} className="block group">
-                  <Card className="border-white/5 bg-card/40 backdrop-blur-sm p-5 transition-all active:scale-[0.98] hover:bg-white/10">
-                    <div className="flex items-center justify-between">
+            <Card className="border-white/5 bg-card/30 overflow-hidden shadow-none">
+              <div className="divide-y divide-white/5">
+                {section.items.map((item) => (
+                  <Link href={item.href} key={item.label} className="block group">
+                    <div className="p-5 flex items-center justify-between hover:bg-white/5 transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
-                          <item.icon className={cn("w-6 h-6", item.color)} />
+                        <div className="w-10 h-10 rounded-xl bg-secondary/30 flex items-center justify-center">
+                          <item.icon className={cn("w-5 h-5", item.color)} />
                         </div>
                         <div>
-                          <span className="block text-sm font-black uppercase italic text-white tracking-tight">{item.label}</span>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase">{item.sub}</span>
+                          <span className="block text-sm font-bold text-foreground/90 tracking-tight">{item.label}</span>
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase">{item.sub}</span>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                     </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            </Card>
           </div>
         ))}
+      </div>
+
+      <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-4">
+        <ShieldCheck className="w-6 h-6 text-primary" />
+        <div>
+          <p className="text-[9px] font-black text-primary uppercase">Elite Access Enabled</p>
+          <p className="text-[8px] font-bold text-muted-foreground uppercase">System integrity verified.</p>
+        </div>
       </div>
     </div>
   );
 }
-
-const cn = (...inputs: any[]) => inputs.filter(Boolean).join(' ');

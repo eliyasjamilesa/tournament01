@@ -3,11 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { 
-  ShieldAlert, 
-  ChevronLeft,
-  Loader2
-} from 'lucide-react';
+import { ShieldAlert, ChevronLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -29,20 +25,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
-    // Wait until both auth and profile are done loading
-    if (authLoading || profileLoading) return;
+    // Wait until auth is done loading
+    if (authLoading) return;
 
-    // Check if user exists and has admin role
-    if (user && profile?.role === 'admin') {
+    // If no user at all, redirect to login
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
+
+    // If profile is still loading, wait
+    if (profileLoading) return;
+
+    // Now we have user and profile data is fetched
+    if (profile?.role === 'admin') {
       setIsAuthorized(true);
     } else {
-      // Only redirect if we are CERTAIN they are not an admin
+      // Final confirmation: user is logged in but profile says they aren't admin
       setIsAuthorized(false);
       router.replace('/');
     }
   }, [user, authLoading, profile, profileLoading, router]);
 
-  // Show loading while we are verifying permissions
+  // Show professional loading screen while verifying
   if (authLoading || profileLoading || isAuthorized === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -58,8 +63,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Final safety check to prevent rendering children if unauthorized
-  if (!isAuthorized) return null;
+  // Double safety: don't render if not authorized
+  if (isAuthorized === false) return null;
 
   const isMainAdmin = pathname === '/admin';
 
@@ -89,8 +94,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 pb-32">
+      {/* Main Content Area */}
+      <main className="flex-1 p-6 pb-32 max-w-md mx-auto w-full">
         {children}
       </main>
     </div>
