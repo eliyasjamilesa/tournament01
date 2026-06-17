@@ -102,8 +102,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isMainAdmin = pathname === '/admin';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="px-6 py-8 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-[100] border-b border-white/5">
+    <div className="min-h-screen bg-background flex flex-col w-full">
+      <header className="px-4 py-8 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-[100] border-b border-white/5">
         <div className="flex items-center gap-3">
           {!isMainAdmin ? (
             <Button variant="ghost" size="icon" className="rounded-full bg-white/5" asChild>
@@ -126,7 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       </header>
 
-      <main className="flex-1 p-6 pb-32 max-w-md mx-auto w-full">
+      <main className="flex-1 p-4 pb-32 w-full">
         {children}
       </main>
     </div>

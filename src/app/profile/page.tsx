@@ -108,8 +108,8 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen pb-32 bg-background pt-12">
-      <div className="flex flex-col items-center px-6 text-center">
+    <div className="min-h-screen pb-32 bg-background pt-12 w-full">
+      <div className="flex flex-col items-center px-4 text-center">
         <div className="relative mb-6">
           <div className="p-1 rounded-full border border-white/10">
             <Avatar className="w-24 h-24 rounded-full border-2 border-background">
@@ -124,7 +124,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="space-y-4 w-full max-w-[280px]">
+        <div className="space-y-4 w-full">
           <div className="space-y-1">
             <h1 className="text-2xl font-headline font-bold uppercase tracking-tight">
               {profile?.displayName || user?.displayName || 'Unknown Player'}
@@ -144,7 +144,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <section className="px-6 mt-8">
+      <section className="px-4 mt-8">
         <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col items-center justify-center py-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-sm transition-all hover:bg-white/5">
             <span className="text-xl font-headline font-bold tracking-tighter text-foreground">
@@ -175,7 +175,7 @@ export default function ProfilePage() {
 
       {/* Admin Panel Link */}
       {isAdmin && (
-        <div className="px-6 mt-8">
+        <div className="px-4 mt-8">
           <Link href="/admin">
             <Card className="border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer">
               <div className="p-4 flex items-center justify-between">
@@ -195,7 +195,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="px-6 mt-10 space-y-8">
+      <div className="px-4 mt-10 space-y-8">
         {sections.map((section) => (
           <div key={section.title} className="space-y-3">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">
@@ -224,7 +224,7 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      <div className="px-6 mt-12">
+      <div className="px-4 mt-12">
         <Button 
           variant="destructive" 
           onClick={handleSignOut}

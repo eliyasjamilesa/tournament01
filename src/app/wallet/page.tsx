@@ -68,8 +68,8 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      <header className="px-6 pt-10 pb-6 flex items-center gap-4">
+    <div className="min-h-screen bg-background pb-32 w-full">
+      <header className="px-4 pt-10 pb-6 flex items-center gap-4">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -81,9 +81,9 @@ export default function WalletPage() {
         <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Wallet</h1>
       </header>
 
-      <main className="px-6 space-y-6">
+      <main className="px-4 space-y-6 w-full">
         {/* Main Balance Card */}
-        <Card className="relative overflow-hidden border-none rounded-[2rem] p-8 h-56 bg-gradient-to-br from-red-600 to-orange-500 shadow-2xl shadow-primary/20">
+        <Card className="relative overflow-hidden border-none rounded-[2.5rem] p-8 h-56 bg-gradient-to-br from-red-600 to-orange-500 shadow-2xl shadow-primary/20">
           <div className="absolute top-0 right-0 p-6 opacity-20">
             <Wallet className="w-24 h-24 text-white" />
           </div>

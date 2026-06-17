@@ -91,8 +91,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen pb-32 bg-background">
-      <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+    <div className="min-h-screen pb-32 bg-background w-full">
+      <header className="px-4 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
         <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-xl transition-colors">
           <LayoutGrid className="w-6 h-6" />
         </button>
@@ -112,7 +112,7 @@ export default function Home() {
         </Link>
       </header>
 
-      <main className="px-6 space-y-8 mt-4">
+      <main className="px-4 space-y-8 mt-4 w-full">
         <section>
           <Card className="overflow-hidden border-none relative group cursor-pointer rounded-[2.5rem] h-52 shadow-2xl">
             <Image 

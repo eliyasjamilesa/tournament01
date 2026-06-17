@@ -76,7 +76,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
       <SheetTrigger asChild>
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-6 pb-10 overflow-y-auto no-scrollbar">
+      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-4 pb-10 overflow-y-auto no-scrollbar">
         <SheetHeader className="sr-only">
           <SheetTitle>Tournament Slots - {tournament.matchId}</SheetTitle>
           <SheetDescription>View registered players for this match.</SheetDescription>
@@ -110,7 +110,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
            <span className="text-[10px] font-bold text-muted-foreground uppercase">{tournament.currentPlayers} Joined</span>
         </div>
 
-        <div className="min-h-[400px] border border-white/5 rounded-[2rem] bg-card/20 flex flex-col p-6 space-y-6">
+        <div className="min-h-[400px] border border-white/5 rounded-[2rem] bg-card/20 flex flex-col p-4 space-y-6">
           {!isJoined ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-20">
               <div className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-2">
@@ -180,7 +180,7 @@ function PrizeDistributionSheet({ tournament }: { tournament: any }) {
       <SheetTrigger asChild>
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Trophy className="w-3 h-3 mr-1.5" /> Prizes</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-6 pb-10">
+      <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-4 pb-10">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-xl font-black uppercase italic text-center">Prize Pool Details</SheetTitle>
           <SheetDescription className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Rank-wise distribution of the total pool.</SheetDescription>
@@ -221,7 +221,7 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
       <SheetTrigger asChild>
         <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Key className="w-3 h-3 mr-1.5" /> Room</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-8 pb-12">
+      <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-4 pb-12">
         <SheetHeader className="sr-only">
           <SheetTitle>Room ID & Password</SheetTitle>
           <SheetDescription>Access credentials for joined players.</SheetDescription>
@@ -423,8 +423,8 @@ export default function PlayPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-50 border-b border-white/5">
+    <div className="min-h-screen bg-background pb-32 w-full">
+      <header className="px-4 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-50 border-b border-white/5">
         <Link href="/" className="p-2 -ml-2 text-white"><ArrowLeft className="w-6 h-6" /></Link>
         <h1 className="text-lg font-black uppercase italic tracking-tighter">
           {modeFilter ? <><span className="text-primary">{modeFilter}</span> Arenas</> : <>Active <span className="text-primary">Arenas</span></>}
@@ -432,7 +432,7 @@ export default function PlayPage() {
         <div className="w-9" />
       </header>
 
-      <main className="p-6 space-y-6">
+      <main className="p-4 space-y-6 w-full">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
@@ -443,7 +443,7 @@ export default function PlayPage() {
           />
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           {filteredTournaments?.length === 0 ? (
             <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">

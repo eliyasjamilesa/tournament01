@@ -24,7 +24,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased pb-20 selection:bg-primary/30">
         <FirebaseClientProvider>
-          <div className="max-w-md mx-auto min-h-screen bg-background border-x border-border/50 relative">
+          <div className="min-h-screen bg-background relative w-full overflow-x-hidden">
             {children}
             <BottomNav />
           </div>
