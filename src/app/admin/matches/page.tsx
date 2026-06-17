@@ -17,7 +17,8 @@ import {
   Trophy,
   Map as MapIcon,
   Users,
-  Target
+  Target,
+  Clock
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,7 +66,10 @@ export default function MatchesPage() {
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !startTime) return;
+    if (!db || !startTime) {
+      toast({ variant: "destructive", title: "Missing Data", description: "Please select a start time." });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const matchId = '#' + Math.floor(10000 + Math.random() * 90000);
@@ -134,7 +138,6 @@ export default function MatchesPage() {
             <CardContent className="pt-6 space-y-6">
               <form onSubmit={handleAddMatch} className="space-y-6">
                 <div className="space-y-4">
-                  {/* Basic Info */}
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Match Title</Label>
                     <Input placeholder="E.g. Sunday Night Rush" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold" required />
@@ -158,8 +161,16 @@ export default function MatchesPage() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Start Time</Label>
-                      <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold" required />
+                      <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Start Time
+                      </Label>
+                      <Input 
+                        type="datetime-local" 
+                        value={startTime} 
+                        onChange={(e) => setStartTime(e.target.value)} 
+                        className="bg-muted/50 border-white/5 h-12 rounded-xl font-bold block" 
+                        required 
+                      />
                     </div>
                   </div>
 
@@ -189,7 +200,6 @@ export default function MatchesPage() {
                     </div>
                   </div>
 
-                  {/* Stats */}
                   <div className="grid grid-cols-4 gap-2">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase ml-1 tracking-widest text-muted-foreground">Entry</Label>
@@ -209,7 +219,6 @@ export default function MatchesPage() {
                     </div>
                   </div>
 
-                  {/* Prize Distribution */}
                   <div className="pt-4 space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-3">Prize Distribution</h3>
                     <div className="grid grid-cols-2 gap-3">
