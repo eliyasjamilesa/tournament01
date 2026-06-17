@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import Link from 'next/link';
 
 export default function DepositPage() {
   const router = useRouter();
@@ -92,10 +93,12 @@ export default function DepositPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => router.back()} 
+          asChild
           className="rounded-full bg-white/5"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <Link href="/wallet">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </Link>
         </Button>
         <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Add Money</h1>
       </header>

@@ -19,6 +19,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function WithdrawPage() {
   const router = useRouter();
@@ -79,10 +80,12 @@ export default function WithdrawPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => router.back()} 
+          asChild
           className="rounded-full bg-white/5"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <Link href="/wallet">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </Link>
         </Button>
         <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Withdraw Money</h1>
       </header>

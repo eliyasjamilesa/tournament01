@@ -20,6 +20,7 @@ import { Card } from '@/components/ui/card';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, query, collection, where, collectionGroup } from 'firebase/firestore';
 import { useMemo } from 'react';
+import Link from 'next/link';
 
 export default function WalletPage() {
   const router = useRouter();
@@ -33,7 +34,6 @@ export default function WalletPage() {
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
-  // Fetch approved deposits for stats
   const depositsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(
@@ -45,7 +45,6 @@ export default function WalletPage() {
   }, [db, user]);
   const { data: deposits, loading: depositsLoading } = useCollection<any>(depositsQuery);
 
-  // Fetch winnings for stats
   const winningsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collectionGroup(db, 'registrations'), where('uid', '==', user.uid));
@@ -73,16 +72,17 @@ export default function WalletPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => router.back()} 
+          asChild
           className="rounded-full bg-white/5 h-10 w-10"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <Link href="/profile">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </Link>
         </Button>
         <h1 className="text-xl font-black uppercase italic tracking-tight text-white">Wallet</h1>
       </header>
 
       <main className="px-4 space-y-6 w-full">
-        {/* Main Balance Card */}
         <Card className="relative overflow-hidden border-none rounded-[2.5rem] p-8 h-56 bg-gradient-to-br from-red-600 to-orange-500 shadow-2xl shadow-primary/20">
           <div className="absolute top-0 right-0 p-6 opacity-20">
             <Wallet className="w-24 h-24 text-white" />
@@ -106,7 +106,6 @@ export default function WalletPage() {
           </div>
         </Card>
 
-        {/* Secondary Stats */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="bg-[#121212] border-white/5 p-5 rounded-2xl flex flex-col items-center text-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
@@ -124,7 +123,6 @@ export default function WalletPage() {
           </Card>
         </div>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <Button 
             onClick={() => router.push('/wallet/deposit')}
@@ -140,7 +138,6 @@ export default function WalletPage() {
           </Button>
         </div>
 
-        {/* Menu Links */}
         <div className="space-y-3 pt-4">
           {[
             { label: 'Transaction History', sub: 'সব ট্রানজ্যাকশন দেখুন', icon: History, color: 'text-red-500', href: '#' },

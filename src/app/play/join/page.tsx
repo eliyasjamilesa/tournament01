@@ -134,6 +134,14 @@ export default function JoinMatchFlow() {
     }
   };
 
+  const handleGoBack = () => {
+    if (step > 1 && step < 4) {
+      setStep(step - 1);
+    } else {
+      router.push('/play');
+    }
+  };
+
   if (!tournamentId) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
@@ -158,7 +166,7 @@ export default function JoinMatchFlow() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-50">
-        <button onClick={() => router.back()} className="p-2 -ml-2 text-white bg-white/5 rounded-full">
+        <button onClick={handleGoBack} className="p-2 -ml-2 text-white bg-white/5 rounded-full">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-sm font-black uppercase tracking-tight italic">
