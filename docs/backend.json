@@ -62,6 +62,21 @@
         "wonAmount": { "type": "number", "description": "The amount won by the user in this match." },
         "timestamp": { "type": "string", "format": "date-time" }
       }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial transactions for deposits or manual recharges.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "amount": { "type": "number" },
+        "method": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -79,6 +94,10 @@
     "/tournaments/{tournamentId}/registrations/{userId}": {
       "schema": "Registration",
       "description": "Records of users who joined the match."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Log of deposit requests and recharges."
     }
   }
 }
