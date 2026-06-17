@@ -11,9 +11,11 @@ export function BottomNav() {
   const pathname = usePathname();
   const { user } = useUser();
 
-  // Hide nav on auth pages
+  // Hide nav on auth pages and joining flow
   const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
-  if (isAuthPage || !user) return null;
+  const isJoiningFlow = pathname?.startsWith('/play/join/');
+  
+  if (isAuthPage || isJoiningFlow || !user) return null;
 
   const navItems = [
     { label: 'স্টোর', icon: ShoppingBag, href: '#' },
