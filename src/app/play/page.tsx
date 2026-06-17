@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Globe, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
+  Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -171,7 +171,6 @@ function SlotsSheet({ tournament }: { tournament: any }) {
 function PrizeDistributionSheet({ tournament }: { tournament: any }) {
   const prizes = tournament.prizes || {};
   
-  // Filter only prizes that have a value greater than 0
   const activePrizes = [1, 2, 3, 4, 5]
     .map(pos => ({ pos, amount: (prizes as any)[`p${pos}`] || 0 }))
     .filter(item => item.amount > 0);
@@ -426,7 +425,7 @@ export default function PlayPage() {
         <h1 className="text-lg font-black uppercase italic tracking-tighter">
           {modeFilter ? <><span className="text-primary">{modeFilter}</span> Arenas</> : <>Active <span className="text-primary">Arenas</span></>}
         </h1>
-        <Button variant="outline" size="sm" className="bg-secondary/50 border-white/5 rounded-full text-[10px] font-bold h-7 px-3"><Globe className="w-3 h-3 mr-1.5" />বাংলা</Button>
+        <div className="w-9" />
       </header>
 
       <main className="p-6 space-y-6">

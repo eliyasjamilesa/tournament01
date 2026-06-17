@@ -9,7 +9,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Globe, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -52,17 +52,17 @@ export default function SignupPage() {
         photoURL: user.photoURL || '',
         coins: 100,
         level: 1,
-        role: 'user', // Default role
+        role: 'user', 
         createdAt: serverTimestamp()
       }, { merge: true });
 
       router.push('/');
     } catch (error: any) {
-      let message = "সাইন আপ ব্যর্থ হয়েছে।";
+      let message = "Signup Failed";
       if (error.code === 'auth/email-already-in-use') {
-        message = "এই ইমেইলটি আগে থেকেই নিবন্ধিত।";
+        message = "This Email is already registered.";
       } else if (error.code === 'auth/weak-password') {
-        message = "পাসওয়ার্ডটি অন্তত ৬টি অক্ষরের দিন।";
+        message = "Password should be at least 6 characters.";
       }
       setErrorMsg(message);
       toast({
@@ -104,9 +104,9 @@ export default function SignupPage() {
     } catch (error: any) {
       if (error.code === 'auth/unauthorized-domain') {
         const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
-        setErrorMsg(`এই ডোমেইনটি (${domain}) Firebase-এ অনুমোদিত নয়।`);
+        setErrorMsg(`Domain (${domain}) is not authorized.`);
       } else if (error.code !== 'auth/popup-closed-by-user') {
-        setErrorMsg("গুগল কানেকশন ব্যর্থ হয়েছে।");
+        setErrorMsg("Google Connection Failed");
       }
     } finally {
       setIsLoading(false);
@@ -115,13 +115,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 max-w-md mx-auto relative">
-      <div className="absolute top-6 right-6">
-        <Button variant="outline" size="sm" className="bg-[#1a1a1a]/80 border-white/5 rounded-full text-[10px] font-bold h-7 px-3 gap-1.5">
-          <Globe className="w-3 h-3 text-primary" />
-          বাংলা
-        </Button>
-      </div>
-
       <div className="flex flex-col items-center mt-10 space-y-6 w-full">
         <div className="relative group">
           <div className="w-16 h-16 rounded-2xl overflow-hidden border border-primary/20 logo-glow">

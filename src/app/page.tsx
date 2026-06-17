@@ -156,7 +156,7 @@ export default function Home() {
                       
                       <div className="absolute top-3 left-3">
                         <Badge className={`${availableCount > 0 ? 'bg-primary' : 'bg-muted/80'} text-[8px] font-black italic tracking-widest px-2 py-0.5 border-none shadow-lg`}>
-                          {availableCount} টি ম্যাচ আছে
+                          {availableCount} {availableCount === 1 ? 'Match' : 'Matches'} Available
                         </Badge>
                       </div>
 
