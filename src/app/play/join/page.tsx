@@ -90,8 +90,8 @@ export default function JoinMatchFlow() {
     } else if (step === 3) {
       if (!db || !user || !tournament || !profile || !tournamentId) return;
       
-      const userCoins = profile.coins || 0;
-      const entryFee = tournament.entryFee || 0;
+      const userCoins = Number(profile.coins || 0);
+      const entryFee = Number(tournament.entryFee || 0);
 
       if (userCoins < entryFee) {
         toast({ 
@@ -112,7 +112,9 @@ export default function JoinMatchFlow() {
           ingameName: ingameName,
           ingameId: ingameId,
           slotNumber: selectedSlot,
-          timestamp: serverTimestamp()
+          timestamp: serverTimestamp(),
+          wonAmount: 0,
+          kills: 0
         });
 
         const tRef = doc(db, 'tournaments', tournamentId);
@@ -267,7 +269,7 @@ export default function JoinMatchFlow() {
 
             <div className="p-5 rounded-3xl bg-primary/5 border border-primary/20 space-y-3 relative overflow-hidden group">
                <h3 className="text-[11px] font-black uppercase italic text-primary flex items-center gap-2">
-                 <Info className="w-3.5 h-3.5" /> জরুরি নিয়ম
+                 <span className="w-1.5 h-1.5 rounded-full bg-primary" /> জরুরি নিয়ম
                </h3>
                <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
                  দয়া করে গেমের নাম এবং আইডি চেক করে দিন। ভুল তথ্য দিলে রেজাল্ট পাবেন না এবং টাকা রিফান্ড করা হবে না।
@@ -300,7 +302,7 @@ export default function JoinMatchFlow() {
               
               <div className="p-4 bg-card/40 border border-white/5 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2"><Wallet className="w-4 h-4 text-primary" /><span className="text-[10px] font-bold uppercase text-muted-foreground">আপনার ব্যালেন্স</span></div>
-                <span className={cn("text-xs font-black", (profile?.coins || 0) < (tournament?.entryFee || 0) ? "text-destructive" : "text-green-500")}>
+                <span className={cn("text-xs font-black", Number(profile?.coins || 0) < Number(tournament?.entryFee || 0) ? "text-destructive" : "text-green-500")}>
                   {profile?.coins || 0} TK
                 </span>
               </div>
@@ -311,7 +313,7 @@ export default function JoinMatchFlow() {
               </div>
             </div>
 
-            {(profile?.coins || 0) < (tournament?.entryFee || 0) && (
+            {Number(profile?.coins || 0) < Number(tournament?.entryFee || 0) && (
                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
                  <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                  <p className="text-[10px] font-bold text-destructive uppercase leading-relaxed">আপনার ব্যালেন্স কম আছে। দয়া করে রিচার্জ করুন।</p>

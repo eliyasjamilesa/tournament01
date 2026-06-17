@@ -72,7 +72,7 @@ export default function LoginPage() {
           displayName: user.displayName || 'Player',
           email: user.email,
           photoURL: user.photoURL || '',
-          coins: 100,
+          coins: 0,
           level: 1,
           role: 'user',
           createdAt: serverTimestamp()
