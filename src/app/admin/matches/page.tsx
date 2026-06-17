@@ -18,7 +18,8 @@ import {
   Map as MapIcon,
   Users,
   Target,
-  Clock
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -146,6 +147,8 @@ export default function MatchesPage() {
       setIsPublishing(false);
     }
   };
+
+  const currentMatch = tournaments?.find(t => t.id === editingResultsMatchId);
 
   return (
     <div className="space-y-8 pb-32">
@@ -355,6 +358,9 @@ export default function MatchesPage() {
                         <DialogTitle className="text-sm uppercase font-black italic tracking-widest text-center">Warrior Ranking</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 py-6">
+                        <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 mb-4">
+                           <p className="text-[9px] font-black text-primary uppercase text-center">Squad matches support multiple Booyah winners (Top Rankers)</p>
+                        </div>
                         {registrations.length === 0 ? (
                            <div className="text-center py-10 opacity-50 flex flex-col items-center gap-2">
                              <User className="w-8 h-8" />
@@ -372,6 +378,9 @@ export default function MatchesPage() {
                                   <p className="text-[8px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber}</p>
                                 </div>
                               </div>
+                              {Number(reg.wonAmount || 0) > 0 && Number(reg.wonAmount || 0) === Number(currentMatch?.prizes?.p1 || 0) && (
+                                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30 text-[7px] font-black uppercase">BOOYAH Candidate</Badge>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-2 gap-2">

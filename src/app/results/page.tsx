@@ -38,7 +38,8 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
     try {
       const snap = await getDocs(collection(db, 'tournaments', tournament.id, 'registrations'));
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setRegistrations(data.sort((a, b) => (b.wonAmount || 0) - (a.wonAmount || 0)));
+      // Sort by won amount descending
+      setRegistrations(data.sort((a, b) => (Number(b.wonAmount || 0)) - (Number(a.wonAmount || 0))));
     } catch (err) {
       console.error(err);
     } finally {
@@ -46,8 +47,18 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
     }
   };
 
-  const booyahPlayer = registrations.length > 0 ? registrations[0] : null;
-  const otherPlayers = registrations.slice(1);
+  // Find the maximum won amount to identify Booyah winners
+  const maxWonAmount = registrations.length > 0 ? Math.max(...registrations.map(r => Number(r.wonAmount || 0))) : 0;
+  
+  // Players who got the max amount (if max > 0) are Booyah winners
+  const booyahPlayers = maxWonAmount > 0 
+    ? registrations.filter(r => Number(r.wonAmount || 0) === maxWonAmount)
+    : [];
+    
+  // The rest of the players
+  const otherPlayers = maxWonAmount > 0 
+    ? registrations.filter(r => Number(r.wonAmount || 0) < maxWonAmount)
+    : registrations;
 
   return (
     <Sheet onOpenChange={(open) => open && fetchDetails()}>
@@ -111,13 +122,15 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                  <tbody>
                    {loading ? (
                      <tr><td colSpan={4} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-red-500" /></td></tr>
-                   ) : booyahPlayer ? (
-                     <tr className="text-white">
-                        <td className="px-4 py-4 text-[11px] font-bold text-gray-500">1</td>
-                        <td className="px-2 py-4 text-[13px] font-black">{booyahPlayer.ingameName || booyahPlayer.displayName}</td>
-                        <td className="px-2 py-4 text-[13px] font-black text-center">{booyahPlayer.kills || 0}</td>
-                        <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{booyahPlayer.wonAmount || 0}</td>
-                     </tr>
+                   ) : booyahPlayers.length > 0 ? (
+                     booyahPlayers.map((player, idx) => (
+                       <tr key={player.id} className="text-white border-b border-white/5 last:border-none">
+                          <td className="px-4 py-4 text-[11px] font-bold text-gray-500">1</td>
+                          <td className="px-2 py-4 text-[13px] font-black uppercase">{player.ingameName || player.displayName}</td>
+                          <td className="px-2 py-4 text-[13px] font-black text-center">{player.kills || 0}</td>
+                          <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{player.wonAmount || 0} TK</td>
+                       </tr>
+                     ))
                    ) : (
                      <tr><td colSpan={4} className="py-6 text-center text-[10px] font-bold text-muted-foreground uppercase">No Winner Listed</td></tr>
                    )}
@@ -134,7 +147,7 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                <table className="w-full text-left">
                  <thead>
                    <tr className="bg-red-900/40 text-[9px] font-black text-white uppercase tracking-widest border-b border-white/5">
-                     <th className="px-4 py-3 w-12">#</th>
+                     <th className="px-4 py-3 w-12">Rank</th>
                      <th className="px-2 py-3">Player Name</th>
                      <th className="px-2 py-3 text-center">Kills</th>
                      <th className="px-4 py-3 text-right">Winning</th>
@@ -145,15 +158,17 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
                       <tr><td colSpan={4} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-red-500" /></td></tr>
                    ) : otherPlayers.length > 0 ? (
                      otherPlayers.map((player, idx) => (
-                       <tr key={player.id} className="text-white">
-                         <td className="px-4 py-4 text-[11px] font-bold text-gray-500">{idx + 2}</td>
-                         <td className="px-2 py-4 text-[13px] font-bold text-gray-300">{player.ingameName || player.displayName}</td>
+                       <tr key={player.id} className="text-white hover:bg-white/5 transition-colors">
+                         <td className="px-4 py-4 text-[11px] font-bold text-gray-500">#{booyahPlayers.length + idx + 1}</td>
+                         <td className="px-2 py-4 text-[13px] font-bold text-gray-300 uppercase">{player.ingameName || player.displayName}</td>
                          <td className="px-2 py-4 text-[13px] font-black text-center">{player.kills || 0}</td>
-                         <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{player.wonAmount || 0}</td>
+                         <td className="px-4 py-4 text-[14px] font-black text-red-600 text-right">{player.wonAmount || 0} TK</td>
                        </tr>
                      ))
+                   ) : registrations.length === 0 ? (
+                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">No data found</td></tr>
                    ) : (
-                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">Waiting for full results...</td></tr>
+                     <tr><td colSpan={4} className="py-10 text-center text-[10px] font-bold text-muted-foreground uppercase">End of list</td></tr>
                    )}
                  </tbody>
                </table>
