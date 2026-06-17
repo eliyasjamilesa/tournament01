@@ -38,7 +38,6 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
     try {
       const snap = await getDocs(collection(db, 'tournaments', tournament.id, 'registrations'));
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort by slot or winning amount? Let's sort by winning amount descending
       setRegistrations(data.sort((a, b) => (b.wonAmount || 0) - (a.wonAmount || 0)));
     } catch (err) {
       console.error(err);
@@ -67,7 +66,6 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
         </SheetHeader>
 
         <div className="px-4 pb-20 space-y-6">
-          {/* Match Header Info Card */}
           <Card className="bg-[#121212] border border-red-900/30 rounded-3xl overflow-hidden shadow-2xl">
             <CardContent className="p-6 space-y-6">
               <div className="text-center space-y-2">
@@ -96,7 +94,6 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
             </CardContent>
           </Card>
 
-          {/* Booyah Section */}
           <div className="space-y-2">
             <div className="bg-red-600 py-3 rounded-t-2xl text-center">
               <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">BOOYAH</h4>
@@ -129,7 +126,6 @@ function MatchResultsSheet({ tournament }: { tournament: any }) {
             </div>
           </div>
 
-          {/* Full Result Section */}
           <div className="space-y-2">
             <div className="bg-red-600 py-3 rounded-t-2xl text-center">
               <h4 className="text-[16px] font-black text-white uppercase italic tracking-[0.2em]">FULL RESULT</h4>
@@ -184,9 +180,12 @@ export default function ResultsPage() {
   const tabs = [
     { id: 'br-solo', label: 'BR Solo', value: 'BR SOLO' },
     { id: 'br-duo', label: 'BR Duo', value: 'BR DUO' },
-    { id: 'br-squad', label: 'BR SQUAD', value: 'BR SQUAD' },
+    { id: 'br-squad', label: 'BR Squad', value: 'BR SQUAD' },
     { id: 'cs-rank', label: 'CS Rank', value: 'CS RANK' },
     { id: 'cs-hs', label: 'CS Headshot', value: 'CS HEADSHOT' },
+    { id: 'lw-1v1', label: 'LW 1v1', value: 'LW 1V1' },
+    { id: 'lw-2v2', label: 'LW 2v2', value: 'LW 2V2' },
+    { id: 'lw-hs', label: 'LW Headshot', value: 'LW HEADSHOT' },
   ];
 
   const resultsQuery = useMemoFirebase(() => {

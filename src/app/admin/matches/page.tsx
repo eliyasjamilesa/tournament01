@@ -47,7 +47,6 @@ export default function MatchesPage() {
   const [maxPlayers, setMaxPlayers] = useState('48');
   const [startTime, setStartTime] = useState('');
   
-  // Prize positions
   const [p1, setP1] = useState('');
   const [p2, setP2] = useState('');
   const [p3, setP3] = useState('');
@@ -56,7 +55,9 @@ export default function MatchesPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRoom, setEditingRoom] = useState<{id: string, rid: string, rpass: string} | null>(null);
+  const [editingResultsMatchId, setEditingResultsMatchId] = useState<string | null>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const tournamentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -98,8 +99,6 @@ export default function MatchesPage() {
         createdAt: serverTimestamp(),
       });
       toast({ title: "Arena Deployed", description: "Match is now live for warriors." });
-      
-      // Reset form
       setMatchTitle(''); setEntryFee(''); setPrizePool(''); setPerKill(''); setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (err: any) {
@@ -121,8 +120,31 @@ export default function MatchesPage() {
 
   const fetchRegistrations = async (tournamentId: string) => {
     if (!db) return;
+    setEditingResultsMatchId(tournamentId);
     const snap = await getDocs(collection(db, 'tournaments', tournamentId, 'registrations'));
     setRegistrations(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  };
+
+  const handlePublishResults = async () => {
+    if (!db || !editingResultsMatchId) return;
+    setIsPublishing(true);
+    try {
+      for (const reg of registrations) {
+        const regRef = doc(db, 'tournaments', editingResultsMatchId, 'registrations', reg.id);
+        await updateDoc(regRef, { 
+          wonAmount: Number(reg.wonAmount || 0),
+          kills: Number(reg.kills || 0)
+        });
+      }
+      
+      await updateDoc(doc(db, 'tournaments', editingResultsMatchId), { status: 'completed' });
+      toast({ title: "Results Published", description: "Archive updated successfully." });
+      setEditingResultsMatchId(null);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Publish Failed", description: err.message });
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -278,12 +300,6 @@ export default function MatchesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 text-[9px] font-black uppercase tracking-widest text-green-500 hover:bg-green-500/10" onClick={async () => {
-                      if(confirm('Mark this match as COMPLETED? Warriors will see this in Results.')) {
-                        await updateDoc(doc(db, 'tournaments', match.id), { status: 'completed' });
-                        toast({ title: "Archived", description: "Match marked as completed." });
-                      }
-                    }}>Complete</Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all" onClick={() => {
                       if(confirm('Warning: This will permanently delete this arena. Proceed?')) deleteDoc(doc(db, 'tournaments', match.id));
                     }}>
@@ -328,7 +344,7 @@ export default function MatchesPage() {
                     </DialogContent>
                   </Dialog>
                   
-                  <Dialog>
+                  <Dialog open={editingResultsMatchId === match.id} onOpenChange={(open) => !open && setEditingResultsMatchId(null)}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" onClick={() => fetchRegistrations(match.id)} className="flex-1 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 transition-all">
                         <Medal className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Results
@@ -389,15 +405,13 @@ export default function MatchesPage() {
                           </div>
                         ))}
                         {registrations.length > 0 && (
-                          <Button onClick={async () => {
-                            for (const reg of registrations) {
-                              await updateDoc(doc(db, 'tournaments', match.id, 'registrations', reg.id), { 
-                                wonAmount: Number(reg.wonAmount || 0),
-                                kills: Number(reg.kills || 0)
-                              });
-                            }
-                            toast({ title: "Results Published", description: "Warriors can now see their rewards." });
-                          }} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-6 shadow-xl shadow-primary/20">PUBLISH ARCHIVE</Button>
+                          <Button 
+                            disabled={isPublishing}
+                            onClick={handlePublishResults} 
+                            className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-6 shadow-xl shadow-primary/20"
+                          >
+                            {isPublishing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : 'PUBLISH ARCHIVE'}
+                          </Button>
                         )}
                       </div>
                     </DialogContent>
