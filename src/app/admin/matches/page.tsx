@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   Plus, 
   Swords, 
@@ -10,15 +11,17 @@ import {
   Key, 
   Medal, 
   User,
-  Trash
+  Calendar,
+  Layers,
+  Monitor
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc, getDocs, where } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -26,6 +29,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 export default function MatchesPage() {
   const db = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'manage';
   
   // Create Match State
   const [matchTitle, setMatchTitle] = useState('');
@@ -107,27 +112,26 @@ export default function MatchesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-black uppercase italic tracking-tighter">Arena <span className="text-primary">Management</span></h1>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Deploy and control tournaments</p>
-      </div>
-
-      <Tabs defaultValue="manage" className="space-y-6">
-        <TabsList className="bg-muted/30 h-11 p-1 rounded-xl border border-white/5">
-          <TabsTrigger value="manage" className="rounded-lg font-black text-[10px] uppercase">Active Matches</TabsTrigger>
-          <TabsTrigger value="deploy" className="rounded-lg font-black text-[10px] uppercase">Deploy New</TabsTrigger>
+      <Tabs defaultValue={initialTab} className="space-y-6">
+        <TabsList className="bg-muted/30 h-11 p-1 rounded-xl border border-white/5 w-full">
+          <TabsTrigger value="manage" className="flex-1 rounded-lg font-black text-[10px] uppercase">Active Matches</TabsTrigger>
+          <TabsTrigger value="deploy" className="flex-1 rounded-lg font-black text-[10px] uppercase">Deploy New</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="deploy">
-          <Card className="border-white/5 bg-card/50 rounded-[2rem]">
+        <TabsContent value="deploy" className="animate-in fade-in slide-in-from-right-4 duration-500">
+          <Card className="border-white/5 bg-card/50 rounded-3xl overflow-hidden">
             <CardContent className="pt-6">
               <form onSubmit={handleAddMatch} className="space-y-6">
                 <div className="space-y-4">
-                  <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Match Title</Label><Input placeholder="Bermuda Rush" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase ml-1">Match Title</Label>
+                    <Input placeholder="Bermuda Rush" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl" required />
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Mode</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase ml-1">Mode</Label>
                       <Select value={matchMode} onValueChange={setMatchMode}>
-                        <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-muted/50 border-white/5 h-12 rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="BR SOLO">BR SOLO</SelectItem>
                           <SelectItem value="BR DUO">BR DUO</SelectItem>
@@ -136,18 +140,22 @@ export default function MatchesPage() {
                           <SelectItem value="CS HEADSHOT">CS HEADSHOT</SelectItem>
                           <SelectItem value="LW 1V1">LW 1V1</SelectItem>
                           <SelectItem value="LW 2V2">LW 2V2</SelectItem>
+                          <SelectItem value="LW HEADSHOT">LW HEADSHOT</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Launch Time</Label><Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase ml-1">Launch Time</Label>
+                      <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl" required />
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Entry Fee</Label><Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Prize</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
-                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Per Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required /></div>
+                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Entry Fee</Label><Input type="number" value={entryFee} onChange={(e) => setEntryFee(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl" required /></div>
+                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Prize</Label><Input type="number" value={prizePool} onChange={(e) => setPrizePool(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl" required /></div>
+                    <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Per Kill</Label><Input type="number" value={perKill} onChange={(e) => setPerKill(e.target.value)} className="bg-muted/50 border-white/5 h-12 rounded-xl" required /></div>
                   </div>
                 </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full h-12 magma-gradient font-black uppercase italic rounded-xl">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-14 magma-gradient font-black uppercase italic rounded-xl shadow-lg">
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Deploy Arena'}
                 </Button>
               </form>
@@ -155,49 +163,87 @@ export default function MatchesPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="manage">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TabsContent value="manage" className="animate-in fade-in slide-in-from-left-4 duration-500">
+          <div className="space-y-4">
             {tournamentsLoading ? (
-              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : tournaments?.length === 0 ? (
+               <div className="text-center py-20 border border-dashed border-white/5 rounded-3xl">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">No matches found</p>
+               </div>
             ) : tournaments?.map((match: any) => (
-              <Card key={match.id} className="border-white/5 bg-card/60 p-4 rounded-2xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Swords className="w-5 h-5" /></div>
-                    <div><h4 className="text-xs font-black uppercase italic">{match.title}</h4><p className="text-[8px] font-bold text-muted-foreground uppercase">{match.matchId} • {match.currentPlayers}/{match.maxPlayers}</p></div>
+              <Card key={match.id} className="border-white/5 bg-card/60 p-5 rounded-2xl overflow-hidden relative group">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><Swords className="w-6 h-6" /></div>
+                    <div>
+                      <h4 className="text-sm font-black uppercase italic text-white tracking-tight">{match.title}</h4>
+                      <p className="text-[8px] font-bold text-muted-foreground uppercase">{match.matchId} • {match.mode}</p>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => deleteDoc(doc(db, 'tournaments', match.id))}><Trash2 className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-red-600 rounded-full" onClick={() => {
+                    if(confirm('Are you sure you want to delete this arena?')) deleteDoc(doc(db, 'tournaments', match.id));
+                  }}><Trash2 className="w-4 h-4" /></Button>
                 </div>
+                
+                <div className="grid grid-cols-3 gap-2 mb-5">
+                   {[
+                     { icon: Calendar, label: 'Fee', val: match.entryFee },
+                     { icon: Layers, label: 'Mode', val: match.mode.split(' ')[1] },
+                     { icon: Monitor, label: 'Slots', val: `${match.currentPlayers}/${match.maxPlayers}` }
+                   ].map((s, i) => (
+                     <div key={i} className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                       <span className="text-[7px] font-bold text-muted-foreground uppercase mb-1">{s.label}</span>
+                       <span className="text-[9px] font-black text-white">{s.val}</span>
+                     </div>
+                   ))}
+                </div>
+
                 <div className="flex gap-2">
                   <Dialog>
-                    <DialogTrigger asChild><Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="flex-1 h-9 rounded-lg text-[10px] font-bold uppercase border-white/10"><Key className="w-3.5 h-3.5 mr-1.5" /> Room</Button></DialogTrigger>
-                    <DialogContent className="bg-card border-white/5 rounded-3xl">
-                      <DialogHeader><DialogTitle>Room Config</DialogTitle></DialogHeader>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => setEditingRoom({id: match.id, rid: match.roomId || '', rpass: match.roomPassword || ''})} className="flex-1 h-10 rounded-xl text-[10px] font-black uppercase border-white/10"><Key className="w-3.5 h-3.5 mr-2 text-primary" /> Room Info</Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card border-white/5 rounded-3xl max-w-[340px]">
+                      <DialogHeader><DialogTitle className="text-sm uppercase font-black italic">Update Room</DialogTitle></DialogHeader>
                       <div className="space-y-4 py-4">
-                        <div className="space-y-1.5"><Label>Room ID</Label><Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted border-none" /></div>
-                        <div className="space-y-1.5"><Label>Password</Label><Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted border-none" /></div>
-                        <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-11 font-black uppercase">Update Room</Button>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Room ID</Label><Input value={editingRoom?.rid} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rid: e.target.value} : null)} className="bg-muted/50 border-none h-11 rounded-xl" /></div>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase ml-1">Password</Label><Input value={editingRoom?.rpass} onChange={(e) => setEditingRoom(prev => prev ? {...prev, rpass: e.target.value} : null)} className="bg-muted/50 border-none h-11 rounded-xl" /></div>
+                        <Button onClick={handleUpdateRoom} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl mt-2">Push Credentials</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
+                  
                   <Dialog>
-                    <DialogTrigger asChild><Button variant="outline" size="sm" onClick={() => fetchRegistrations(match.id)} className="flex-1 h-9 rounded-lg text-[10px] font-bold uppercase border-white/10"><Medal className="w-3.5 h-3.5 mr-1.5" /> Results</Button></DialogTrigger>
-                    <DialogContent className="bg-card border-white/5 rounded-3xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader><DialogTitle>Match Winners</DialogTitle></DialogHeader>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => fetchRegistrations(match.id)} className="flex-1 h-10 rounded-xl text-[10px] font-black uppercase border-white/10"><Medal className="w-3.5 h-3.5 mr-2 text-yellow-500" /> Results</Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card border-white/5 rounded-3xl max-h-[80vh] overflow-y-auto max-w-[340px]">
+                      <DialogHeader><DialogTitle className="text-sm uppercase font-black italic">Winner Statistics</DialogTitle></DialogHeader>
                       <div className="space-y-3 py-4">
-                        {registrations.map((reg) => (
-                          <div key={reg.id} className="p-3 bg-muted/30 rounded-xl flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4 text-primary" />
-                              <p className="text-xs font-black uppercase">{reg.ingameName || reg.displayName}</p>
+                        {registrations.length === 0 ? (
+                           <p className="text-center text-[10px] text-muted-foreground uppercase font-bold py-10">No registrations found</p>
+                        ) : registrations.map((reg) => (
+                          <div key={reg.id} className="p-4 bg-muted/30 rounded-2xl flex items-center justify-between border border-white/5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><User className="w-4 h-4 text-primary" /></div>
+                              <div>
+                                <p className="text-[10px] font-black uppercase">{reg.ingameName || reg.displayName}</p>
+                                <p className="text-[8px] font-bold text-muted-foreground uppercase">Slot #{reg.slotNumber}</p>
+                              </div>
                             </div>
-                            <Input type="number" placeholder="Won" value={reg.wonAmount || ''} onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, wonAmount: e.target.value } : r))} className="w-20 h-8 text-xs" />
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-muted-foreground">TK</span>
+                              <Input type="number" placeholder="0" value={reg.wonAmount || ''} onChange={(e) => setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, wonAmount: e.target.value } : r))} className="w-16 h-8 text-[10px] font-black bg-background border-none text-right" />
+                            </div>
                           </div>
                         ))}
-                        <Button onClick={async () => {
-                          for (const reg of registrations) await updateDoc(doc(db, 'tournaments', match.id, 'registrations', reg.id), { wonAmount: Number(reg.wonAmount || 0) });
-                          toast({ title: "Results Saved" });
-                        }} className="w-full magma-gradient h-11 font-black uppercase italic">Save All Results</Button>
+                        {registrations.length > 0 && (
+                          <Button onClick={async () => {
+                            for (const reg of registrations) await updateDoc(doc(db, 'tournaments', match.id, 'registrations', reg.id), { wonAmount: Number(reg.wonAmount || 0) });
+                            toast({ title: "Results Published" });
+                          }} className="w-full magma-gradient h-12 font-black uppercase italic rounded-xl shadow-lg mt-4">Save All Winners</Button>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>
