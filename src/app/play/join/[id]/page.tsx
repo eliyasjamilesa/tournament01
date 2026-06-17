@@ -1,10 +1,9 @@
-/**
- * This page is kept to satisfy Next.js static export requirements for dynamic routes.
- * The actual functionality has moved to the query-parameter based route at /play/join.
- */
 
+/**
+ * This page is kept for static build compatibility.
+ * Redirects dynamic path users to the query-based route.
+ */
 export function generateStaticParams() {
-  // We provide a dummy param so the build succeeds
   return [{ id: 'match' }];
 }
 
@@ -14,7 +13,10 @@ export default function JoinMatchPlaceholder() {
       <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Redirecting to Arena...</p>
       <script dangerouslySetInnerHTML={{
-        __html: `window.location.href = '/play/join?id=' + window.location.pathname.split('/').pop();`
+        __html: `
+          const matchId = window.location.pathname.split('/').pop();
+          window.location.href = '/play/join?id=' + matchId;
+        `
       }} />
     </div>
   );
