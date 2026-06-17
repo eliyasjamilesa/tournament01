@@ -28,6 +28,13 @@
    git push -u origin main
    ```
 
+### যদি `Rejected` বা `error: failed to push` দেখায়:
+GitHub-এ রিপোজিটরি খোলার সময় যদি কোনো ফাইল আগে থেকে তৈরি হয়ে থাকে, তবে নিচের কমান্ডগুলো দিন:
+```bash
+git pull origin main --rebase
+git push -u origin main
+```
+
 ## অটোমেটিক APK বিল্ড করার নিয়ম
 
 ১. কোডটি GitHub-এ পুশ করার পর, আপনার রিপোজিটরির **Actions** ট্যাবে যান।
