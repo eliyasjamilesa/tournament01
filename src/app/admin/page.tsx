@@ -11,7 +11,8 @@ import {
   Trophy,
   Plus,
   Key,
-  ChevronLeft
+  ChevronLeft,
+  CalendarDays
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
 
   useEffect(() => {
-    // Wait until both auth and profile are loaded
+    // Wait until both auth and profile are fully loaded
     if (authLoading || profileLoading) return;
 
     if (!user) {
@@ -60,7 +61,7 @@ export default function AdminDashboard() {
 
   // Form states
   const [matchTitle, setMatchTitle] = useState('');
-  const [matchMode, setMatchMode] = useState('Solo');
+  const [matchMode, setMatchMode] = useState('BR SOLO');
   const [matchMap, setMatchMap] = useState('Bermuda');
   const [matchVersion, setMatchVersion] = useState('TPP');
   const [entryFee, setEntryFee] = useState('');
@@ -87,10 +88,22 @@ export default function AdminDashboard() {
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
+    
+    if (!startTime) {
+      toast({ variant: "destructive", title: "Error", description: "Please select a launch time." });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
       const matchId = '#' + Math.floor(10000 + Math.random() * 90000);
+      const launchDate = new Date(startTime);
+      
+      if (isNaN(launchDate.getTime())) {
+        throw new Error("Invalid date format.");
+      }
+
       await addDoc(collection(db, 'tournaments'), {
         matchId,
         title: matchTitle,
@@ -102,7 +115,7 @@ export default function AdminDashboard() {
         perKill: Number(perKill),
         maxPlayers: Number(maxPlayers),
         currentPlayers: 0,
-        startTime: new Date(startTime).toISOString(),
+        startTime: launchDate.toISOString(),
         status: 'open',
         roomId: '',
         roomPassword: '',
@@ -111,9 +124,14 @@ export default function AdminDashboard() {
         },
         createdAt: serverTimestamp(),
       });
+      
       toast({ title: "Success", description: `Match ${matchId} deployed.` });
+      
+      // Reset form
       setMatchTitle(''); setEntryFee(''); setPrizePool(''); setPerKill(''); setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Deployment Failed", description: err.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -141,7 +159,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Establishing Secure Connection...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Verifying Command Authority...</p>
       </div>
     );
   }
@@ -184,21 +202,36 @@ export default function AdminDashboard() {
                   <div className="grid gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest ml-1">Match Title</Label>
-                      <Input placeholder="e.g. Bermuda Night Solo" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
+                      <Input placeholder="e.g. Bermuda Night Fight" value={matchTitle} onChange={(e) => setMatchTitle(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Mode</Label>
                         <Select value={matchMode} onValueChange={setMatchMode}>
                           <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="Solo">Solo</SelectItem><SelectItem value="Duo">Duo</SelectItem><SelectItem value="Squad">Squad</SelectItem></SelectContent>
+                          <SelectContent>
+                            <SelectItem value="BR SOLO">BR SOLO</SelectItem>
+                            <SelectItem value="BR DUO">BR DUO</SelectItem>
+                            <SelectItem value="BR SQUAD">BR SQUAD</SelectItem>
+                            <SelectItem value="CS RANK">CS RANK</SelectItem>
+                            <SelectItem value="CS HEADSHOT">CS HEADSHOT</SelectItem>
+                            <SelectItem value="LW 1V1">LW 1V1</SelectItem>
+                            <SelectItem value="LW 2V2">LW 2V2</SelectItem>
+                            <SelectItem value="LW HEADSHOT">LW HEADSHOT</SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Map</Label>
                         <Select value={matchMap} onValueChange={setMatchMap}>
                           <SelectTrigger className="bg-muted/50 border-white/5 h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="Bermuda">Bermuda</SelectItem><SelectItem value="Purgatory">Purgatory</SelectItem><SelectItem value="Kalahari">Kalahari</SelectItem><SelectItem value="Alpine">Alpine</SelectItem></SelectContent>
+                          <SelectContent>
+                            <SelectItem value="Bermuda">Bermuda</SelectItem>
+                            <SelectItem value="Purgatory">Purgatory</SelectItem>
+                            <SelectItem value="Kalahari">Kalahari</SelectItem>
+                            <SelectItem value="Alpine">Alpine</SelectItem>
+                            <SelectItem value="Nexterra">Nexterra</SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                     </div>
@@ -211,8 +244,16 @@ export default function AdminDashboard() {
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Launch Time</Label>
-                        <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-muted/50 border-white/5 h-11 rounded-xl" required />
+                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 flex items-center gap-1.5">
+                          <CalendarDays className="w-3 h-3" /> Launch Time
+                        </Label>
+                        <Input 
+                          type="datetime-local" 
+                          value={startTime} 
+                          onChange={(e) => setStartTime(e.target.value)} 
+                          className="bg-muted/50 border-white/5 h-11 rounded-xl block w-full" 
+                          required 
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -226,9 +267,26 @@ export default function AdminDashboard() {
                         {[1, 2, 3, 4, 5].map((pos) => (
                           <div key={pos} className="space-y-1">
                             <Label className="text-[8px] font-bold text-muted-foreground uppercase ml-1">Rank {pos}</Label>
-                            <Input type="number" value={pos === 1 ? p1 : pos === 2 ? p2 : pos === 3 ? p3 : pos === 4 ? p4 : p5} onChange={(e) => { const v = e.target.value; if(pos === 1) setP1(v); else if(pos === 2) setP2(v); else if(pos === 3) setP3(v); else if(pos === 4) setP4(v); else setP5(v); }} className="bg-background border-white/5 h-10 text-xs rounded-lg" required />
+                            <Input 
+                              type="number" 
+                              value={pos === 1 ? p1 : pos === 2 ? p2 : pos === 3 ? p3 : pos === 4 ? p4 : p5} 
+                              onChange={(e) => { 
+                                const v = e.target.value; 
+                                if(pos === 1) setP1(v); 
+                                else if(pos === 2) setP2(v); 
+                                else if(pos === 3) setP3(v); 
+                                else if(pos === 4) setP4(v); 
+                                else setP5(v); 
+                              }} 
+                              className="bg-background border-white/5 h-10 text-xs rounded-lg" 
+                              required 
+                            />
                           </div>
                         ))}
+                        <div className="space-y-1">
+                          <Label className="text-[8px] font-bold text-muted-foreground uppercase ml-1">Max Players</Label>
+                          <Input type="number" value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} className="bg-background border-white/5 h-10 text-xs rounded-lg" required />
+                        </div>
                       </div>
                     </div>
                   </div>
