@@ -62,6 +62,7 @@ export default function Home() {
   if (!user) return null;
 
   const userAvatar = profile?.photoURL || user?.photoURL || PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
+  const promoBanner = PlaceHolderImages.find(img => img.id === 'promo-banner')?.imageUrl || '';
 
   const gameSections = [
     {
@@ -115,11 +116,12 @@ export default function Home() {
         <section>
           <Card className="overflow-hidden border-none relative group cursor-pointer rounded-[2.5rem] h-52 shadow-2xl">
             <Image 
-              src="https://picsum.photos/seed/telegram-promo/800/600" 
+              src={promoBanner} 
               alt="Promo Banner" 
-              fill 
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-              data-ai-hint="gaming banner"
+              width={800}
+              height={400}
+              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+              data-ai-hint="gaming promotion"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-8 space-y-3">
@@ -146,11 +148,12 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4">
               {section.types.map((type) => {
                 const availableCount = getMatchCountForType(type.title);
+                const typeImage = PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || '';
                 return (
                   <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group">
                     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
                       <Image 
-                        src={PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || ''} 
+                        src={typeImage} 
                         alt={type.title} 
                         fill 
                         className="object-cover transition-transform duration-500 group-hover:scale-110"

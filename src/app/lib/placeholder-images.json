@@ -1,64 +1,71 @@
+
 {
   "placeholderImages": [
     {
       "id": "br-solo",
       "description": "Battle Royale Solo Mode",
-      "imageUrl": "https://picsum.photos/seed/br-solo/600/800",
-      "imageHint": "warrior solo"
+      "imageUrl": "https://picsum.photos/seed/ignite-solo/600/800",
+      "imageHint": "gaming warrior"
     },
     {
       "id": "br-duo",
       "description": "Battle Royale Duo Mode",
-      "imageUrl": "https://picsum.photos/seed/br-duo/600/800",
-      "imageHint": "duo team"
+      "imageUrl": "https://picsum.photos/seed/ignite-duo/600/800",
+      "imageHint": "gaming duo"
     },
     {
       "id": "br-squad",
       "description": "Battle Royale Squad Mode",
-      "imageUrl": "https://picsum.photos/seed/br-squad/600/800",
-      "imageHint": "squad team"
+      "imageUrl": "https://picsum.photos/seed/ignite-squad/600/800",
+      "imageHint": "gaming squad"
     },
     {
       "id": "cs-rank",
       "description": "Clash Squad Ranked Mode",
-      "imageUrl": "https://picsum.photos/seed/cs-rank/600/800",
-      "imageHint": "combat rank"
+      "imageUrl": "https://picsum.photos/seed/ignite-cs/600/800",
+      "imageHint": "combat arena"
     },
     {
       "id": "cs-headshot",
       "description": "Clash Squad Headshot Mode",
-      "imageUrl": "https://picsum.photos/seed/cs-hs/600/800",
-      "imageHint": "sniper headshot"
+      "imageUrl": "https://picsum.photos/seed/ignite-hs/600/800",
+      "imageHint": "sniper target"
     },
     {
       "id": "lw-1v1",
       "description": "Lone Wolf 1v1 Mode",
-      "imageUrl": "https://picsum.photos/seed/lw-1v1/600/800",
-      "imageHint": "lone duel"
+      "imageUrl": "https://picsum.photos/seed/ignite-1v1/600/800",
+      "imageHint": "lone fighter"
     },
     {
       "id": "lw-2v2",
       "description": "Lone Wolf 2v2 Mode",
-      "imageUrl": "https://picsum.photos/seed/lw-2v2/600/800",
-      "imageHint": "team duel"
+      "imageUrl": "https://picsum.photos/seed/ignite-2v2/600/800",
+      "imageHint": "duo battle"
     },
     {
       "id": "lw-hs",
       "description": "Lone Wolf Headshot Mode",
-      "imageUrl": "https://picsum.photos/seed/lw-hs/600/800",
-      "imageHint": "precision duel"
+      "imageUrl": "https://picsum.photos/seed/ignite-lwhs/600/800",
+      "imageHint": "precision aim"
     },
     {
       "id": "player-avatar",
       "description": "Player profile avatar",
-      "imageUrl": "https://picsum.photos/seed/avatar/200/200",
-      "imageHint": "gamer avatar"
+      "imageUrl": "https://picsum.photos/seed/ignite-avatar/200/200",
+      "imageHint": "gamer profile"
     },
     {
       "id": "app-logo",
       "description": "Main app logo with gaming theme",
-      "imageUrl": "https://picsum.photos/seed/fflogo/400/400",
-      "imageHint": "gaming logo"
+      "imageUrl": "https://picsum.photos/seed/ignite-logo/400/400",
+      "imageHint": "gaming fire"
+    },
+    {
+      "id": "promo-banner",
+      "description": "Telegram promotion banner",
+      "imageUrl": "https://picsum.photos/seed/ignite-promo/800/400",
+      "imageHint": "gaming promotion"
     }
   ]
 }
