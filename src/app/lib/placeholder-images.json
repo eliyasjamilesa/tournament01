@@ -4,49 +4,49 @@
     {
       "id": "br-solo",
       "description": "Battle Royale Solo Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-solo/600/800",
+      "imageUrl": "https://ibb.co.com/dwj1Qvkz",
       "imageHint": "gaming warrior"
     },
     {
       "id": "br-duo",
       "description": "Battle Royale Duo Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-duo/600/800",
+      "imageUrl": "https://ibb.co.com/JFyVd3fX",
       "imageHint": "gaming duo"
     },
     {
       "id": "br-squad",
       "description": "Battle Royale Squad Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-squad/600/800",
+      "imageUrl": "https://ibb.co.com/YBbfCv26",
       "imageHint": "gaming squad"
     },
     {
       "id": "cs-rank",
       "description": "Clash Squad Ranked Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-cs/600/800",
+      "imageUrl": "https://ibb.co.com/gZkFVnnR",
       "imageHint": "combat arena"
     },
     {
       "id": "cs-headshot",
       "description": "Clash Squad Headshot Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-hs/600/800",
+      "imageUrl": "https://ibb.co.com/fYsnQCvd",
       "imageHint": "sniper target"
     },
     {
       "id": "lw-1v1",
       "description": "Lone Wolf 1v1 Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-1v1/600/800",
+      "imageUrl": "https://ibb.co.com/FLhTS0CB",
       "imageHint": "lone fighter"
     },
     {
       "id": "lw-2v2",
       "description": "Lone Wolf 2v2 Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-2v2/600/800",
+      "imageUrl": "https://ibb.co.com/x8rv1pT4",
       "imageHint": "duo battle"
     },
     {
       "id": "lw-hs",
       "description": "Lone Wolf Headshot Mode",
-      "imageUrl": "https://picsum.photos/seed/ignite-lwhs/600/800",
+      "imageUrl": "https://ibb.co.com/fYsnQCvd",
       "imageHint": "precision aim"
     },
     {
@@ -64,7 +64,7 @@
     {
       "id": "promo-banner",
       "description": "Telegram promotion banner",
-      "imageUrl": "https://picsum.photos/seed/ignite-promo/800/400",
+      "imageUrl": "https://ibb.co.com/RT6y8F8J",
       "imageHint": "gaming promotion"
     }
   ]
