@@ -332,16 +332,24 @@ function TournamentCard({ tournament }: { tournament: any }) {
 }
 
 export default function PlayPage() {
+  const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const modeFilter = searchParams.get('mode');
   
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
   const tournamentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(50));
-  }, [db]);
+  }, [db, user]);
 
   const { data: tournaments, loading } = useCollection<any>(tournamentsQuery);
 
@@ -353,6 +361,16 @@ export default function PlayPage() {
     
     return matchesSearch && matchesMode;
   });
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background pb-32">

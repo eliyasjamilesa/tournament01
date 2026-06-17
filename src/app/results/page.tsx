@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Loader2, 
   Calendar, 
@@ -15,7 +16,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -23,8 +24,16 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
 export default function ResultsPage() {
+  const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('BR SOLO');
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const tabs = [
     { id: 'br-solo', label: 'BR Solo', value: 'BR SOLO' },
@@ -35,7 +44,7 @@ export default function ResultsPage() {
   ];
 
   const resultsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     // Showing matches that are completed or just all past matches for this mode
     return query(
       collection(db, 'tournaments'),
@@ -43,7 +52,7 @@ export default function ResultsPage() {
       orderBy('createdAt', 'desc'),
       limit(20)
     );
-  }, [db, activeTab]);
+  }, [db, activeTab, user]);
 
   const { data: matches, loading } = useCollection<any>(resultsQuery);
 
@@ -60,6 +69,16 @@ export default function ResultsPage() {
     };
     return PlaceHolderImages.find(img => img.id === idMap[mode])?.imageUrl || '';
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -102,7 +121,6 @@ export default function ResultsPage() {
         ) : (
           matches?.map((match: any) => (
             <Card key={match.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
-              {/* Match ID Badge */}
               <div className="absolute top-0 right-0">
                 <div className="bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-bl-xl shadow-lg">
                   {match.matchId || '#-----'}
@@ -110,7 +128,6 @@ export default function ResultsPage() {
               </div>
 
               <CardContent className="p-5 space-y-6">
-                {/* Header Section */}
                 <div className="flex gap-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 shrink-0">
                     <Image 
@@ -123,7 +140,7 @@ export default function ResultsPage() {
                   </div>
                   <div className="space-y-1.5 pr-12">
                     <p className="text-[12px] font-bold text-gray-200 leading-tight">
-                      {match.title} | Normal | 🚫ম্যাচ এ জয়েন করার আগে রুলস পরে নেন। 🚫রুলস ফলো না করলে রিওয়ার্ড দেয়া হবে না & রিফান্ড পাবেন না
+                      {match.title} | Normal | 🚫ম্যাচ এ জয়েন করার আগে রুলস পরে নেন। 🚫রুলস ফলো না করলে রিওয়ার্ড দেয়া হবে না & রিফান্ড পাবেন না
                     </p>
                     <div className="flex items-center gap-2 text-primary">
                       <Calendar className="w-3.5 h-3.5" />
@@ -134,9 +151,7 @@ export default function ResultsPage() {
                   </div>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-px bg-white/5 rounded-xl border border-white/5 overflow-hidden">
-                  {/* Row 1 */}
                   <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center">
                     <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Win Prize</span>
                     <span className="text-[12px] font-black text-cyan-400">{match.prizePool} TK</span>
@@ -149,7 +164,6 @@ export default function ResultsPage() {
                     <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Entry Fee</span>
                     <span className="text-[12px] font-black text-white">{match.entryFee}</span>
                   </div>
-                  {/* Row 2 */}
                   <div className="bg-[#0d0d0d] p-3 flex flex-col items-center justify-center text-center border-t border-white/5">
                     <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Per Kill</span>
                     <span className="text-[12px] font-black text-red-600">{match.perKill}</span>
