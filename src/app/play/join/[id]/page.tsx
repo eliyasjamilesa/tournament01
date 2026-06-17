@@ -12,11 +12,12 @@ import {
   Gamepad2, 
   Clock, 
   Wallet,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, setDoc, updateDoc, increment, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -39,6 +40,13 @@ export default function JoinMatchFlow() {
     return doc(db, 'tournaments', tournamentId);
   }, [db, tournamentId]);
   const { data: tournament, loading: tournamentLoading } = useDoc<any>(tournamentRef);
+
+  // Fetch User Profile for Balance Check
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+  const { data: profile, loading: profileLoading } = useDoc<any>(userRef);
 
   // Fetch Existing Registrations
   const registrationsRef = useMemoFirebase(() => {
@@ -78,21 +86,46 @@ export default function JoinMatchFlow() {
       }
       setStep(2);
     } else if (step === 2) {
-      if (!db || !user || !tournament) return;
+      if (!db || !user || !tournament || !profile) return;
+      
+      // Balance Check
+      const userCoins = profile.coins || 0;
+      const entryFee = tournament.entryFee || 0;
+
+      if (userCoins < entryFee) {
+        toast({ 
+          variant: "destructive", 
+          title: "Insufficient Balance", 
+          description: `You need ${entryFee} TK but have only ${userCoins} TK. Please top up your wallet.` 
+        });
+        return;
+      }
+
       setIsSubmitting(true);
       try {
+        const batch = writeBatch(db);
+        
+        // 1. Create Registration
         const regRef = doc(db, 'tournaments', tournamentId, 'registrations', user.uid);
-        await setDoc(regRef, {
+        batch.set(regRef, {
           uid: user.uid,
-          displayName: user.displayName || 'Player',
+          displayName: user.displayName || profile.displayName || 'Player',
           slotNumber: selectedSlot,
           timestamp: serverTimestamp()
         });
+
+        // 2. Update Tournament Player Count
         const tRef = doc(db, 'tournaments', tournamentId);
-        await updateDoc(tRef, { currentPlayers: increment(1) });
+        batch.update(tRef, { currentPlayers: increment(1) });
+
+        // 3. Deduct Coins from User Profile
+        const uRef = doc(db, 'users', user.uid);
+        batch.update(uRef, { coins: increment(-entryFee) });
+
+        await batch.commit();
         
         setStep(3);
-        toast({ title: "Joined!", description: "You have successfully joined the match." });
+        toast({ title: "Joined!", description: "Coins deducted and match joined successfully." });
       } catch (err: any) {
         toast({ variant: "destructive", title: "Error", description: err.message });
       } finally {
@@ -101,7 +134,7 @@ export default function JoinMatchFlow() {
     }
   };
 
-  if (tournamentLoading || regsLoading) {
+  if (tournamentLoading || regsLoading || profileLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -214,23 +247,38 @@ export default function JoinMatchFlow() {
                    </div>
                 </div>
 
+                <div className="p-4 bg-card/40 border border-white/5 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Your Balance</span>
+                  </div>
+                  <span className={cn(
+                    "text-xs font-black",
+                    (profile?.coins || 0) < (tournament?.entryFee || 0) ? "text-destructive" : "text-green-500"
+                  )}>
+                    {profile?.coins || 0} TK
+                  </span>
+                </div>
+
                 <div className="space-y-3 pt-2">
                    <div className="flex items-center justify-between px-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                          <Clock className="w-3.5 h-3.5" />
                          <span className="text-[10px] font-bold uppercase">Start Time</span>
                       </div>
-                      <span className="text-[10px] font-black">{format(new Date(tournament.startTime), 'hh:mm a, dd MMM')}</span>
-                   </div>
-                   <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                         <Wallet className="w-3.5 h-3.5" />
-                         <span className="text-[10px] font-bold uppercase">Currency</span>
-                      </div>
-                      <span className="text-[10px] font-black">Virtual Coins</span>
+                      <span className="text-[10px] font-black">{tournament.startTime ? format(new Date(tournament.startTime), 'hh:mm a, dd MMM') : 'TBA'}</span>
                    </div>
                 </div>
              </div>
+
+             {(profile?.coins || 0) < (tournament?.entryFee || 0) && (
+               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
+                 <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                 <p className="text-[10px] font-bold text-destructive uppercase leading-relaxed">
+                   Insufficient coins to join this arena. Please recharge your wallet to proceed with the mission.
+                 </p>
+               </div>
+             )}
           </div>
         )}
 
