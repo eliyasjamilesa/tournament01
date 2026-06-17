@@ -2,61 +2,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is logged in
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper function to check if user is admin
     function isAdmin() {
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Tournament rules
+    // User profile rules - Anyone signed in can read (for leaderboard/display), only owner/admin can write
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Tournament rules - Everyone can read, only admin can write
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isAdmin();
       
+      // Individual registrations
       match /registrations/{userId} {
         allow read: if isSignedIn();
         allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       }
     }
 
-    // Allow collection group queries for registrations
+    // Collection group queries for registrations (used in profile page)
     match /{path=**}/registrations/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
     
-    // User profile rules
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-    }
-
-    // Transaction rules
+    // Transaction rules - Users can create deposits/withdraws and read their own, admins can do everything
     match /transactions/{transactionId} {
-      // Admins can read all transactions
-      // Regular users can only read their own transactions
-      // For listing (queries), users must include a filter where userId == auth.uid
       allow read: if isSignedIn() && (
         isAdmin() || 
         (resource != null && resource.data.userId == request.auth.uid) ||
-        (request.method == 'get' && resource == null)
+        (request.method == 'get') // Allow individual lookups
       );
       
-      // Anyone signed in can create a transaction (deposit/withdraw request)
       allow create: if isSignedIn();
       
-      // Only admins can update or delete
+      // Only admins can update (approve/reject) or delete
       allow update, delete: if isAdmin();
-    }
-
-    // General fallback for any other collections
-    match /{document=**} {
-      allow read, write: if isAdmin();
     }
   }
 }

@@ -30,18 +30,27 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setError(null);
       },
       async (serverError: any) => {
-        // Attempt to extract the path for better error reporting
-        // In newer SDKs, path might be nested or obscured
-        const path = (query as any)._query?.path?.toString() || 
-                     (query as any).path || 
-                     'transactions'; // Fallback to likely culprit if unknown
+        // Log the actual error for debugging
+        console.warn("Firestore collection error:", serverError);
+
+        // Attempt to extract path
+        let path = 'unknown';
+        try {
+          path = (query as any)._query?.path?.toString() || (query as any).path || 'collection';
+        } catch (e) {
+          path = 'collection';
+        }
 
         const permissionError = new FirestorePermissionError({
           path: path,
           operation: 'list',
         } satisfies SecurityRuleContext);
 
-        errorEmitter.emit('permission-error', permissionError);
+        // Only emit if it's actually a permission error
+        if (serverError.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', permissionError);
+        }
+        
         setError(serverError);
         setLoading(false);
       }

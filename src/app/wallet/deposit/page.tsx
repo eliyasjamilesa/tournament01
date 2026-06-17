@@ -21,6 +21,8 @@ import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function DepositPage() {
   const router = useRouter();
@@ -51,24 +53,37 @@ export default function DepositPage() {
     if (!db || !user || !method || !amount || !txId) return;
 
     setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'transactions'), {
-        userId: user.uid,
-        userEmail: user.email,
-        amount: Number(amount),
-        method: method,
-        type: 'deposit',
-        transactionId: txId,
-        status: 'pending',
-        timestamp: serverTimestamp()
+    const depositData = {
+      userId: user.uid,
+      userEmail: user.email,
+      amount: Number(amount),
+      method: method,
+      type: 'deposit',
+      transactionId: txId,
+      status: 'pending',
+      timestamp: serverTimestamp()
+    };
+
+    addDoc(collection(db, 'transactions'), depositData)
+      .then(() => {
+        toast({ title: "সফল", description: "আপনার রিকোয়েস্ট পাঠানো হয়েছে। চেক করে অ্যাড করা হবে।" });
+        router.push('/wallet');
+      })
+      .catch(async (error) => {
+        if (error.code === 'permission-denied') {
+          const permissionError = new FirestorePermissionError({
+            path: 'transactions',
+            operation: 'create',
+            requestResourceData: depositData
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        } else {
+          toast({ variant: "destructive", title: "Error", description: error.message });
+        }
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-      toast({ title: "সফল", description: "আপনার রিকোয়েস্ট পাঠানো হয়েছে। চেক করে অ্যাড করা হবে।" });
-      router.push('/wallet');
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (
