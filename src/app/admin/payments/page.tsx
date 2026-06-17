@@ -5,26 +5,35 @@ import { useState } from 'react';
 import { Wallet, CheckCircle2, XCircle, Loader2, Clock, User, Mail, Hash, ArrowUpRight, ArrowDownLeft, Phone, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
 import { doc, updateDoc, writeBatch, increment, query, where, orderBy, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 export default function PaymentsPage() {
+  const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
+  // Fetch current user profile to verify admin role locally before querying
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+  const { data: profile } = useDoc<any>(userDocRef);
+
   const pendingPaymentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    // Querying all pending transactions ordered by time
+    // ONLY run this query if the database is ready, user is logged in, AND confirmed as admin
+    if (!db || !user || profile?.role !== 'admin') return null;
+    
     return query(
       collection(db, 'transactions'), 
       where('status', '==', 'pending'),
       orderBy('timestamp', 'desc')
     );
-  }, [db]);
+  }, [db, user, profile?.role]);
 
   const { data: pendingPayments, loading, error } = useCollection<any>(pendingPaymentsQuery);
 
@@ -69,20 +78,34 @@ export default function PaymentsPage() {
     }
   };
 
-  if (error) {
+  if (profile && profile.role !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
         <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center border border-destructive/20">
           <ShieldAlert className="w-10 h-10 text-destructive" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-black uppercase italic tracking-tighter">অনুমতি <span className="text-destructive">নেই</span></h2>
+          <h2 className="text-xl font-black uppercase italic tracking-tighter">অ্যাডমিন এক্সেস <span className="text-destructive">নেই</span></h2>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[280px]">
-            আপনি সম্ভবত অ্যাডমিন হিসেবে ভেরিফাইড নন অথবা ডাটাবেস পারমিশনে সমস্যা হচ্ছে।
+            আপনার প্রোফাইল অ্যাডমিন হিসেবে ভেরিফাইড নয়।
           </p>
-          <p className="text-[8px] text-muted-foreground mt-4 font-mono">Error: {error.message}</p>
         </div>
-        <Button variant="outline" onClick={() => window.location.reload()} className="h-10 rounded-xl uppercase font-black text-[10px] tracking-widest">পেজ রিফ্রেশ করুন</Button>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center gap-6">
+        <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center border border-destructive/20">
+          <AlertTriangle className="w-10 h-10 text-destructive" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">লোডিং <span className="text-destructive">এরর</span></h2>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ডাটাবেস কানেকশনে সমস্যা হচ্ছে।</p>
+          <p className="text-[7px] font-mono text-muted-foreground opacity-50 mt-4 break-all">{error.message}</p>
+        </div>
+        <Button variant="outline" onClick={() => window.location.reload()} className="h-10 rounded-xl uppercase font-black text-[10px] tracking-widest">রিফ্রেশ করুন</Button>
       </div>
     );
   }

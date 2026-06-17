@@ -38,10 +38,17 @@ service cloud.firestore {
 
     // Transaction rules
     match /transactions/{transactionId} {
-      // Allow admins to read all, users to read only their own
-      allow read: if isSignedIn() && (isAdmin() || (resource != null && resource.data.userId == request.auth.uid));
+      // Allow admins to read/list all transactions
+      // Allow users to only read their own transactions
+      allow read: if isSignedIn() && (
+        isAdmin() || 
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (request.method == 'get' && resource == null) // Allow getting non-existent for checks
+      );
+      
       // Anyone signed in can create a transaction (deposit/withdraw request)
       allow create: if isSignedIn();
+      
       // Only admins can update or delete
       allow update, delete: if isAdmin();
     }
