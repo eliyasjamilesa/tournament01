@@ -70,7 +70,7 @@ export default function ProfilePage() {
 
   const stats = [
     { label: 'MATCHES', value: '124', icon: Swords },
-    { label: 'COINS', value: profile?.coins || '100', highlight: true, icon: Wallet },
+    { label: 'COINS', value: profile?.coins || '0', highlight: true, icon: Wallet },
     { label: 'WINS', value: '28', icon: Trophy },
   ];
 
@@ -86,7 +86,7 @@ export default function ProfilePage() {
     {
       title: "Account & Settings",
       items: [
-        { icon: CreditCard, label: 'Wallet & Topup', href: '#', color: 'text-primary' },
+        { icon: CreditCard, label: 'Wallet & Topup', href: '/wallet', color: 'text-primary' },
         { icon: UserCircle, label: 'Game Profile', href: '#', color: 'text-muted-foreground' },
         { icon: Bell, label: 'Notifications', href: '#', color: 'text-orange-500' },
         { icon: Settings, label: 'App Settings', href: '#', color: 'text-muted-foreground' },
