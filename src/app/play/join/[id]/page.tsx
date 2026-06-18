@@ -1,14 +1,19 @@
 
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Trophy } from 'lucide-react';
+import { useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trophy, Loader2 } from 'lucide-react';
 
-export default function JoinMatchPlaceholder() {
+// Required for static export with dynamic routes
+export async function generateStaticParams() {
+  return [{ id: 'match' }];
+}
+
+export default function JoinMatchPlaceholder({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const params = useParams();
-  const id = params?.id;
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
 
   useEffect(() => {
     if (id && id !== 'match') {

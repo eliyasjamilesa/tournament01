@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   Plus, 
@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Link from 'next/link';
 
-export default function MatchesPage() {
+function MatchesContent() {
   const db = useFirestore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -317,5 +317,13 @@ export default function MatchesPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function MatchesPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+      <MatchesContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { 
   Trophy, Search, Map as MapIcon, Skull, Wallet, Gamepad2, Calendar, Layers, Monitor, ArrowLeft, Lock, Loader2, Key, CheckCircle2, AlertCircle, Check, Clock, Swords
 } from 'lucide-react';
@@ -377,7 +377,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
   );
 }
 
-export default function PlayPage() {
+function PlayContent() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
@@ -459,5 +459,13 @@ export default function PlayPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function PlayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <PlayContent />
+    </Suspense>
   );
 }

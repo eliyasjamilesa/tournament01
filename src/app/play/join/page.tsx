@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -25,7 +25,7 @@ import { doc, collection, setDoc, updateDoc, increment, serverTimestamp, writeBa
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-export default function JoinMatchFlow() {
+function JoinMatchContent() {
   const searchParams = useSearchParams();
   const tournamentId = searchParams.get('id');
   const router = useRouter();
@@ -358,5 +358,13 @@ export default function JoinMatchFlow() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function JoinMatchFlow() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <JoinMatchContent />
+    </Suspense>
   );
 }
