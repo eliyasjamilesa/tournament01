@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRouter } from 'next/navigation';
@@ -140,11 +139,11 @@ export default function WalletPage() {
 
         <div className="space-y-3 pt-4">
           {[
-            { label: 'Transaction History', sub: 'সব ট্রানজ্যাকশন দেখুন', icon: History, color: 'text-red-500', href: '#' },
+            { label: 'Transaction History', sub: 'সব ট্রানজ্যাকশন দেখুন', icon: History, color: 'text-red-500', href: '/wallet/history' },
             { label: 'How to add money?', sub: 'টাকা অ্যাড করার নিয়ম', icon: HelpCircle, color: 'text-blue-500', href: '#' },
             { label: 'How to join a match?', sub: 'ম্যাচে জয়েন করার নিয়ম', icon: Gamepad2, color: 'text-orange-500', href: '#' },
           ].map((item, idx) => (
-            <Card key={idx} className="bg-[#121212] border-white/5 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
+            <Card key={idx} className="bg-[#121212] border-white/5 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group" onClick={() => item.href !== '#' && router.push(item.href)}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-muted/20 flex items-center justify-center">
