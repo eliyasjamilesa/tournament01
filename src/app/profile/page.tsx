@@ -50,16 +50,23 @@ export default function ProfilePage() {
   const { data: userRegistrations, loading: regsLoading } = useCollection<any>(registrationsQuery);
 
   const stats = useMemo(() => {
-    if (!userRegistrations) return { matches: 0, coins: profile?.coins || 0, wins: 0 };
+    if (!userRegistrations) return { matches: 0, coins: profile?.coins || 0, wins: 0, level: profile?.level || 1, xp: profile?.xp || 0 };
     
     const totalWinnings = userRegistrations.reduce((acc: number, reg: any) => acc + (Number(reg.wonAmount) || 0), 0);
     
     return {
       matches: userRegistrations.length,
       coins: profile?.coins || 0,
-      wins: totalWinnings
+      wins: totalWinnings,
+      level: profile?.level || 1,
+      xp: profile?.xp || 0
     };
-  }, [userRegistrations, profile?.coins]);
+  }, [userRegistrations, profile?.coins, profile?.level, profile?.xp]);
+
+  // Simple level calculation: Level = current level, progress = (xp % 100)
+  // Assume each level is 100 XP for simplicity in this MVP
+  const xpProgress = stats.xp % 100;
+  const nextLevelPercent = stats.matches > 0 ? Math.min(99, xpProgress || (stats.matches * 10) % 100) : 0;
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -136,10 +143,10 @@ export default function ProfilePage() {
           
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
             <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              <span>Level {profile?.level || 1}</span>
-              <span>85% to Lvl {(profile?.level || 1) + 1}</span>
+              <span>Level {stats.level}</span>
+              <span>{Math.floor(nextLevelPercent)}% to Lvl {stats.level + 1}</span>
             </div>
-            <Progress value={85} className="h-1.5 bg-background" />
+            <Progress value={nextLevelPercent} className="h-1.5 bg-background" />
           </div>
         </div>
       </div>
