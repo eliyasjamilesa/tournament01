@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Camera,
   Gamepad2,
-  Fingerprint
+  Fingerprint,
+  Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export default function EditProfilePage() {
   const { user, loading: userLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -44,6 +46,7 @@ export default function EditProfilePage() {
   const [ingameName, setIngameName] = useState('');
   const [ingameId, setIngameId] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -55,19 +58,52 @@ export default function EditProfilePage() {
     }
   }, [profile, user]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Limit file size to 1MB for Firestore storage
+    if (file.size > 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "দয়া করে ১ মেগাবাইটের নিচের ছবি আপলোড করুন।"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setPhotoURL(base64String);
+      setIsUploading(false);
+      toast({
+        title: "ছবি সিলেক্ট হয়েছে",
+        description: "সব সেভ করুন বাটনে ক্লিক করে নিশ্চিত করুন।"
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !user) return;
 
     setIsUpdating(true);
     try {
-      // Update Firebase Auth Profile
-      await updateProfile(user, {
-        displayName: displayName,
-        photoURL: photoURL
-      });
+      // Update Firebase Auth Profile (Note: Auth has a limit on photoURL length, 
+      // so if the base64 is too long it might fail, but we'll try)
+      try {
+        await updateProfile(user, {
+          displayName: displayName,
+          photoURL: photoURL.startsWith('data:') ? user.photoURL : photoURL 
+        });
+      } catch (authErr) {
+        console.warn("Auth profile sync skipped due to URL size");
+      }
 
-      // Update Firestore Profile
+      // Update Firestore Profile (This is our source of truth)
       await updateDoc(doc(db, 'users', user.uid), {
         displayName,
         phone,
@@ -119,18 +155,28 @@ export default function EditProfilePage() {
 
       <main className="flex-1 p-6 pb-32 space-y-8 max-w-md mx-auto w-full overflow-y-auto no-scrollbar">
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            <Avatar className="w-24 h-24 border-2 border-primary/20">
+          <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <Avatar className="w-24 h-24 border-2 border-primary/20 transition-all group-hover:opacity-80">
               <AvatarImage src={photoURL} className="object-cover" />
               <AvatarFallback className="bg-muted text-xl font-bold uppercase">
                 {displayName[0] || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full border-2 border-background">
-              <Camera className="w-3.5 h-3.5 text-white" />
+            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+               <Upload className="w-6 h-6 text-white" />
+            </div>
+            <div className="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full border-2 border-background shadow-lg">
+              {isUploading ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" /> : <Camera className="w-3.5 h-3.5 text-white" />}
             </div>
           </div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">আপনার ছবি আপডেট করুন</p>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+          />
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ছবির উপর ক্লিক করে নতুন ছবি নিন</p>
         </div>
 
         <form onSubmit={handleUpdate} className="space-y-8">
@@ -165,21 +211,21 @@ export default function EditProfilePage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">প্রোফাইল পিকচার লিংক (URL)</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">প্রোফাইল পিকচার লিংক (ঐচ্ছিক)</Label>
                 <div className="relative">
                   <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
-                    placeholder="https://image-link.com/photo.jpg" 
-                    value={photoURL}
+                    placeholder="সরাসরি আপলোড করুন বা লিংক দিন" 
+                    value={photoURL.startsWith('data:') ? 'Uploaded directly' : photoURL}
                     onChange={(e) => setPhotoURL(e.target.value)}
-                    className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold"
+                    className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold truncate"
                   />
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-3">গেমিং ইনফো (ফ্রি ফায়ার)</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-3">게মিং ইনফো (ফ্রি ফায়ার)</h3>
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">গেমের নাম (In-game Name)</Label>
                 <div className="relative">
