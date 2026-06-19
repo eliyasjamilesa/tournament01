@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,8 +10,7 @@ import {
   CheckCircle2,
   Camera,
   Gamepad2,
-  Fingerprint,
-  Upload
+  Fingerprint
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +20,6 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Link from 'next/link';
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -77,7 +74,7 @@ export default function EditProfilePage() {
       setIsUploading(false);
       toast({
         title: "ছবি সিলেক্ট হয়েছে",
-        description: "সব সেভ করুন বাটনে ক্লিক করে নিশ্চিত করুন।"
+        description: "সেভ বাটনে ক্লিক করুন।"
       });
     };
     reader.readAsDataURL(file);
@@ -92,7 +89,6 @@ export default function EditProfilePage() {
       try {
         await updateProfile(user, {
           displayName: displayName,
-          // Only update auth profile if photoURL isn't a huge base64 (auth has limits)
           photoURL: photoURL.length < 50000 ? photoURL : user.photoURL 
         });
       } catch (authErr) {
@@ -109,14 +105,14 @@ export default function EditProfilePage() {
 
       toast({
         title: "সফল!",
-        description: "আপনার প্রোফাইল আপডেট করা হয়েছে।",
+        description: "প্রোফাইল আপডেট হয়েছে।",
       });
       router.push('/profile');
     } catch (err: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "প্রোফাইল আপডেট করতে সমস্যা হয়েছে।",
+        description: "আপডেট ব্যর্থ হয়েছে।",
       });
     } finally {
       setIsUpdating(false);
@@ -132,19 +128,19 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col w-full overflow-x-hidden">
-      <header className="px-6 py-6 flex items-center gap-4 border-b border-white/5 bg-background sticky top-0 z-50">
+    <div className="min-h-screen bg-background flex flex-col w-full">
+      <header className="px-6 py-6 flex items-center gap-4 border-b border-white/5 bg-[#050505] sticky top-0 z-50">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => router.push('/profile')}
-          className="rounded-xl bg-white/5 h-10 w-10 flex-shrink-0"
+          className="rounded-xl bg-[#121212] h-10 w-10 flex-shrink-0"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </Button>
         <div className="flex flex-col">
           <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">Edit Profile</h1>
-          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Update Information</p>
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Update Info</p>
         </div>
       </header>
 
@@ -152,17 +148,17 @@ export default function EditProfilePage() {
         <div className="p-6 max-w-md mx-auto w-full space-y-10">
           <div className="flex flex-col items-center">
             <div 
-              className="relative cursor-pointer w-28 h-28" 
+              className="relative cursor-pointer w-24 h-24" 
               onClick={() => fileInputRef.current?.click()}
             >
-              <Avatar className="w-24 h-24 border-2 border-white/10 mx-auto">
+              <Avatar className="w-24 h-24 border border-white/10 mx-auto rounded-full overflow-hidden">
                 <AvatarImage src={photoURL} className="object-cover" />
-                <AvatarFallback className="bg-muted text-2xl font-black uppercase">
+                <AvatarFallback className="bg-[#121212] text-xl font-black uppercase">
                   {displayName[0] || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute bottom-1 right-1 p-2 bg-primary rounded-xl border border-background">
-                {isUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Camera className="w-4 h-4 text-white" />}
+              <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full border border-background">
+                {isUploading ? <Loader2 className="w-3 h-3 text-white animate-spin" /> : <Camera className="w-3 h-3 text-white" />}
               </div>
             </div>
             <input 
@@ -172,37 +168,37 @@ export default function EditProfilePage() {
               accept="image/*" 
               onChange={handleFileChange} 
             />
-            <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Change Photo</p>
+            <p className="mt-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Change Photo</p>
           </div>
 
-          <form onSubmit={handleUpdate} className="space-y-10">
+          <form onSubmit={handleUpdate} className="space-y-8">
             <div className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic border-l-2 border-primary pl-4">বেসিক ইনফো</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-4">বেসিক ইনফো</h3>
                 <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ডিসপ্লে নাম</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ডিসপ্লে নাম</Label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
-                        placeholder="আপনার নাম দিন" 
+                        placeholder="নাম দিন" 
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ফোন নম্বর</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ফোন নম্বর</Label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="01XXXXXXXXX" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
                       />
                     </div>
                   </div>
@@ -210,30 +206,30 @@ export default function EditProfilePage() {
               </div>
 
               <div className="space-y-4 pt-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic border-l-2 border-primary pl-4">গেমিং ইনফো</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-4">গেমিং ইনফো</h3>
                 <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ইন-গেম নাম</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ইন-গেম নাম</Label>
                     <div className="relative">
                       <Gamepad2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="E.g. ShadowSlayer" 
                         value={ingameName}
                         onChange={(e) => setIngameName(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">প্লেয়ার আইডি (UID)</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">প্লেয়ার আইডি (UID)</Label>
                     <div className="relative">
                       <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="E.g. 102938475" 
                         value={ingameId}
                         onChange={(e) => setIngameId(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold font-mono"
+                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold font-mono text-white"
                       />
                     </div>
                   </div>
@@ -244,7 +240,7 @@ export default function EditProfilePage() {
             <Button 
               type="submit" 
               disabled={isUpdating}
-              className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl text-xs"
+              className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl text-xs shadow-none border-none"
             >
               {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <><CheckCircle2 className="w-4 h-4 mr-2" /> সব সেভ করুন</>
