@@ -72,10 +72,6 @@ export default function EditProfilePage() {
       const base64String = reader.result as string;
       setPhotoURL(base64String);
       setIsUploading(false);
-      toast({
-        title: "ছবি সিলেক্ট হয়েছে",
-        description: "সেভ বাটনে ক্লিক করুন।"
-      });
     };
     reader.readAsDataURL(file);
   };
@@ -86,15 +82,6 @@ export default function EditProfilePage() {
 
     setIsUpdating(true);
     try {
-      try {
-        await updateProfile(user, {
-          displayName: displayName,
-          photoURL: photoURL.length < 50000 ? photoURL : user.photoURL 
-        });
-      } catch (authErr) {
-        console.error("Auth update skip:", authErr);
-      }
-
       await updateDoc(doc(db, 'users', user.uid), {
         displayName,
         phone,
@@ -121,44 +108,41 @@ export default function EditProfilePage() {
 
   if (userLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-[#000000]">
+        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col w-full">
-      <header className="px-6 py-6 flex items-center gap-4 border-b border-white/5 bg-[#050505] sticky top-0 z-50">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+    <div className="min-h-screen bg-[#000000] flex flex-col w-full text-white">
+      <header className="px-6 py-4 flex items-center gap-4 border-b border-[#111111] bg-[#000000] sticky top-0 z-50">
+        <button 
           onClick={() => router.push('/profile')}
-          className="rounded-xl bg-[#121212] h-10 w-10 flex-shrink-0"
+          className="p-2 rounded-lg bg-[#111111] text-white"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </Button>
-        <div className="flex flex-col">
-          <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">Edit Profile</h1>
-          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Update Info</p>
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div>
+          <h1 className="text-lg font-bold uppercase tracking-tight">Edit Profile</h1>
+          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Update Info</p>
         </div>
       </header>
 
-      <main className="flex-1 pb-32">
+      <main className="flex-1 pb-20">
         <div className="p-6 max-w-md mx-auto w-full space-y-10">
           <div className="flex flex-col items-center">
             <div 
-              className="relative cursor-pointer w-24 h-24" 
+              className="relative w-24 h-24 bg-[#111111] rounded-full flex items-center justify-center overflow-hidden border border-[#222222]" 
               onClick={() => fileInputRef.current?.click()}
             >
-              <Avatar className="w-24 h-24 border border-white/10 mx-auto rounded-full overflow-hidden">
-                <AvatarImage src={photoURL} className="object-cover" />
-                <AvatarFallback className="bg-[#121212] text-xl font-black uppercase">
-                  {displayName[0] || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full border border-background">
-                {isUploading ? <Loader2 className="w-3 h-3 text-white animate-spin" /> : <Camera className="w-3 h-3 text-white" />}
+              {photoURL ? (
+                <img src={photoURL} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-10 h-10 text-gray-600" />
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
               </div>
             </div>
             <input 
@@ -168,70 +152,68 @@ export default function EditProfilePage() {
               accept="image/*" 
               onChange={handleFileChange} 
             />
-            <p className="mt-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Change Photo</p>
+            {isUploading && <p className="mt-2 text-[10px] text-red-600 font-bold uppercase">Uploading...</p>}
           </div>
 
           <form onSubmit={handleUpdate} className="space-y-8">
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-4">বেসিক ইনফো</h3>
-                <div className="grid gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ডিসপ্লে নাম</Label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                      <Input 
-                        placeholder="নাম দিন" 
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
-                        required
-                      />
-                    </div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-600 border-l-2 border-red-600 pl-3">Basic Info</h3>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500">Display Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                    <Input 
+                      placeholder="Enter your name" 
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="bg-[#111111] border-[#222222] h-12 pl-12 rounded-xl focus:border-red-600 transition-colors"
+                      required
+                    />
                   </div>
+                </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ফোন নম্বর</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                      <Input 
-                        placeholder="01XXXXXXXXX" 
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
-                      />
-                    </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500">Phone Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                    <Input 
+                      placeholder="01XXXXXXXXX" 
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="bg-[#111111] border-[#222222] h-12 pl-12 rounded-xl focus:border-red-600 transition-colors"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic border-l-2 border-primary pl-4">গেমিং ইনফো</h3>
-                <div className="grid gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">ইন-গেম নাম</Label>
-                    <div className="relative">
-                      <Gamepad2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                      <Input 
-                        placeholder="E.g. ShadowSlayer" 
-                        value={ingameName}
-                        onChange={(e) => setIngameName(e.target.value)}
-                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold text-white"
-                      />
-                    </div>
+              <div className="space-y-4 pt-2">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-600 border-l-2 border-red-600 pl-3">Gaming Info</h3>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500">In-game Name</Label>
+                  <div className="relative">
+                    <Gamepad2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                    <Input 
+                      placeholder="E.g. ShadowSlayer" 
+                      value={ingameName}
+                      onChange={(e) => setIngameName(e.target.value)}
+                      className="bg-[#111111] border-[#222222] h-12 pl-12 rounded-xl focus:border-red-600 transition-colors"
+                    />
                   </div>
+                </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">প্লেয়ার আইডি (UID)</Label>
-                    <div className="relative">
-                      <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                      <Input 
-                        placeholder="E.g. 102938475" 
-                        value={ingameId}
-                        onChange={(e) => setIngameId(e.target.value)}
-                        className="bg-[#121212] border-white/10 h-12 pl-12 rounded-xl font-bold font-mono text-white"
-                      />
-                    </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500">Player UID</Label>
+                  <div className="relative">
+                    <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                    <Input 
+                      placeholder="E.g. 102938475" 
+                      value={ingameId}
+                      onChange={(e) => setIngameId(e.target.value)}
+                      className="bg-[#111111] border-[#222222] h-12 pl-12 rounded-xl font-mono focus:border-red-600 transition-colors"
+                    />
                   </div>
                 </div>
               </div>
@@ -240,10 +222,10 @@ export default function EditProfilePage() {
             <Button 
               type="submit" 
               disabled={isUpdating}
-              className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl text-xs shadow-none border-none"
+              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-widest rounded-xl"
             >
               {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                <><CheckCircle2 className="w-4 h-4 mr-2" /> সব সেভ করুন</>
+                <><CheckCircle2 className="w-4 h-4 mr-2" /> Save Profile</>
               )}
             </Button>
           </form>
