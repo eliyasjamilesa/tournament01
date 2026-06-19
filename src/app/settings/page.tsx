@@ -17,9 +17,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { toast } = useToast();
   
   // States with default values
   const [notifications, setNotifications] = useState(true);
@@ -29,21 +31,29 @@ export default function SettingsPage() {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedNotifications = localStorage.getItem('app_notifications');
-    const savedSounds = localStorage.getItem('app_sounds');
-    const savedLanguage = localStorage.getItem('app_language');
+    try {
+      const savedNotifications = localStorage.getItem('app_notifications');
+      const savedSounds = localStorage.getItem('app_sounds');
+      const savedLanguage = localStorage.getItem('app_language');
 
-    if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
-    if (savedSounds !== null) setSounds(savedSounds === 'true');
-    if (savedLanguage !== null) setLanguage(savedLanguage);
-    
-    setIsLoaded(true);
+      if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
+      if (savedSounds !== null) setSounds(savedSounds === 'true');
+      if (savedLanguage !== null) setLanguage(savedLanguage);
+    } catch (e) {
+      console.error("Failed to load settings from storage", e);
+    } finally {
+      setIsLoaded(true);
+    }
   }, []);
 
   // Persist settings whenever they change
   const handleToggleNotifications = (val: boolean) => {
     setNotifications(val);
     localStorage.setItem('app_notifications', String(val));
+    toast({
+      title: val ? "নোটিফিকেশন চালু" : "নোটিফিকেশন বন্ধ",
+      description: val ? "এখন থেকে আপনি সব আপডেট পাবেন।" : "আপনি এখন থেকে আর কোনো পুশ নোটিফিকেশন পাবেন না।",
+    });
   };
 
   const handleToggleSounds = (val: boolean) => {
@@ -55,12 +65,17 @@ export default function SettingsPage() {
     const newLang = language === 'Bangla' ? 'English' : 'Bangla';
     setLanguage(newLang);
     localStorage.setItem('app_language', newLang);
+    toast({
+      title: "ভাষা পরিবর্তন",
+      description: `অ্যাপের ভাষা এখন ${newLang} এ সেট করা হয়েছে।`,
+    });
   };
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-[#000000] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+      <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary">Settings Loading...</p>
       </div>
     );
   }
@@ -86,7 +101,10 @@ export default function SettingsPage() {
           label: 'Language', 
           sub: 'ভাষা পরিবর্তন করুন', 
           control: (
-            <button onClick={handleToggleLanguage} className="text-[10px] font-black uppercase text-primary italic px-2">
+            <button 
+              onClick={handleToggleLanguage} 
+              className="text-[10px] font-black uppercase text-primary italic px-3 py-1 bg-primary/10 rounded-lg border border-primary/20"
+            >
               {language}
             </button>
           )
@@ -100,7 +118,7 @@ export default function SettingsPage() {
           icon: MessageSquare, 
           label: 'Join Telegram', 
           sub: 'হেল্প এবং সাপোর্টের জন্য', 
-          href: '#',
+          href: 'https://t.me/ignitearena',
           color: 'text-blue-500'
         },
         { 
@@ -123,15 +141,15 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-[#000000] flex flex-col w-full text-white">
-      <header className="px-6 py-4 flex items-center gap-4 border-b border-[#111111] bg-[#000000] sticky top-0 z-50">
+      <header className="px-6 py-8 flex items-center gap-4 border-b border-[#111111] bg-[#000000] sticky top-0 z-50">
         <button 
           onClick={() => router.push('/profile')}
-          className="p-2 rounded-lg bg-[#111111] text-white"
+          className="p-2.5 rounded-xl bg-[#111111] text-white border border-white/5"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold uppercase tracking-tight">Settings</h1>
+          <h1 className="text-xl font-black uppercase italic tracking-tight">Settings</h1>
           <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">App Preferences</p>
         </div>
       </header>
@@ -140,20 +158,20 @@ export default function SettingsPage() {
         <div className="p-4 space-y-8 max-w-md mx-auto w-full">
           {settingsSections.map((section) => (
             <div key={section.title} className="space-y-3">
-              <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 px-1">
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 px-1 italic">
                 {section.title}
               </h2>
-              <Card className="bg-[#0a0a0a] border border-[#111111] rounded-2xl overflow-hidden shadow-none">
+              <Card className="bg-[#050505] border border-[#111111] rounded-[2rem] overflow-hidden shadow-none">
                 <div className="divide-y divide-[#111111]">
                   {section.items.map((item, idx) => (
-                    <div key={idx} className="p-4 flex items-center justify-between">
+                    <div key={idx} className="p-5 flex items-center justify-between hover:bg-white/5 transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#111111] flex items-center justify-center">
+                        <div className="w-11 h-11 rounded-2xl bg-[#111111] flex items-center justify-center border border-white/5">
                           <item.icon className={`w-5 h-5 ${item.color || 'text-white'}`} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-200 tracking-tight">{item.label}</p>
-                          <p className="text-[9px] font-bold text-gray-500 uppercase">{item.sub}</p>
+                          <p className="text-[13px] font-black text-gray-200 tracking-tight">{item.label}</p>
+                          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{item.sub}</p>
                         </div>
                       </div>
                       {item.control ? item.control : (
@@ -166,12 +184,12 @@ export default function SettingsPage() {
             </div>
           ))}
 
-          <div className="pt-10 text-center space-y-2 opacity-30">
-             <div className="w-12 h-12 rounded-2xl bg-[#111111] flex items-center justify-center mx-auto mb-2">
-                <Settings className="w-6 h-6 text-gray-500" />
+          <div className="pt-10 text-center space-y-2 opacity-20">
+             <div className="w-14 h-14 rounded-[1.5rem] bg-[#111111] flex items-center justify-center mx-auto mb-3 border border-white/5">
+                <Settings className="w-7 h-7 text-gray-500" />
              </div>
-             <p className="text-[10px] font-black uppercase tracking-widest">Ignite Arena v1.0.4-Stable</p>
-             <p className="text-[8px] font-bold uppercase tracking-[0.2em]">Developed by Elite Tech Team</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.2em]">Ignite Arena v1.0.4-Stable</p>
+             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary italic">Born for the Arena</p>
           </div>
         </div>
       </main>
