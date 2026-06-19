@@ -7,7 +7,6 @@ import {
   ArrowLeft, 
   User, 
   Phone, 
-  Image as ImageIcon, 
   Loader2, 
   CheckCircle2,
   Camera,
@@ -93,10 +92,11 @@ export default function EditProfilePage() {
       try {
         await updateProfile(user, {
           displayName: displayName,
-          photoURL: photoURL.startsWith('data:') ? user.photoURL : photoURL 
+          // Only update auth profile if photoURL isn't a huge base64 (auth has limits)
+          photoURL: photoURL.length < 50000 ? photoURL : user.photoURL 
         });
       } catch (authErr) {
-        // Auth sync fallback
+        console.error("Auth update skip:", authErr);
       }
 
       await updateDoc(doc(db, 'users', user.uid), {
@@ -125,27 +125,22 @@ export default function EditProfilePage() {
 
   if (userLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-        </div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">লোড হচ্ছে...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col w-full overflow-hidden">
-      <header className="px-6 py-8 flex items-center gap-4 border-b border-white/5 bg-background/95 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-background flex flex-col w-full overflow-x-hidden">
+      <header className="px-6 py-6 flex items-center gap-4 border-b border-white/5 bg-background sticky top-0 z-50">
         <Button 
           variant="ghost" 
           size="icon" 
-          asChild
+          onClick={() => router.push('/profile')}
           className="rounded-xl bg-white/5 h-10 w-10 flex-shrink-0"
         >
-          <Link href="/profile">
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </Link>
+          <ArrowLeft className="w-5 h-5 text-white" />
         </Button>
         <div className="flex flex-col">
           <h1 className="text-lg font-black uppercase italic tracking-tighter text-white">Edit Profile</h1>
@@ -153,23 +148,20 @@ export default function EditProfilePage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar pb-32">
-        <div className="p-6 max-w-md mx-auto w-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <main className="flex-1 pb-32">
+        <div className="p-6 max-w-md mx-auto w-full space-y-10">
           <div className="flex flex-col items-center">
             <div 
-              className="relative group cursor-pointer w-28 h-28 flex-shrink-0" 
+              className="relative cursor-pointer w-28 h-28" 
               onClick={() => fileInputRef.current?.click()}
             >
-              <Avatar className="w-full h-full border-2 border-primary/20 shadow-xl shadow-primary/5 transition-all group-hover:opacity-90">
+              <Avatar className="w-24 h-24 border-2 border-white/10 mx-auto">
                 <AvatarImage src={photoURL} className="object-cover" />
                 <AvatarFallback className="bg-muted text-2xl font-black uppercase">
                   {displayName[0] || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                 <Upload className="w-6 h-6 text-white" />
-              </div>
-              <div className="absolute bottom-1 right-1 p-2 bg-primary rounded-xl border-2 border-background shadow-lg shadow-primary/20">
+              <div className="absolute bottom-1 right-1 p-2 bg-primary rounded-xl border border-background">
                 {isUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Camera className="w-4 h-4 text-white" />}
               </div>
             </div>
@@ -180,7 +172,7 @@ export default function EditProfilePage() {
               accept="image/*" 
               onChange={handleFileChange} 
             />
-            <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Change Profile Photo</p>
+            <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Change Photo</p>
           </div>
 
           <form onSubmit={handleUpdate} className="space-y-10">
@@ -189,28 +181,28 @@ export default function EditProfilePage() {
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic border-l-2 border-primary pl-4">বেসিক ইনফো</h3>
                 <div className="grid gap-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">ডিসপ্লে নাম</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ডিসপ্লে নাম</Label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="আপনার নাম দিন" 
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
                         required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">ফোন নম্বর</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ফোন নম্বর</Label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="01XXXXXXXXX" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
                       />
                     </div>
                   </div>
@@ -218,30 +210,30 @@ export default function EditProfilePage() {
               </div>
 
               <div className="space-y-4 pt-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic border-l-2 border-primary pl-4">গেমিং ইনফো (ফ্রি ফায়ার)</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic border-l-2 border-primary pl-4">গেমিং ইনফো</h3>
                 <div className="grid gap-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">গেমের নাম (In-game Name)</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ইন-গেম নাম</Label>
                     <div className="relative">
                       <Gamepad2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="E.g. ShadowSlayer" 
                         value={ingameName}
                         onChange={(e) => setIngameName(e.target.value)}
-                        className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold"
+                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">প্লেয়ার আইডি (UID)</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">প্লেয়ার আইডি (UID)</Label>
                     <div className="relative">
                       <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                       <Input 
                         placeholder="E.g. 102938475" 
                         value={ingameId}
                         onChange={(e) => setIngameId(e.target.value)}
-                        className="bg-muted/30 border-white/5 h-12 pl-12 rounded-xl font-bold font-mono"
+                        className="bg-white/5 border-white/10 h-12 pl-12 rounded-xl font-bold font-mono"
                       />
                     </div>
                   </div>
@@ -252,7 +244,7 @@ export default function EditProfilePage() {
             <Button 
               type="submit" 
               disabled={isUpdating}
-              className="w-full h-14 magma-gradient font-black uppercase italic tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 text-xs active:scale-[0.98] transition-all"
+              className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl text-xs"
             >
               {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <><CheckCircle2 className="w-4 h-4 mr-2" /> সব সেভ করুন</>
