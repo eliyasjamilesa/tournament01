@@ -4,6 +4,7 @@ import './globals.css';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { PushNotificationManager } from '@/components/PushNotificationManager';
 
 export const metadata: Metadata = {
   title: 'IgniteArena | Free Fire Tournament App',
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased pb-20 selection:bg-primary/30">
         <FirebaseClientProvider>
+          <PushNotificationManager />
           <div className="min-h-screen bg-background relative w-full overflow-x-hidden">
             {children}
             <BottomNav />
