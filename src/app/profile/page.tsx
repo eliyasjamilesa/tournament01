@@ -100,7 +100,7 @@ export default function ProfilePage() {
       title: "Account & Settings",
       items: [
         { icon: CreditCard, label: 'Wallet & Topup', href: '/wallet', color: 'text-primary' },
-        { icon: UserCircle, label: 'Game Profile', href: '#', color: 'text-muted-foreground' },
+        { icon: UserCircle, label: 'Game Profile', href: '/profile/edit', color: 'text-muted-foreground' },
         { icon: Bell, label: 'Notifications', href: '#', color: 'text-orange-500' },
         { icon: Settings, label: 'App Settings', href: '#', color: 'text-muted-foreground' },
       ]
@@ -119,9 +119,9 @@ export default function ProfilePage() {
               </AvatarFallback>
             </Avatar>
           </div>
-          <button className="absolute bottom-1 right-1 bg-primary p-2 rounded-full shadow-lg border-2 border-background">
+          <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-primary p-2 rounded-full shadow-lg border-2 border-background">
             <Plus className="w-3.5 h-3.5 text-white" />
-          </button>
+          </Link>
         </div>
 
         <div className="space-y-4 w-full">
