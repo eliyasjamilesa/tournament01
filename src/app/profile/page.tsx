@@ -101,8 +101,8 @@ export default function ProfilePage() {
       items: [
         { icon: CreditCard, label: 'Wallet & Topup', href: '/wallet', color: 'text-primary' },
         { icon: UserCircle, label: 'Game Profile', href: '/profile/edit', color: 'text-muted-foreground' },
-        { icon: Bell, label: 'Notifications', href: '#', color: 'text-orange-500' },
-        { icon: Settings, label: 'App Settings', href: '#', color: 'text-muted-foreground' },
+        { icon: Bell, label: 'Notifications', href: '/notifications', color: 'text-orange-500' },
+        { icon: Settings, label: 'App Settings', href: '/settings', color: 'text-muted-foreground' },
       ]
     }
   ];
