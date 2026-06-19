@@ -34,7 +34,7 @@ export default function Home() {
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
-  // Real-time listener for new notifications to show as "In-app Push"
+  // Real-time listener for new notifications
   useEffect(() => {
     if (!db || !user) return;
 
@@ -44,14 +44,13 @@ export default function Home() {
         const newNote = snapshot.docs[0];
         const noteData = newNote.data();
         
-        // Use a functional update to prevent closure issues with lastNotifiedId
         setLastNotifiedId((prevId) => {
-          // If prevId exists and is different from the new ID, show a toast
-          if (prevId && prevId !== newNote.id) {
+          // If a new notification arrives that wasn't previously shown
+          if (prevId !== null && prevId !== newNote.id) {
             toast({
               title: noteData.title || "নতুন ঘোষণা",
               description: noteData.message,
-              className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+              className: "bg-primary text-white border-none rounded-2xl shadow-xl border-l-4 border-white",
             });
           }
           return newNote.id;

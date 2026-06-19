@@ -6,59 +6,69 @@ import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } fro
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * @fileOverview Manages system push notifications for native platforms (Android/iOS).
+ * This requires a 'google-services.json' file in the android/app directory to function on APK.
+ */
+
 export function PushNotificationManager() {
   const { toast } = useToast();
 
   useEffect(() => {
     // Only run on native platforms (Android/iOS)
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform()) {
+      console.log('Push Notifications: Native platform not detected, skipping registration.');
+      return;
+    }
 
     const initializePush = async () => {
-      // Check/Request permissions
-      let permStatus = await PushNotifications.checkPermissions();
+      try {
+        // Check/Request permissions
+        let permStatus = await PushNotifications.checkPermissions();
 
-      if (permStatus.receive === 'prompt') {
-        permStatus = await PushNotifications.requestPermissions();
-      }
+        if (permStatus.receive === 'prompt') {
+          permStatus = await PushNotifications.requestPermissions();
+        }
 
-      if (permStatus.receive !== 'granted') {
-        console.warn('User denied permissions!');
-        return;
-      }
+        if (permStatus.receive !== 'granted') {
+          console.warn('Push Notifications: Permission denied by user.');
+          return;
+        }
 
-      // Register with Apple / Google to receive push via APNS/FCM
-      await PushNotifications.register();
+        // Register with Google/Apple push services
+        await PushNotifications.register();
 
-      // On success, we should be able to receive notifications
-      PushNotifications.addListener('registration', (token: Token) => {
-        console.log('Push registration success, token: ' + token.value);
-        // Tip: You can save this token in your Firebase 'users' collection 
-        // if you want to send notifications to a specific person.
-      });
-
-      // Some issue with our setup and push will not work
-      PushNotifications.addListener('registrationError', (error: any) => {
-        console.error('Error on registration: ' + JSON.stringify(error));
-      });
-
-      // Show us the notification payload if the app is open on our device
-      PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-        toast({
-          title: notification.title || 'New Announcement',
-          description: notification.body || '',
-          className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+        // Listen for successful registration
+        PushNotifications.addListener('registration', (token: Token) => {
+          console.log('Push Notifications: Registration success. Device Token:', token.value);
+          // In a production app, you would save this token to your Firestore user profile
         });
-      });
 
-      // Method called when tapping on a notification
-      PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
-        console.log('Push action performed: ' + JSON.stringify(notification));
-      });
+        // Listen for registration errors
+        PushNotifications.addListener('registrationError', (error: any) => {
+          console.error('Push Notifications: Registration error:', JSON.stringify(error));
+        });
+
+        // Show a toast if a notification is received while the app is open
+        PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+          toast({
+            title: notification.title || 'Elite Alert',
+            description: notification.body || '',
+            className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+          });
+        });
+
+        // Handle tapping on a notification
+        PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+          console.log('Push Notifications: Action performed:', action.notification.data);
+        });
+      } catch (err) {
+        console.error('Push Notifications: Initialization failed.', err);
+      }
     };
 
     initializePush();
 
-    // Clean up listeners on unmount
     return () => {
       PushNotifications.removeAllListeners();
     };
