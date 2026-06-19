@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Loader2, LayoutGrid, Bell } from 'lucide-react';
 import Link from 'next/link';
@@ -10,12 +10,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
   const router = useRouter();
   const db = useFirestore();
+  const { toast } = useToast();
+  const [lastNotifiedId, setLastNotifiedId] = useState<string | null>(null);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -30,6 +33,31 @@ export default function Home() {
   }, [db]);
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
+
+  // Real-time listener for new notifications to show as "In-app Push"
+  useEffect(() => {
+    if (!db || !user) return;
+
+    const q = query(collection(db, 'notifications'), orderBy('timestamp', 'desc'), limit(1));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const newNote = snapshot.docs[0];
+        const noteData = newNote.data();
+        
+        // Only show toast if it's a new ID and not from a long time ago (e.g., within last 5 mins)
+        if (lastNotifiedId && lastNotifiedId !== newNote.id) {
+           toast({
+             title: noteData.title || "নতুন ঘোষণা",
+             description: noteData.message,
+             className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+           });
+        }
+        setLastNotifiedId(newNote.id);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [db, user, lastNotifiedId, toast]);
 
   useEffect(() => {
     if (!authLoading && !user) {
