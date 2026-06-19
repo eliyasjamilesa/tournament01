@@ -11,6 +11,8 @@
         "email": { "type": "string", "format": "email" },
         "photoURL": { "type": "string" },
         "phone": { "type": "string" },
+        "ingameName": { "type": "string", "description": "Default Free Fire name for the user." },
+        "ingameId": { "type": "string", "description": "Default Free Fire UID for the user." },
         "coins": { "type": "number", "description": "Virtual currency for tournament entry." },
         "level": { "type": "number", "description": "User's experience level." },
         "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role in the platform." }

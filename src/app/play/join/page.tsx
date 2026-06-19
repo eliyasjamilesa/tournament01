@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -56,6 +56,14 @@ function JoinMatchContent() {
     return collection(db, 'tournaments', tournamentId, 'registrations');
   }, [db, tournamentId]);
   const { data: registrations, loading: regsLoading } = useCollection<any>(registrationsRef);
+
+  // Auto-fill from profile when loaded
+  useEffect(() => {
+    if (profile) {
+      if (profile.ingameName) setIngameName(profile.ingameName);
+      if (profile.ingameId) setIngameId(profile.ingameId);
+    }
+  }, [profile]);
 
   const occupiedSlots = useMemo(() => {
     if (!registrations) return new Set<number>();
@@ -191,7 +199,7 @@ function JoinMatchContent() {
         ))}
       </div>
 
-      <main className="flex-1 px-6 pb-32 space-y-6 overflow-y-auto">
+      <main className="flex-1 px-6 pb-32 space-y-6 overflow-y-auto no-scrollbar">
         {step === 1 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -252,7 +260,7 @@ function JoinMatchContent() {
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">গেমের নাম (In-game Name)</Label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                  <Gamepad2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                   <Input 
                     placeholder="E.g. ShadowSlayer" 
                     value={ingameName}
