@@ -44,20 +44,23 @@ export default function Home() {
         const newNote = snapshot.docs[0];
         const noteData = newNote.data();
         
-        // Only show toast if it's a new ID and not from a long time ago (e.g., within last 5 mins)
-        if (lastNotifiedId && lastNotifiedId !== newNote.id) {
-           toast({
-             title: noteData.title || "নতুন ঘোষণা",
-             description: noteData.message,
-             className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
-           });
-        }
-        setLastNotifiedId(newNote.id);
+        // Use a functional update to prevent closure issues with lastNotifiedId
+        setLastNotifiedId((prevId) => {
+          // If prevId exists and is different from the new ID, show a toast
+          if (prevId && prevId !== newNote.id) {
+            toast({
+              title: noteData.title || "নতুন ঘোষণা",
+              description: noteData.message,
+              className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+            });
+          }
+          return newNote.id;
+        });
       }
     });
 
     return () => unsubscribe();
-  }, [db, user, lastNotifiedId, toast]);
+  }, [db, user, toast]);
 
   useEffect(() => {
     if (!authLoading && !user) {
