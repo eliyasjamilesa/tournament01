@@ -7,7 +7,6 @@ import {
   ArrowLeft, 
   Settings, 
   Bell, 
-  Globe, 
   Volume2, 
   ShieldCheck, 
   Info,
@@ -26,7 +25,6 @@ export default function SettingsPage() {
   // States with default values
   const [notifications, setNotifications] = useState(true);
   const [sounds, setSounds] = useState(true);
-  const [language, setLanguage] = useState('Bangla');
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load settings from localStorage on mount
@@ -34,11 +32,9 @@ export default function SettingsPage() {
     try {
       const savedNotifications = localStorage.getItem('app_notifications');
       const savedSounds = localStorage.getItem('app_sounds');
-      const savedLanguage = localStorage.getItem('app_language');
 
       if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
       if (savedSounds !== null) setSounds(savedSounds === 'true');
-      if (savedLanguage !== null) setLanguage(savedLanguage);
     } catch (e) {
       console.error("Failed to load settings from storage", e);
     } finally {
@@ -59,16 +55,6 @@ export default function SettingsPage() {
   const handleToggleSounds = (val: boolean) => {
     setSounds(val);
     localStorage.setItem('app_sounds', String(val));
-  };
-
-  const handleToggleLanguage = () => {
-    const newLang = language === 'Bangla' ? 'English' : 'Bangla';
-    setLanguage(newLang);
-    localStorage.setItem('app_language', newLang);
-    toast({
-      title: "ভাষা পরিবর্তন",
-      description: `অ্যাপের ভাষা এখন ${newLang} এ সেট করা হয়েছে।`,
-    });
   };
 
   if (!isLoaded) {
@@ -95,19 +81,6 @@ export default function SettingsPage() {
           label: 'Sound Effects', 
           sub: 'অ্যাপের সাউন্ড অন/অফ করুন', 
           control: <Switch checked={sounds} onCheckedChange={handleToggleSounds} /> 
-        },
-        { 
-          icon: Globe, 
-          label: 'Language', 
-          sub: 'ভাষা পরিবর্তন করুন', 
-          control: (
-            <button 
-              onClick={handleToggleLanguage} 
-              className="text-[10px] font-black uppercase text-primary italic px-3 py-1 bg-primary/10 rounded-lg border border-primary/20"
-            >
-              {language}
-            </button>
-          )
         },
       ]
     },
