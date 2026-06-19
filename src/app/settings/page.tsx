@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -20,9 +20,50 @@ import { Card } from '@/components/ui/card';
 
 export default function SettingsPage() {
   const router = useRouter();
+  
+  // States with default values
   const [notifications, setNotifications] = useState(true);
   const [sounds, setSounds] = useState(true);
   const [language, setLanguage] = useState('Bangla');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedNotifications = localStorage.getItem('app_notifications');
+    const savedSounds = localStorage.getItem('app_sounds');
+    const savedLanguage = localStorage.getItem('app_language');
+
+    if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
+    if (savedSounds !== null) setSounds(savedSounds === 'true');
+    if (savedLanguage !== null) setLanguage(savedLanguage);
+    
+    setIsLoaded(true);
+  }, []);
+
+  // Persist settings whenever they change
+  const handleToggleNotifications = (val: boolean) => {
+    setNotifications(val);
+    localStorage.setItem('app_notifications', String(val));
+  };
+
+  const handleToggleSounds = (val: boolean) => {
+    setSounds(val);
+    localStorage.setItem('app_sounds', String(val));
+  };
+
+  const handleToggleLanguage = () => {
+    const newLang = language === 'Bangla' ? 'English' : 'Bangla';
+    setLanguage(newLang);
+    localStorage.setItem('app_language', newLang);
+  };
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+      </div>
+    );
+  }
 
   const settingsSections = [
     {
@@ -32,20 +73,20 @@ export default function SettingsPage() {
           icon: Bell, 
           label: 'Notifications', 
           sub: 'নতুন ম্যাচের খবর পান', 
-          control: <Switch checked={notifications} onCheckedChange={setNotifications} /> 
+          control: <Switch checked={notifications} onCheckedChange={handleToggleNotifications} /> 
         },
         { 
           icon: Volume2, 
           label: 'Sound Effects', 
           sub: 'অ্যাপের সাউন্ড অন/অফ করুন', 
-          control: <Switch checked={sounds} onCheckedChange={setSounds} /> 
+          control: <Switch checked={sounds} onCheckedChange={handleToggleSounds} /> 
         },
         { 
           icon: Globe, 
           label: 'Language', 
           sub: 'ভাষা পরিবর্তন করুন', 
           control: (
-            <button onClick={() => setLanguage(l => l === 'Bangla' ? 'English' : 'Bangla')} className="text-[10px] font-black uppercase text-primary italic">
+            <button onClick={handleToggleLanguage} className="text-[10px] font-black uppercase text-primary italic px-2">
               {language}
             </button>
           )
