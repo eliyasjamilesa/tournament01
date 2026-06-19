@@ -100,10 +100,10 @@ export default function Home() {
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary italic">Live Status</span>
         </div>
 
-        <button className="p-2 -mr-2 text-white hover:bg-white/5 rounded-xl transition-colors relative">
+        <Link href="/notifications" className="p-2 -mr-2 text-white hover:bg-white/5 rounded-xl transition-colors relative">
           <Bell className="w-6 h-6" />
           <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border border-background" />
-        </button>
+        </Link>
       </header>
 
       <main className="px-4 space-y-8 mt-4 w-full">

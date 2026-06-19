@@ -8,7 +8,8 @@ import {
   Zap, 
   ChevronRight,
   ShieldCheck,
-  Medal
+  Medal,
+  Bell
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
@@ -28,6 +29,12 @@ export default function AdminMenu() {
       items: [
         { icon: Wallet, label: 'Payment Receive', sub: 'ইউজারদের পেমেন্ট চেক করুন', href: '/admin/payments', color: 'text-green-500' },
         { icon: Zap, label: 'Payment Send', sub: 'কয়েন রিচার্জ করে দিন', href: '/admin/recharge', color: 'text-orange-500' },
+      ]
+    },
+    {
+      title: "যোগাযোগ ও ঘোষণা",
+      items: [
+        { icon: Bell, label: 'Push Notification', sub: 'ইউজারদের মেসেজ পাঠান', href: '/admin/notifications', color: 'text-blue-500' },
       ]
     }
   ];

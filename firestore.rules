@@ -30,17 +30,22 @@ service cloud.firestore {
       }
     }
 
-    // Collection group rules for registrations (Crucial for Profile/Joined pages)
+    // Collection group rules for registrations
     match /{path=**}/registrations/{regDocId} {
       allow read: if isSignedIn();
     }
     
     // Transaction rules
     match /transactions/{transactionId} {
-      // Allow read if signed in - the client query will filter appropriately
       allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
+    }
+
+    // Notification rules
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }

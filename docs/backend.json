@@ -82,6 +82,18 @@
         "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
         "timestamp": { "type": "string", "format": "date-time" }
       }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System-wide notifications for users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["general", "match", "alert"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -103,6 +115,10 @@
     "/transactions/{transactionId}": {
       "schema": "Transaction",
       "description": "Log of deposit requests, withdrawals and recharges."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "App notifications for announcements."
     }
   }
 }
