@@ -3,13 +3,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Loader2, LayoutGrid } from 'lucide-react';
+import { Zap, Loader2, LayoutGrid, Bell } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query } from 'firebase/firestore';
 
@@ -61,7 +60,6 @@ export default function Home() {
 
   if (!user) return null;
 
-  const userAvatar = profile?.photoURL || user?.photoURL || PlaceHolderImages.find(img => img.id === 'player-avatar')?.imageUrl;
   const promoBanner = PlaceHolderImages.find(img => img.id === 'promo-banner')?.imageUrl || '';
 
   const gameSections = [
@@ -102,14 +100,10 @@ export default function Home() {
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary italic">Live Status</span>
         </div>
 
-        <Link href="/profile">
-          <Avatar className="w-10 h-10 border-2 border-primary shadow-[0_0_15px_rgba(255,0,0,0.3)]">
-            <AvatarImage src={userAvatar} className="object-cover" />
-            <AvatarFallback className="bg-muted font-bold">
-              {profile?.displayName?.[0] || user?.displayName?.[0] || 'U'}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+        <button className="p-2 -mr-2 text-white hover:bg-white/5 rounded-xl transition-colors relative">
+          <Bell className="w-6 h-6" />
+          <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border border-background" />
+        </button>
       </header>
 
       <main className="px-4 space-y-8 mt-4 w-full">
