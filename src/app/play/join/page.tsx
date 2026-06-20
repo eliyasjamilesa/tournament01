@@ -15,7 +15,8 @@ import {
   User,
   Fingerprint,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  Percent
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,6 +83,22 @@ function JoinMatchContent() {
     return { total: 48, perGroup: 1, type: 'SOLO' };
   }, [tournament]);
 
+  // Level 20 Discount Logic: 5% car
+  const feeCalculation = useMemo(() => {
+    if (!tournament || !profile) return { base: 0, final: 0, hasDiscount: false };
+    const baseFee = Number(tournament.entryFee || 0);
+    const totalXP = profile.xp || 0;
+    const currentLevel = Math.floor(totalXP / 1000) + 1;
+    
+    if (currentLevel >= 20) {
+      const discount = baseFee * 0.05;
+      const finalFee = Math.floor(baseFee - discount);
+      return { base: baseFee, final: finalFee, hasDiscount: true };
+    }
+    
+    return { base: baseFee, final: baseFee, hasDiscount: false };
+  }, [tournament, profile]);
+
   const handleProceed = async () => {
     if (step === 1) {
       if (selectedSlot === null) {
@@ -99,13 +116,13 @@ function JoinMatchContent() {
       if (!db || !user || !tournament || !profile || !tournamentId) return;
       
       const userCoins = Number(profile.coins || 0);
-      const entryFee = Number(tournament.entryFee || 0);
+      const entryFeeToPay = feeCalculation.final;
 
-      if (userCoins < entryFee) {
+      if (userCoins < entryFeeToPay) {
         toast({ 
           variant: "destructive", 
           title: "টাকা কম আছে", 
-          description: `আপনার কাছে ${userCoins} TK আছে, কিন্তু জয়েন করতে ${entryFee} TK লাগবে।` 
+          description: `আপনার কাছে ${userCoins} TK আছে, কিন্তু জয়েন করতে ${entryFeeToPay} TK লাগবে।` 
         });
         return;
       }
@@ -131,7 +148,7 @@ function JoinMatchContent() {
 
         const uRef = doc(db, 'users', user.uid);
         batch.update(uRef, { 
-          coins: increment(-entryFee),
+          coins: increment(-entryFeeToPay),
           xp: increment(10)
         });
 
@@ -331,18 +348,32 @@ function JoinMatchContent() {
               
               <div className="p-4 bg-card/40 border border-white/5 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2"><Wallet className="w-4 h-4 text-primary" /><span className="text-[10px] font-bold uppercase text-muted-foreground">আপনার ব্যালেন্স</span></div>
-                <span className={cn("text-xs font-black", Number(profile?.coins || 0) < Number(tournament?.entryFee || 0) ? "text-destructive" : "text-green-500")}>
+                <span className={cn("text-xs font-black", Number(profile?.coins || 0) < feeCalculation.final ? "text-destructive" : "text-green-500")}>
                   {profile?.coins || 0} TK
                 </span>
               </div>
 
               <div className="flex justify-between items-center px-2">
-                 <span className="text-[10px] font-black uppercase text-primary italic">এন্ট্রি ফি লাগবে</span>
-                 <span className="text-lg font-black">{tournament.entryFee} TK</span>
+                 <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-black uppercase text-primary italic">এন্ট্রি ফি লাগবে</span>
+                    {feeCalculation.hasDiscount && (
+                      <span className="text-[8px] font-black text-green-500 flex items-center gap-1 uppercase">
+                        <Percent className="w-2.5 h-2.5" /> Level 20 Discount (5%)
+                      </span>
+                    )}
+                 </div>
+                 <div className="text-right">
+                    {feeCalculation.hasDiscount && (
+                      <span className="text-[10px] font-bold text-muted-foreground line-through block">
+                        {feeCalculation.base} TK
+                      </span>
+                    )}
+                    <span className="text-lg font-black">{feeCalculation.final} TK</span>
+                 </div>
               </div>
             </div>
 
-            {Number(profile?.coins || 0) < Number(tournament?.entryFee || 0) && (
+            {Number(profile?.coins || 0) < feeCalculation.final && (
                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
                  <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                  <p className="text-[10px] font-bold text-destructive uppercase leading-relaxed">আপনার ব্যালেন্স কম আছে। দয়া করে রিচার্জ করুন।</p>
