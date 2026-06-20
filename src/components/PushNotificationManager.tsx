@@ -22,11 +22,10 @@ export function PushNotificationManager() {
 
     const initializePush = async () => {
       try {
+        console.log('Push: Initializing...');
         // Check current permission status
         let permStatus = await PushNotifications.checkPermissions();
 
-        // If permission is not granted yet, we wait. We don't force request here 
-        // to avoid conflicts with early app lifecycle.
         if (permStatus.receive === 'granted') {
           await registerPush();
         } else if (permStatus.receive === 'prompt') {
@@ -37,15 +36,18 @@ export function PushNotificationManager() {
             setTimeout(async () => {
               await registerPush();
             }, 1000);
+          } else {
+            console.log('Push: User denied permission');
           }
         }
       } catch (err) {
-        console.error('Push: Permission check failed', err);
+        console.error('Push: Permission check/request failed', err);
       }
     };
 
     const registerPush = async () => {
       try {
+        console.log('Push: Registering listeners...');
         // IMPORTANT: Remove existing listeners to avoid duplicates
         await PushNotifications.removeAllListeners();
 
@@ -55,10 +57,12 @@ export function PushNotificationManager() {
         });
 
         await PushNotifications.addListener('registrationError', (error: any) => {
-          console.error('Push: Registration error:', JSON.stringify(error));
+          console.error('Push: Registration error reported by OS:', JSON.stringify(error));
+          // This usually happens if google-services.json is missing or invalid
         });
 
         await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+          console.log('Push: Received', notification);
           toast({
             title: notification.title || 'Elite Alert',
             description: notification.body || '',
@@ -70,21 +74,24 @@ export function PushNotificationManager() {
           console.log('Push: Action performed:', action.notification.data);
         });
 
-        // Finally, register. Wrapping in its own try-catch to prevent app crash.
+        // Finally, register. 
+        // This is where it often crashes if google-services.json is missing.
+        console.log('Push: Calling native register()...');
         try {
           await PushNotifications.register();
+          console.log('Push: Native register() called successfully');
         } catch (regErr) {
-          console.error('Push: Native register call failed', regErr);
+          console.error('Push: Native register() call threw an exception. Is google-services.json missing?', regErr);
         }
       } catch (err) {
-        console.error('Push: Listener setup failed', err);
+        console.error('Push: Listener setup/registration failed', err);
       }
     };
 
     // Initialize after a short delay to ensure app is stable
     const timer = setTimeout(() => {
       initializePush();
-    }, 2000);
+    }, 3000); // Increased delay slightly to 3s
 
     return () => {
       clearTimeout(timer);
