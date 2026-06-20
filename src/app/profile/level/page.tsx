@@ -67,7 +67,7 @@ export default function LevelPage() {
   const missions = [
     { title: "ম্যাচ খেলুন", desc: "প্রতিটি ম্যাচে জয়েন করলে ১০ XP পাবেন।", icon: Swords, color: "text-blue-500" },
     { title: "বুইয়াহ (Booyah)", desc: "প্রতিটি ম্যাচ জিতলে ৫০ XP পাবেন।", icon: Trophy, color: "text-yellow-500" },
-    { title: "প্রতি কিল (Per Kill)", desc: "প্রতিটি কিলের জন্য ১০ XP পাবেন।", icon: Zap, color: "text-primary" },
+    { title: "প্রতি কিল (Per Kill)", desc: "প্রতিটি কিলের জন্য ৫ XP পাবেন।", icon: Zap, color: "text-primary" },
     { title: "বন্ধু ইনভাইট", desc: "বন্ধু জয়েন করলে ৫০ XP পাবেন।", icon: Users, color: "text-green-500" },
   ];
 
@@ -122,7 +122,7 @@ export default function LevelPage() {
            </div>
         </section>
 
-        {/* XP History Section - NEW */}
+        {/* XP History Section */}
         <section className="space-y-4">
            <div className="flex items-center gap-3 px-2">
               <div className="h-[1px] flex-1 bg-white/5" />

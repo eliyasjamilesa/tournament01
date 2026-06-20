@@ -76,7 +76,7 @@ export default function AdminResultsPage() {
         // AWARD XP TO USER (Only if match status is changing from open/live to completed)
         if (!isAlreadyCompleted) {
           const userRef = doc(db, 'users', reg.id);
-          const killXP = Number(reg.kills || 0) * 10;
+          const killXP = Number(reg.kills || 0) * 5; // Updated to 5 XP per kill
           const winXP = Number(reg.wonAmount || 0) > 0 ? 50 : 0;
           const totalXP = killXP + winXP;
           
