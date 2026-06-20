@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, orderBy, limit, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, updateDoc, getDocs, writeBatch, increment } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -60,20 +60,39 @@ export default function AdminResultsPage() {
     setIsPublishing(true);
     try {
       const batch = writeBatch(db);
+      const currentMatch = tournaments?.find(t => t.id === selectedMatchId);
+      const isAlreadyCompleted = currentMatch?.status === 'completed';
       
       for (const reg of registrations) {
         const regRef = doc(db, 'tournaments', selectedMatchId, 'registrations', reg.id);
+        
+        // Update registration record
         batch.update(regRef, { 
           wonAmount: Number(reg.wonAmount || 0),
-          kills: Number(reg.kills || 0)
+          kills: Number(reg.kills || 0),
+          xpAwarded: true
         });
+
+        // AWARD XP TO USER (Only if match status is changing from open/live to completed)
+        if (!isAlreadyCompleted) {
+          const userRef = doc(db, 'users', reg.id);
+          const killXP = Number(reg.kills || 0) * 10;
+          const winXP = Number(reg.wonAmount || 0) > 0 ? 50 : 0;
+          const totalXP = killXP + winXP;
+          
+          if (totalXP > 0) {
+            batch.update(userRef, { 
+              xp: increment(totalXP)
+            });
+          }
+        }
       }
       
       const tournamentRef = doc(db, 'tournaments', selectedMatchId);
       batch.update(tournamentRef, { status: 'completed' });
       
       await batch.commit();
-      toast({ title: "সফল", description: "ম্যাচ রেজাল্ট পাবলিশ হয়েছে।" });
+      toast({ title: "সফল", description: "ম্যাচ রেজাল্ট পাবলিশ হয়েছে এবং প্লেয়াররা XP পেয়েছে।" });
       setSelectedMatchId(null);
     } catch (err: any) {
       toast({ variant: "destructive", title: "ব্যর্থ হয়েছে", description: err.message });

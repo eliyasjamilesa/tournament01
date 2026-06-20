@@ -122,18 +122,22 @@ function JoinMatchContent() {
           slotNumber: selectedSlot,
           timestamp: serverTimestamp(),
           wonAmount: 0,
-          kills: 0
+          kills: 0,
+          xpAwarded: false // Track if result XP was given
         });
 
         const tRef = doc(db, 'tournaments', tournamentId);
         batch.update(tRef, { currentPlayers: increment(1) });
 
         const uRef = doc(db, 'users', user.uid);
-        batch.update(uRef, { coins: increment(-entryFee) });
+        batch.update(uRef, { 
+          coins: increment(-entryFee),
+          xp: increment(10) // AWARD JOIN XP (10)
+        });
 
         await batch.commit();
         setStep(4);
-        toast({ title: "সফল!", description: "ম্যাচ জয়েন করা হয়েছে।" });
+        toast({ title: "সফল!", description: "ম্যাচ জয়েন করা হয়েছে এবং ১০ XP পেয়েছেন।" });
       } catch (err: any) {
         toast({ variant: "destructive", title: "Error", description: err.message });
       } finally {

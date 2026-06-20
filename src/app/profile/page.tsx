@@ -51,21 +51,23 @@ export default function ProfilePage() {
   const { data: userRegistrations, loading: regsLoading } = useCollection<any>(registrationsQuery);
 
   const stats = useMemo(() => {
-    if (!userRegistrations) return { matches: 0, coins: profile?.coins || 0, wins: 0, level: profile?.level || 1, xp: profile?.xp || 0 };
+    if (!userRegistrations) return { matches: 0, coins: profile?.coins || 0, wins: 0, level: 1, xp: profile?.xp || 0 };
     
     const totalWinnings = userRegistrations.reduce((acc: number, reg: any) => acc + (Number(reg.wonAmount) || 0), 0);
+    const totalXP = profile?.xp || 0;
+    const derivedLevel = Math.floor(totalXP / 1000) + 1; // 1000 XP per level
     
     return {
       matches: userRegistrations.length,
       coins: profile?.coins || 0,
       wins: totalWinnings,
-      level: profile?.level || 1,
-      xp: profile?.xp || 0
+      level: derivedLevel,
+      xp: totalXP
     };
-  }, [userRegistrations, profile?.coins, profile?.level, profile?.xp]);
+  }, [userRegistrations, profile?.coins, profile?.xp]);
 
   // Level Logic: 1000 XP per level
-  const nextLevelPercent = stats.xp > 0 ? (stats.xp % 1000) / 10 : 0;
+  const nextLevelPercent = (stats.xp % 1000) / 10;
 
   useEffect(() => {
     if (!userLoading && !user) {

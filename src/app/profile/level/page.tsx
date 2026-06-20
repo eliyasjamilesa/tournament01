@@ -46,7 +46,7 @@ export default function LevelPage() {
 
   // Level Logic: 1000 XP per level
   const totalXP = profile?.xp || 0;
-  const currentLevel = profile?.level || 1;
+  const currentLevel = Math.floor(totalXP / 1000) + 1;
   const xpInsideCurrentLevel = totalXP % 1000;
   const xpProgressPercent = (xpInsideCurrentLevel / 1000) * 100;
   const xpToNextLevel = 1000 - xpInsideCurrentLevel;
