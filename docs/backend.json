@@ -20,6 +20,17 @@
       },
       "required": ["uid", "email"]
     },
+    "XPLog": {
+      "title": "XPLog",
+      "description": "Record of XP points earned by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
     "Tournament": {
       "title": "Tournament",
       "description": "A match or tournament event.",
@@ -104,6 +115,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Individual user profiles."
+    },
+    "/users/{userId}/xpHistory/{logId}": {
+      "schema": "XPLog",
+      "description": "History of XP points earned by the user."
     },
     "/tournaments/{tournamentId}": {
       "schema": "Tournament",

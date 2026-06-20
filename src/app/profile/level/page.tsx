@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
   Medal, 
-  Star, 
   Zap, 
   ShieldCheck, 
   Trophy, 
@@ -14,14 +13,16 @@ import {
   Users,
   Loader2,
   Lock,
-  ChevronRight
+  ChevronRight,
+  History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 export default function LevelPage() {
   const router = useRouter();
@@ -34,6 +35,18 @@ export default function LevelPage() {
   }, [db, user]);
 
   const { data: profile, loading: profileLoading } = useDoc<any>(userDocRef);
+
+  // XP History Fetching
+  const xpHistoryQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'users', user.uid, 'xpHistory'),
+      orderBy('timestamp', 'desc'),
+      limit(20)
+    );
+  }, [db, user]);
+
+  const { data: xpHistory, loading: xpHistoryLoading } = useCollection<any>(xpHistoryQuery);
 
   if (userLoading || profileLoading) {
     return (
@@ -84,7 +97,7 @@ export default function LevelPage() {
       </header>
 
       <main className="p-4 space-y-10 max-w-md mx-auto w-full">
-        {/* Level Badge Area - Simple Solid Design */}
+        {/* Level Badge Area */}
         <section className="flex flex-col items-center justify-center py-10 space-y-6 bg-[#0a0a0a] rounded-[2.5rem] border border-[#111111]">
            <div className="relative">
               <div className="w-28 h-24 bg-primary rounded-2xl flex items-center justify-center border-4 border-white/10">
@@ -106,6 +119,38 @@ export default function LevelPage() {
                  <span className="text-primary">{xpToNextLevel} XP to Lvl {currentLevel + 1}</span>
               </div>
               <Progress value={xpProgressPercent} className="h-2 bg-black border border-[#222222]" />
+           </div>
+        </section>
+
+        {/* XP History Section - NEW */}
+        <section className="space-y-4">
+           <div className="flex items-center gap-3 px-2">
+              <div className="h-[1px] flex-1 bg-white/5" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">XP History</h3>
+              <div className="h-[1px] flex-1 bg-white/5" />
+           </div>
+           
+           <div className="space-y-2">
+              {xpHistoryLoading ? (
+                <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin opacity-20" /></div>
+              ) : xpHistory?.length === 0 ? (
+                <p className="text-[10px] text-center text-gray-600 uppercase font-bold py-4">No records found</p>
+              ) : (
+                xpHistory?.map((log: any) => (
+                  <div key={log.id} className="flex items-center justify-between p-4 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+                     <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                           <Zap className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                           <p className="text-[11px] font-black text-white uppercase leading-none mb-1">{log.reason}</p>
+                           <p className="text-[8px] font-bold text-gray-500 uppercase">{log.timestamp ? format(log.timestamp.toDate(), 'dd MMM, hh:mm a') : 'Just now'}</p>
+                        </div>
+                     </div>
+                     <span className="text-xs font-black text-green-500">+{log.amount} XP</span>
+                  </div>
+                ))
+              )}
            </div>
         </section>
 
@@ -131,7 +176,7 @@ export default function LevelPage() {
            </div>
         </section>
 
-        {/* Rank Benefits - Refined Design */}
+        {/* Rank Benefits */}
         <section className="space-y-6">
            <div className="flex items-center gap-3 px-2">
               <div className="h-[1px] flex-1 bg-white/5" />
@@ -153,7 +198,6 @@ export default function LevelPage() {
                     )}
                   >
                     <div className="flex items-stretch min-h-[80px]">
-                      {/* Level Indicator Side */}
                       <div className={cn(
                         "w-14 flex flex-col items-center justify-center border-r",
                         isUnlocked ? "bg-primary/10 border-primary/20" : "bg-black border-[#111111]"
@@ -168,7 +212,6 @@ export default function LevelPage() {
                         )}>{perk.level}</span>
                       </div>
 
-                      {/* Content Side */}
                       <div className="flex-1 p-4 flex flex-col justify-center">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className={cn(
@@ -191,7 +234,6 @@ export default function LevelPage() {
                         </p>
                       </div>
 
-                      {/* Right Arrow/Status */}
                       <div className="px-4 flex items-center justify-center">
                          {isUnlocked ? (
                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(255,0,0,0.5)]" />

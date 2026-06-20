@@ -123,7 +123,7 @@ function JoinMatchContent() {
           timestamp: serverTimestamp(),
           wonAmount: 0,
           kills: 0,
-          xpAwarded: false // Track if result XP was given
+          xpAwarded: false
         });
 
         const tRef = doc(db, 'tournaments', tournamentId);
@@ -132,7 +132,16 @@ function JoinMatchContent() {
         const uRef = doc(db, 'users', user.uid);
         batch.update(uRef, { 
           coins: increment(-entryFee),
-          xp: increment(10) // AWARD JOIN XP (10)
+          xp: increment(10)
+        });
+
+        // XP HISTORY LOG
+        const xpLogRef = doc(collection(db, 'users', user.uid, 'xpHistory'));
+        batch.set(xpLogRef, {
+          userId: user.uid,
+          amount: 10,
+          reason: `Match Join: ${tournament.title}`,
+          timestamp: serverTimestamp()
         });
 
         await batch.commit();

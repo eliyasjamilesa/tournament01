@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, orderBy, limit, updateDoc, getDocs, writeBatch, increment } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, updateDoc, getDocs, writeBatch, increment, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -83,6 +83,15 @@ export default function AdminResultsPage() {
           if (totalXP > 0) {
             batch.update(userRef, { 
               xp: increment(totalXP)
+            });
+
+            // LOG XP HISTORY
+            const xpLogRef = doc(collection(db, 'users', reg.id, 'xpHistory'));
+            batch.set(xpLogRef, {
+              userId: reg.id,
+              amount: totalXP,
+              reason: `Results: ${currentMatch?.title} (${reg.kills} Kills ${winXP > 0 ? '+ Booyah' : ''})`,
+              timestamp: serverTimestamp()
             });
           }
         }
