@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function SettingsPage() {
           icon: MessageSquare, 
           label: 'Join Telegram', 
           sub: 'হেল্প এবং সাপোর্টের জন্য', 
-          href: 'https://t.me/ignitearena',
+          href: 'https://t.me/TSTOUR',
           color: 'text-blue-500'
         },
         { 
@@ -148,7 +149,9 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       {item.control ? item.control : (
-                         <ChevronRight className="w-4 h-4 text-gray-700" />
+                        <Link href={item.href || '#'} target={item.href?.startsWith('http') ? '_blank' : undefined}>
+                          <ChevronRight className="w-4 h-4 text-gray-700" />
+                        </Link>
                       )}
                     </div>
                   ))}

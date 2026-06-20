@@ -138,7 +138,7 @@ export default function Home() {
 
       <main className="px-4 space-y-8 mt-4 w-full">
         <section>
-          <Card className="overflow-hidden border-none relative group cursor-pointer rounded-[2.5rem] h-52 shadow-2xl">
+          <Card className="overflow-hidden border-none relative group rounded-[2.5rem] h-52 shadow-2xl">
             <Image 
               src={promoBanner} 
               alt="Promo Banner" 
@@ -148,6 +148,20 @@ export default function Home() {
               data-ai-hint="gaming promotion"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            
+            {/* Telegram Join Button Overlay */}
+            <div className="absolute bottom-6 left-6 z-10">
+              <Link 
+                href="https://t.me/TSTOUR" 
+                target="_blank"
+                className="bg-primary hover:bg-primary/90 text-white text-[10px] font-black uppercase italic tracking-widest px-5 py-2.5 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.53-.99-.68-.35-1.05.22-1.71.15-.17 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.18-.08-.04-.19-.01-.27.01-.12.02-1.95 1.22-5.41 3.53-.51.35-.97.52-1.38.51-.45-.01-1.31-.25-1.95-.46-.78-.26-1.4-.4-1.35-.85.03-.24.36-.48.98-.73 3.84-1.67 6.4-2.77 7.67-3.3 3.65-1.51 4.41-1.77 4.9-.17z" />
+                </svg>
+                Join Telegram
+              </Link>
+            </div>
           </Card>
         </section>
 
