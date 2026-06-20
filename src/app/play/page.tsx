@@ -74,7 +74,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5">Slots</Button>
+        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0">Slots</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-4 pb-10 overflow-y-auto no-scrollbar">
         <SheetHeader className="sr-only">
@@ -178,7 +178,7 @@ function PrizeDistributionSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Trophy className="w-3 h-3 mr-1.5" /> Prizes</Button>
+        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0"><Trophy className="w-3 h-3 mr-1" /> Prizes</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-4 pb-10">
         <SheetHeader className="mb-6">
@@ -219,7 +219,7 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase flex-1 border-white/10 hover:bg-white/5"><Key className="w-3 h-3 mr-1.5" /> Room</Button>
+        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0"><Key className="w-3 h-3 mr-1" /> Room</Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-4 pb-12">
         <SheetHeader className="sr-only">
@@ -365,7 +365,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
               )}
             </Button>
           )}
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <SlotsSheet tournament={tournament} />
             <RoomDetailsSheet tournament={tournament} />
             <PrizeDistributionSheet tournament={tournament} />
