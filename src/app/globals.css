@@ -25,9 +25,7 @@
     --ring: 0 100% 50%;
     --radius: 0.75rem;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
