@@ -15,7 +15,8 @@ import {
   CreditCard,
   UserCircle,
   ShieldAlert,
-  User
+  User,
+  Medal
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -64,7 +65,6 @@ export default function ProfilePage() {
   }, [userRegistrations, profile?.coins, profile?.level, profile?.xp]);
 
   // Simple level calculation: Level = current level, progress = (xp % 100)
-  // Assume each level is 100 XP for simplicity in this MVP
   const xpProgress = stats.xp % 100;
   const nextLevelPercent = stats.matches > 0 ? Math.min(99, xpProgress || (stats.matches * 10) % 100) : 0;
 
@@ -141,13 +141,15 @@ export default function ProfilePage() {
             </p>
           </div>
           
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
-            <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              <span>Level {stats.level}</span>
-              <span>{Math.floor(nextLevelPercent)}% to Lvl {stats.level + 1}</span>
+          <Link href="/profile/level" className="block w-full active:scale-[0.98] transition-transform">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2 group">
+              <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                <span className="flex items-center gap-1"><Medal className="w-3 h-3 text-primary" /> Level {stats.level}</span>
+                <span className="group-hover:text-primary transition-colors">{Math.floor(nextLevelPercent)}% to Lvl {stats.level + 1} <ChevronRight className="w-2 h-2 inline" /></span>
+              </div>
+              <Progress value={nextLevelPercent} className="h-1.5 bg-background" />
             </div>
-            <Progress value={nextLevelPercent} className="h-1.5 bg-background" />
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -247,3 +249,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
