@@ -12,11 +12,10 @@ import {
   Info, 
   Swords, 
   Users,
-  ChevronRight,
   Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -35,9 +34,9 @@ export default function LevelPage() {
 
   if (userLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-primary">Loading My Rank...</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Loading Rank...</p>
       </div>
     );
   }
@@ -62,100 +61,99 @@ export default function LevelPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      <header className="px-6 pt-10 pb-6 flex items-center gap-4 border-b border-white/5 bg-background/95 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-black pb-32 text-white">
+      <header className="px-6 py-8 flex items-center gap-4 border-b border-[#111111] bg-black sticky top-0 z-50">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => router.push('/profile')}
-          className="rounded-full bg-white/5"
+          className="rounded-xl bg-[#111111] border border-[#222222]"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </Button>
-        <h1 className="text-xl font-black uppercase italic tracking-tight text-white">My Rank & Level</h1>
+        <div>
+          <h1 className="text-xl font-black uppercase italic tracking-tight">Rank & Level</h1>
+          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Progress Stats</p>
+        </div>
       </header>
 
       <main className="p-4 space-y-8 max-w-md mx-auto w-full">
-        {/* Level Badge Area */}
-        <section className="flex flex-col items-center justify-center py-10 space-y-6 bg-gradient-to-b from-primary/10 to-transparent rounded-[3rem] border border-primary/5">
+        {/* Level Badge Area - Simplified */}
+        <section className="flex flex-col items-center justify-center py-10 space-y-6 bg-[#0a0a0a] rounded-[2rem] border border-[#111111]">
            <div className="relative">
-              <div className="w-32 h-32 rounded-full magma-gradient flex items-center justify-center shadow-[0_0_40px_rgba(255,0,0,0.3)] border-4 border-white/10">
-                 <Medal className="w-16 h-16 text-white" />
+              <div className="w-28 h-24 bg-primary rounded-2xl flex items-center justify-center border-4 border-white/20">
+                 <Medal className="w-12 h-12 text-white" />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-white flex items-center justify-center border-4 border-background shadow-xl">
-                 <span className="text-xl font-black text-primary italic">{currentLevel}</span>
+              <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-xl bg-white flex items-center justify-center border-4 border-[#0a0a0a]">
+                 <span className="text-lg font-black text-primary italic">{currentLevel}</span>
               </div>
            </div>
            
-           <div className="text-center space-y-2">
+           <div className="text-center space-y-1">
               <h2 className="text-2xl font-black uppercase italic tracking-tighter">Level {currentLevel}</h2>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rank: Bronze Warrior</p>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Rank Status: Active</p>
            </div>
 
            <div className="w-full px-8 space-y-3">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                 <span className="text-muted-foreground">Current XP: {currentXP}</span>
-                 <span className="text-primary">{xpToNextLevel} XP needed for Lvl {currentLevel + 1}</span>
+              <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                 <span className="text-gray-500">XP: {currentXP}</span>
+                 <span className="text-primary">{xpToNextLevel} XP to Lvl {currentLevel + 1}</span>
               </div>
-              <Progress value={xpProgress} className="h-2.5 bg-background border border-white/5 shadow-inner" />
+              <Progress value={xpProgress} className="h-2 bg-black border border-[#222222]" />
            </div>
         </section>
 
-        {/* Missions / How to level up */}
+        {/* Missions Section */}
         <section className="space-y-4">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground px-2 flex items-center gap-2">
-              <Star className="w-3 h-3 text-primary" /> How to Level Up
-           </h3>
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 px-2">How to Level Up</h3>
            <div className="grid grid-cols-1 gap-3">
               {missions.map((mission, idx) => (
-                <Card key={idx} className="bg-[#0a0a0a] border-white/5 rounded-2xl overflow-hidden">
-                   <div className="p-4 flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${mission.color}`}>
-                         <mission.icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                         <h4 className="text-sm font-black uppercase italic tracking-tight text-white">{mission.title}</h4>
-                         <p className="text-[9px] font-bold text-muted-foreground uppercase">{mission.desc}</p>
-                      </div>
-                   </div>
+                <Card key={idx} className="bg-[#0a0a0a] border-[#111111] rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-[#111111] flex items-center justify-center shrink-0">
+                        <mission.icon className={`w-5 h-5 ${mission.color}`} />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black uppercase italic text-white leading-tight">{mission.title}</h4>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">{mission.desc}</p>
+                    </div>
                 </Card>
               ))}
            </div>
         </section>
 
-        {/* Level Perks / Benefits */}
+        {/* Rank Benefits */}
         <section className="space-y-4">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground px-2 flex items-center gap-2">
-              <ShieldCheck className="w-3 h-3 text-primary" /> Rank Benefits
-           </h3>
-           <Card className="bg-[#0a0a0a] border-white/5 rounded-[2rem] overflow-hidden">
-              <div className="divide-y divide-white/5">
-                 {perks.map((perk, idx) => (
-                   <div key={idx} className={`p-5 flex items-start gap-4 ${currentLevel >= perk.level ? 'opacity-100' : 'opacity-30'}`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${currentLevel >= perk.level ? 'bg-primary/20 text-primary' : 'bg-muted/20 text-muted-foreground'}`}>
-                         <span className="text-xs font-black italic">{perk.level}</span>
-                      </div>
-                      <div className="space-y-1">
-                         <div className="flex items-center gap-2">
-                            <h4 className="text-[11px] font-black uppercase italic tracking-tight text-white">{perk.title}</h4>
-                            {currentLevel >= perk.level && <ShieldCheck className="w-3 h-3 text-green-500" />}
-                         </div>
-                         <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed">{perk.desc}</p>
-                      </div>
-                   </div>
-                 ))}
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 px-2">Rank Benefits</h3>
+           <Card className="bg-[#0a0a0a] border-[#111111] rounded-[2rem] overflow-hidden">
+              <div className="divide-y divide-[#111111]">
+                 {perks.map((perk, idx) => {
+                   const isUnlocked = currentLevel >= perk.level;
+                   return (
+                     <div key={idx} className={`p-5 flex items-start gap-4 ${isUnlocked ? 'opacity-100' : 'opacity-30'}`}>
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${isUnlocked ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-black border-[#222222] text-gray-700'}`}>
+                           <span className="text-xs font-black italic">{perk.level}</span>
+                        </div>
+                        <div className="space-y-1">
+                           <div className="flex items-center gap-2">
+                              <h4 className="text-[11px] font-black uppercase italic text-white">{perk.title}</h4>
+                              {isUnlocked && <ShieldCheck className="w-3.5 h-3.5 text-green-500" />}
+                           </div>
+                           <p className="text-[10px] font-bold text-gray-500 uppercase leading-relaxed">{perk.desc}</p>
+                        </div>
+                     </div>
+                   );
+                 })}
               </div>
            </Card>
         </section>
 
-        <section className="p-6 rounded-3xl bg-primary/5 border border-primary/20 flex items-start gap-4">
+        <div className="p-5 rounded-2xl bg-[#0a0a0a] border border-[#111111] flex items-start gap-4">
            <Info className="w-5 h-5 text-primary shrink-0" />
-           <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
-             আপনার লেভেল যত বাড়বে, অ্যারেনাতে আপনার সম্মান এবং সুযোগ তত বেশি হবে। নিয়মিত ম্যাচ খেলুন এবং টপ র‍্যাঙ্কে পৌঁছান।
+           <p className="text-[9px] font-bold text-gray-500 uppercase leading-relaxed">
+             আপনার লেভেল বাড়াতে নিয়মিত টুর্নামেন্টে অংশ নিন। প্রতিটি কিল এবং বুইয়াহ আপনাকে আরও দ্রুত টপ র‍্যাঙ্কে নিয়ে যাবে।
            </p>
-        </section>
+        </div>
       </main>
     </div>
   );
 }
-
