@@ -12,7 +12,8 @@ import {
   Calendar,
   Map as MapIcon,
   Users,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -90,7 +91,7 @@ function MatchesContent() {
         },
         createdAt: serverTimestamp(),
       });
-      toast({ title: "সফল", description: "নতুন টুর্নামেন্ট চালু হয়েছে।" });
+      toast({ title: "সফল", description: "নতুন টুর্নামেন্ট চালু হয়েছে। কালেকশন রিস্টোর করা হয়েছে।" });
       setMatchTitle(''); setEntryFee(''); setPrizePool(''); setPerKill(''); setStartTime('');
       setP1(''); setP2(''); setP3(''); setP4(''); setP5('');
     } catch (err: any) {
@@ -246,11 +247,20 @@ function MatchesContent() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">লোডিং হচ্ছে...</p>
               </div>
-            ) : tournaments?.length === 0 ? (
-              <div className="text-center py-20 border border-dashed border-white/10 rounded-3xl">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">কোন ম্যাচ নেই</p>
+            ) : !tournaments || tournaments.length === 0 ? (
+              <div className="text-center py-24 border border-dashed border-white/5 rounded-[2.5rem] space-y-4 bg-muted/5">
+                 <div className="w-20 h-20 rounded-full bg-muted/10 flex items-center justify-center mx-auto border border-white/5">
+                   <Swords className="w-10 h-10 text-muted-foreground opacity-20" />
+                 </div>
+                 <div className="space-y-1">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">কোন একটিভ ম্যাচ পাওয়া যায়নি</p>
+                    <p className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-widest">একটি নতুন ম্যাচ যোগ করুন অথবা কালেকশন চেক করুন</p>
+                 </div>
+                 <Button variant="outline" size="sm" asChild className="h-9 rounded-xl uppercase font-black text-[9px] tracking-widest">
+                   <Link href="/admin/matches?tab=deploy">নতুন ম্যাচ তৈরি করুন</Link>
+                 </Button>
               </div>
-            ) : tournaments?.map((match: any) => (
+            ) : tournaments.map((match: any) => (
               <Card key={match.id} className="border-white/5 bg-card/40 p-5 rounded-2xl overflow-hidden shadow-lg">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
