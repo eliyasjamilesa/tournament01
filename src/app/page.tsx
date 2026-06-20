@@ -148,14 +148,6 @@ export default function Home() {
               data-ai-hint="gaming promotion"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-8 space-y-3">
-              <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white leading-tight">
-                টেলিগ্রাম চ্যানেলে <br /> <span className="text-primary">জয়েন করুন</span>
-              </h3>
-              <button className="bg-primary text-white text-[10px] font-black uppercase italic px-6 py-2.5 rounded-full w-fit flex items-center gap-2 shadow-lg shadow-primary/20">
-                JOIN TELEGRAM <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              </button>
-            </div>
           </Card>
         </section>
 
