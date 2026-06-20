@@ -64,9 +64,8 @@ export default function ProfilePage() {
     };
   }, [userRegistrations, profile?.coins, profile?.level, profile?.xp]);
 
-  // Simple level calculation: Level = current level, progress = (xp % 100)
-  const xpProgress = stats.xp % 100;
-  const nextLevelPercent = stats.matches > 0 ? Math.min(99, xpProgress || (stats.matches * 10) % 100) : 0;
+  // Level Logic: 1000 XP per level
+  const nextLevelPercent = stats.xp > 0 ? (stats.xp % 1000) / 10 : 0;
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -249,4 +248,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

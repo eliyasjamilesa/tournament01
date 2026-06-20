@@ -41,15 +41,17 @@ export default function LevelPage() {
     );
   }
 
+  // Level Logic: 1000 XP per level
+  const totalXP = profile?.xp || 0;
   const currentLevel = profile?.level || 1;
-  const currentXP = profile?.xp || 0;
-  const xpProgress = currentXP % 100;
-  const xpToNextLevel = 100 - xpProgress;
+  const xpInsideCurrentLevel = totalXP % 1000;
+  const xpProgressPercent = (xpInsideCurrentLevel / 1000) * 100;
+  const xpToNextLevel = 1000 - xpInsideCurrentLevel;
 
   const missions = [
-    { title: "ম্যাচ খেলুন", desc: "প্রতিটি ম্যাচে জয়েন করলে ৫ XP পাবেন।", icon: Swords, color: "text-blue-500" },
-    { title: "বুইয়াহ (Booyah)", desc: "প্রতিটি ম্যাচ জিতলে ২০ XP পাবেন।", icon: Trophy, color: "text-yellow-500" },
-    { title: "প্রতি কিল (Per Kill)", desc: "প্রতিটি কিলের জন্য ২ XP পাবেন।", icon: Zap, color: "text-primary" },
+    { title: "ম্যাচ খেলুন", desc: "প্রতিটি ম্যাচে জয়েন করলে ১০ XP পাবেন।", icon: Swords, color: "text-blue-500" },
+    { title: "বুইয়াহ (Booyah)", desc: "প্রতিটি ম্যাচ জিতলে ৫০ XP পাবেন।", icon: Trophy, color: "text-yellow-500" },
+    { title: "প্রতি কিল (Per Kill)", desc: "প্রতিটি কিলের জন্য ১০ XP পাবেন।", icon: Zap, color: "text-primary" },
     { title: "বন্ধু ইনভাইট", desc: "বন্ধু জয়েন করলে ৫০ XP পাবেন।", icon: Users, color: "text-green-500" },
   ];
 
@@ -78,7 +80,7 @@ export default function LevelPage() {
       </header>
 
       <main className="p-4 space-y-8 max-w-md mx-auto w-full">
-        {/* Level Badge Area - Simplified */}
+        {/* Level Badge Area - Simple Solid Design */}
         <section className="flex flex-col items-center justify-center py-10 space-y-6 bg-[#0a0a0a] rounded-[2rem] border border-[#111111]">
            <div className="relative">
               <div className="w-28 h-24 bg-primary rounded-2xl flex items-center justify-center border-4 border-white/20">
@@ -96,10 +98,10 @@ export default function LevelPage() {
 
            <div className="w-full px-8 space-y-3">
               <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
-                 <span className="text-gray-500">XP: {currentXP}</span>
+                 <span className="text-gray-500">XP: {totalXP}</span>
                  <span className="text-primary">{xpToNextLevel} XP to Lvl {currentLevel + 1}</span>
               </div>
-              <Progress value={xpProgress} className="h-2 bg-black border border-[#222222]" />
+              <Progress value={xpProgressPercent} className="h-2 bg-black border border-[#222222]" />
            </div>
         </section>
 
