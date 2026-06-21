@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   Trophy, 
   Loader2, 
@@ -11,6 +11,8 @@ import {
   Crown,
   ArrowLeft,
   ChevronRight,
+  Save,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,10 @@ export default function AdminResultsPage() {
   }, [db]);
   const { data: tournaments, loading: tournamentsLoading } = useCollection<any>(tournamentsQuery);
 
+  const currentMatch = useMemo(() => {
+    return tournaments?.find(t => t.id === selectedMatchId);
+  }, [tournaments, selectedMatchId]);
+
   const fetchRegistrations = async (tournamentId: string) => {
     if (!db) return;
     setSelectedMatchId(tournamentId);
@@ -48,7 +54,15 @@ export default function AdminResultsPage() {
     }
   };
 
-  const handleBooyahShortcut = (regId: string, winAmount: number) => {
+  const handleUpdateReg = (regId: string, field: string, value: string | number) => {
+    setRegistrations(prev => prev.map(r => 
+      r.id === regId ? { ...r, [field]: value } : r
+    ));
+  };
+
+  const handleBooyahShortcut = (regId: string) => {
+    if (!currentMatch) return;
+    const winAmount = Number(currentMatch.prizes?.p1 || 0);
     setRegistrations(prev => prev.map(r => 
       r.id === regId ? { ...r, wonAmount: winAmount } : r
     ));
@@ -56,34 +70,36 @@ export default function AdminResultsPage() {
   };
 
   const handlePublishResults = async () => {
-    if (!db || !selectedMatchId) return;
+    if (!db || !selectedMatchId || !currentMatch) return;
     setIsPublishing(true);
     try {
       const batch = writeBatch(db);
-      const currentMatch = tournaments?.find(t => t.id === selectedMatchId);
-      const isAlreadyCompleted = currentMatch?.status === 'completed';
+      const isAlreadyCompleted = currentMatch.status === 'completed';
       
       for (const reg of registrations) {
         const regRef = doc(db, 'tournaments', selectedMatchId, 'registrations', reg.id);
         const winAmount = Number(reg.wonAmount || 0);
+        const killCount = Number(reg.kills || 0);
         
         // Update registration record
         batch.update(regRef, { 
           wonAmount: winAmount,
-          kills: Number(reg.kills || 0),
+          kills: killCount,
           xpAwarded: true
         });
 
         // UPDATE USER STATS (Only if match status is changing from open/live to completed)
         if (!isAlreadyCompleted) {
           const userRef = doc(db, 'users', reg.id);
-          const killXP = Number(reg.kills || 0) * 5; 
+          const killXP = killCount * 5; 
           const winXP = winAmount > 0 ? 50 : 0;
           const totalXP = killXP + winXP;
           
           const userUpdate: any = {};
           if (totalXP > 0) userUpdate.xp = increment(totalXP);
           if (winAmount > 0) userUpdate.totalWinnings = increment(winAmount);
+          
+          // Note: Level is derived from XP in profile page, no need to update level field if we use derivation
           
           if (Object.keys(userUpdate).length > 0) {
             batch.update(userRef, userUpdate);
@@ -95,7 +111,7 @@ export default function AdminResultsPage() {
             batch.set(xpLogRef, {
               userId: reg.id,
               amount: totalXP,
-              reason: `Results: ${currentMatch?.title} (${reg.kills} Kills ${winXP > 0 ? '+ Booyah' : ''})`,
+              reason: `Match Results: ${currentMatch.title} (${killCount} Kills ${winXP > 0 ? '+ Booyah' : ''})`,
               timestamp: serverTimestamp()
             });
           }
@@ -121,14 +137,103 @@ export default function AdminResultsPage() {
   );
 
   if (selectedMatchId && currentMatch) {
-    // Current match content... (kept same as before but uses updated handlePublishResults)
+    return (
+      <div className="space-y-6 pb-32 animate-in fade-in slide-in-from-right-4 duration-500">
+        <header className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => setSelectedMatchId(null)} className="rounded-full bg-white/5">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h2 className="text-lg font-black uppercase italic tracking-tight">{currentMatch.title}</h2>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase">{currentMatch.matchId} • {registrations.length} Players</p>
+          </div>
+        </header>
+
+        <div className="space-y-4">
+          {registrations.length === 0 ? (
+            <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
+               <p className="text-[10px] font-bold text-muted-foreground uppercase">এই ম্যাচে কেউ জয়েন করেনি</p>
+            </div>
+          ) : (
+            registrations.sort((a, b) => a.slotNumber - b.slotNumber).map((reg) => (
+              <Card key={reg.id} className="border-white/5 bg-card/40 overflow-hidden rounded-2xl">
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black italic">
+                        #{reg.slotNumber}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black uppercase italic text-white">{reg.ingameName || reg.displayName}</h4>
+                        <p className="text-[8px] font-bold text-muted-foreground font-mono">UID: {reg.ingameId || '---'}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleBooyahShortcut(reg.id)}
+                      className={cn(
+                        "h-8 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest gap-1.5",
+                        Number(reg.wonAmount) > 0 ? "bg-yellow-500 border-yellow-500 text-black" : "border-white/10 bg-white/5"
+                      )}
+                    >
+                      <Crown className="w-3 h-3" /> Booyah
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[8px] font-black uppercase text-muted-foreground ml-1">Kills</Label>
+                      <div className="relative">
+                        <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-primary" />
+                        <Input 
+                          type="number" 
+                          value={reg.kills || ''} 
+                          onChange={(e) => handleUpdateReg(reg.id, 'kills', e.target.value)}
+                          placeholder="0"
+                          className="h-9 bg-black/20 border-white/5 pl-8 text-xs font-black"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[8px] font-black uppercase text-muted-foreground ml-1">Winning (TK)</Label>
+                      <div className="relative">
+                        <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-yellow-500" />
+                        <Input 
+                          type="number" 
+                          value={reg.wonAmount || ''} 
+                          onChange={(e) => handleUpdateReg(reg.id, 'wonAmount', e.target.value)}
+                          placeholder="0"
+                          className="h-9 bg-black/20 border-white/5 pl-8 text-xs font-black text-yellow-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background/80 backdrop-blur-md border-t border-white/5 z-[100]">
+          <div className="max-w-md mx-auto">
+            <Button 
+              disabled={isPublishing || registrations.length === 0}
+              onClick={handlePublishResults}
+              className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-xl text-sm gap-2"
+            >
+              {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> পাবলিশ করুন</>}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // Rest of AdminResultsPage (Simplified for this update block to focus on logic)
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter">Match <span className="text-primary">Results</span></h2>
+        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Match <span className="text-primary">Results</span></h2>
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">রেজাল্ট দেওয়ার জন্য একটি ম্যাচ সিলেক্ট করুন</p>
       </div>
 
@@ -169,7 +274,7 @@ export default function AdminResultsPage() {
                  <div className="text-right">
                     <p className="text-[8px] font-black text-primary uppercase">Status</p>
                     <p className={cn("text-[9px] font-black uppercase italic", match.status === 'completed' ? 'text-green-500' : 'text-yellow-500')}>
-                      {match.status === 'completed' ? 'সেভ করা' : 'বাকি আছে'}
+                      {match.status === 'completed' ? 'পাবলিশড' : 'বাকি আছে'}
                     </p>
                  </div>
                  <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
