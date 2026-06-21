@@ -11,6 +11,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
@@ -38,24 +40,37 @@ export default function Home() {
     if (!db || !user) return;
 
     const q = query(collection(db, 'notifications'), orderBy('timestamp', 'desc'), limit(1));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const newNote = snapshot.docs[0];
-        const noteData = newNote.data();
-        
-        setLastNotifiedId((prevId) => {
-          // If a new notification arrives that wasn't previously shown
-          if (prevId !== null && prevId !== newNote.id) {
-            toast({
-              title: noteData.title || "নতুন ঘোষণা",
-              description: noteData.message,
-              className: "bg-primary text-white border-none rounded-2xl shadow-xl border-l-4 border-white",
-            });
-          }
-          return newNote.id;
-        });
+    const unsubscribe = onSnapshot(
+      q, 
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const newNote = snapshot.docs[0];
+          const noteData = newNote.data();
+          
+          setLastNotifiedId((prevId) => {
+            // If a new notification arrives that wasn't previously shown
+            if (prevId !== null && prevId !== newNote.id) {
+              toast({
+                title: noteData.title || "নতুন ঘোষণা",
+                description: noteData.message,
+                className: "bg-primary text-white border-none rounded-2xl shadow-xl",
+              });
+            }
+            return newNote.id;
+          });
+        }
+      },
+      async (serverError) => {
+        // Handle permission errors centrally as per guidelines
+        if (serverError.code === 'permission-denied') {
+          const permissionError = new FirestorePermissionError({
+            path: 'notifications',
+            operation: 'list',
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        }
       }
-    });
+    );
 
     return () => unsubscribe();
   }, [db, user, toast]);
@@ -82,7 +97,7 @@ export default function Home() {
           <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
           <LayoutGrid className="w-5 h-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">Initiating Arena...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Initiating Arena...</p>
       </div>
     );
   }
@@ -125,7 +140,7 @@ export default function Home() {
         </button>
         
         <div className="flex items-center gap-2 bg-[#1a0505] border border-primary/20 px-4 py-2 rounded-full">
-          <Zap className="w-4 h-4 text-primary fill-primary animate-pulse" />
+          <Zap className="w-4 h-4 text-primary fill-primary" />
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary italic">Live Status</span>
         </div>
 
@@ -149,7 +164,6 @@ export default function Home() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
-              {/* Telegram Join Visual Button Overlay */}
               <div className="absolute bottom-6 left-6 z-10">
                 <div className="bg-primary hover:bg-primary/90 text-white text-[10px] font-black uppercase italic tracking-widest px-5 py-2.5 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -178,7 +192,7 @@ export default function Home() {
                 const typeImage = PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || '';
                 return (
                   <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group">
-                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-primary/10">
+                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 shadow-xl transition-all duration-300 group-hover:border-primary/50">
                       <Image 
                         src={typeImage} 
                         alt={type.title} 
@@ -212,7 +226,7 @@ export default function Home() {
 
         <section className="pb-10">
           <Link href="/scout">
-            <Card className="overflow-hidden border-none magma-gradient relative group cursor-pointer rounded-[2.5rem] shadow-xl">
+            <Card className="overflow-hidden border-none bg-primary relative group cursor-pointer rounded-[2.5rem] shadow-xl">
               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
               <CardContent className="p-8 relative z-10 flex items-center justify-between">
                 <div className="space-y-2">
