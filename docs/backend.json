@@ -16,6 +16,7 @@
         "coins": { "type": "number", "description": "Virtual currency for tournament entry." },
         "xp": { "type": "number", "description": "Experience points earned by the user." },
         "level": { "type": "number", "description": "User's experience level." },
+        "totalWinnings": { "type": "number", "description": "Lifetime earnings from tournaments." },
         "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role in the platform." }
       },
       "required": ["uid", "email"]
