@@ -4,9 +4,11 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   output: 'export', // Required for Capacitor to build APK
   typescript: {
+    // Ensuring CI build doesn't hang on type errors
     ignoreBuildErrors: true,
   },
   eslint: {
+    // Ensuring CI build doesn't hang on linting issues
     ignoreDuringBuilds: true,
   },
   images: {

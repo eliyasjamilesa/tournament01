@@ -14,7 +14,7 @@
     "static": "next build",
     "cap:sync": "npx cap sync",
     "cap:open": "npx cap open android",
-    "assets:generate": "npx @capacitor/assets generate"
+    "assets:generate": "npx @capacitor/assets generate --android"
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
