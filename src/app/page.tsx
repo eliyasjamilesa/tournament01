@@ -188,29 +188,31 @@ export default function Home() {
                 const typeImage = PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || '';
                 return (
                   <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group">
-                    <Card className="magma-card aspect-square rounded-[2rem] overflow-hidden flex flex-col items-center justify-center p-0 text-center relative border-none">
+                    <Card className="magma-card aspect-square rounded-[2rem] overflow-hidden flex flex-col items-center justify-center p-0 text-center relative border border-white/10 shadow-2xl">
                       <div className="absolute inset-0 z-0">
                          <Image 
                             src={typeImage} 
                             alt={type.title} 
                             fill 
-                            className="object-cover opacity-60 grayscale-[0.3] transition-all duration-700 group-hover:scale-125 group-hover:grayscale-0 group-hover:opacity-100"
+                            className="object-cover opacity-100 transition-all duration-700 group-hover:scale-110"
                             data-ai-hint="game mode"
                           />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                       </div>
                       
                       <div className="relative z-10 p-4 w-full h-full flex flex-col justify-end items-center gap-1">
-                        <span className="text-[11px] font-black uppercase italic text-white tracking-tight leading-none group-hover:text-primary transition-colors">{type.title}</span>
-                        <div className="flex flex-col items-center">
-                           <span className={availableCount > 0 ? "text-[8px] font-black text-green-500 uppercase tracking-widest" : "text-[8px] font-bold text-muted-foreground uppercase tracking-widest"}>
-                             {availableCount} {availableCount === 1 ? 'Match' : 'Matches'}
-                           </span>
+                        <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 w-full">
+                          <span className="text-[11px] font-black uppercase italic text-white tracking-tight leading-none block group-hover:text-primary transition-colors">{type.title}</span>
+                          <div className="flex flex-col items-center mt-1">
+                             <span className={availableCount > 0 ? "text-[8px] font-black text-green-500 uppercase tracking-widest" : "text-[8px] font-bold text-muted-foreground uppercase tracking-widest"}>
+                               {availableCount} {availableCount === 1 ? 'Match' : 'Matches'}
+                             </span>
+                          </div>
                         </div>
                       </div>
 
                       {availableCount > 0 && (
-                        <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]" />
+                        <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#22c55e] border-2 border-white/20" />
                       )}
                     </Card>
                   </Link>
