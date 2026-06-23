@@ -27,13 +27,22 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
-      - name: Sync Capacitor
+      - name: Prepare Capacitor Android
         run: |
-          # If android folder doesn't exist, add it
           if [ ! -d "android" ]; then
             npx cap add android
           fi
-          npx cap sync
+
+      - name: Generate Android Assets (Icons & Splash)
+        run: |
+          if [ -d "assets" ]; then
+            npm run assets:generate
+          else
+            echo "Assets folder not found. Using default icons."
+          fi
+
+      - name: Sync Capacitor
+        run: npx cap sync
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
