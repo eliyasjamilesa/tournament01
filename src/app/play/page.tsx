@@ -18,21 +18,41 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 function CountdownTimer({ startTime }: { startTime: string }) {
   const [timeLeft, setTimeLeft] = useState<string>('');
+  
   useEffect(() => {
     const target = new Date(startTime).getTime();
+    
     const updateTimer = () => {
       const now = new Date().getTime();
       const difference = target - now;
-      if (difference <= 0) { setTimeLeft('MATCH STARTED'); return; }
+
+      if (difference <= 0) {
+        setTimeLeft('MATCH STARTED');
+        return;
+      }
+
+      // Calculation for hours, minutes and seconds
+      const hours = Math.floor(difference / (1000 * 60 * 60));
       const mins = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const secs = Math.floor((difference % (1000 * 60)) / 1000);
-      setTimeLeft(`STARTS IN: ${mins}M ${secs}S`);
+
+      const hourStr = hours > 0 ? `${hours}H ` : '';
+      const minStr = `${mins}M `;
+      const secStr = `${secs}S`;
+
+      setTimeLeft(`STARTS IN: ${hourStr}${minStr}${secStr}`);
     };
+
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [startTime]);
-  return <div className="w-full bg-green-600 py-2 flex items-center justify-center border-t border-white/5"><span className="text-white text-[10px] font-black uppercase tracking-widest">{timeLeft}</span></div>;
+
+  return (
+    <div className="w-full bg-green-600 py-2 flex items-center justify-center border-t border-white/5">
+      <span className="text-white text-[10px] font-black uppercase tracking-widest">{timeLeft}</span>
+    </div>
+  );
 }
 
 function SlotsSheet({ tournament }: { tournament: any }) {
@@ -119,7 +139,7 @@ function SlotsSheet({ tournament }: { tournament: any }) {
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Join match to view players</p>
             </div>
           ) : slotsLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-red-500" /></div>
+            <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-red-500" /></div>
           ) : (
             <div className="space-y-6">
               {Array.from({ length: Math.ceil(slotConfig.total / slotConfig.perGroup) }).map((_, groupIndex) => (
