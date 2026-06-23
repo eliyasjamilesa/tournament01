@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, LayoutGrid, Bell, ChevronRight, Swords } from 'lucide-react';
+import { Zap, LayoutGrid, Bell, ChevronRight, Swords, Flame, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +22,7 @@ export default function Home() {
   const db = useFirestore();
   const { toast } = useToast();
   const [lastNotifiedId, setLastNotifiedId] = useState<string | null>(null);
+  const [showSplash, setShowSplash] = useState(true);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -36,6 +37,16 @@ export default function Home() {
   }, [db]);
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
+
+  // Splash timeout logic
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!authLoading) {
+        setShowSplash(false);
+      }
+    }, 2500); // Show splash for 2.5 seconds
+    return () => clearTimeout(timer);
+  }, [authLoading]);
 
   useEffect(() => {
     if (!db || !user) return;
@@ -75,10 +86,10 @@ export default function Home() {
   }, [db, user, toast]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !showSplash) {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, showSplash]);
 
   const getMatchCountForType = (typeTitle: string) => {
     if (!allTournaments) return 0;
@@ -89,14 +100,36 @@ export default function Home() {
     }).length;
   };
 
-  if (authLoading || (user && profileLoading)) {
+  // Splash Screen UI
+  if (showSplash || (authLoading && !user)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <div className="relative">
-          <div className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-          <Swords className="w-6 h-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Animated Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        
+        <div className="relative z-10 flex flex-col items-center gap-8 animate-in fade-in zoom-in duration-1000">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-3xl magma-gradient flex items-center justify-center shadow-[0_0_50px_rgba(255,0,0,0.4)] rotate-12">
+               <Flame className="w-14 h-14 text-white fill-white/20" />
+            </div>
+            {/* Loading Ring around logo */}
+            <div className="absolute -inset-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-black uppercase italic tracking-tighter text-white">TS <span className="text-primary text-glow-red">TOUR</span></h1>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em] animate-pulse">Elite Arena Loading</p>
+          </div>
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary animate-pulse">Loading Arena...</p>
+
+        <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-2">
+           <div className="flex items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+              <div className="w-1 h-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+              <div className="w-1 h-1 rounded-full bg-primary animate-bounce" />
+           </div>
+           <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Version 1.0.4 - Stable</p>
+        </div>
       </div>
     );
   }
@@ -132,7 +165,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen pb-40 bg-background w-full">
+    <div className="min-h-screen pb-40 bg-background w-full animate-in fade-in duration-700">
       <header className="px-4 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-xl z-[100]">
         <div className="flex items-center gap-3">
            <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
@@ -251,3 +284,4 @@ export default function Home() {
     </div>
   );
 }
+
