@@ -13,6 +13,7 @@ import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/fir
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const { user, loading: authLoading } = useUser();
@@ -182,38 +183,39 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-5">
               {section.types.map((type) => {
                 const availableCount = getMatchCountForType(type.title);
                 const typeImage = PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || '';
                 return (
-                  <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group">
-                    <Card className="magma-card aspect-square rounded-[2rem] overflow-hidden flex flex-col items-center justify-center p-0 text-center relative border border-white/10 shadow-2xl">
-                      <div className="absolute inset-0 z-0">
+                  <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group outline-none">
+                    <Card className="magma-card rounded-[2.5rem] overflow-hidden flex flex-col items-stretch p-0 border border-white/10 shadow-2xl transition-all duration-300 active:scale-95">
+                      <div className="relative aspect-[16/11] w-full overflow-hidden">
                          <Image 
                             src={typeImage} 
                             alt={type.title} 
                             fill 
-                            className="object-cover opacity-100 transition-all duration-700 group-hover:scale-110"
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
                             data-ai-hint="game mode"
                           />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                         {availableCount > 0 && (
+                            <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#22c55e] border-2 border-background z-20" />
+                         )}
                       </div>
                       
-                      <div className="relative z-10 p-4 w-full h-full flex flex-col justify-end items-center gap-1">
-                        <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 w-full">
-                          <span className="text-[11px] font-black uppercase italic text-white tracking-tight leading-none block group-hover:text-primary transition-colors">{type.title}</span>
-                          <div className="flex flex-col items-center mt-1">
-                             <span className={availableCount > 0 ? "text-[8px] font-black text-green-500 uppercase tracking-widest" : "text-[8px] font-bold text-muted-foreground uppercase tracking-widest"}>
-                               {availableCount} {availableCount === 1 ? 'Match' : 'Matches'}
-                             </span>
-                          </div>
+                      <div className="p-4 bg-[#0d0d0d] border-t border-white/5 text-center space-y-1">
+                        <span className="text-[11px] font-black uppercase italic text-white tracking-tight leading-none block group-hover:text-primary transition-colors">
+                          {type.title}
+                        </span>
+                        <div className="flex flex-col items-center">
+                          <span className={cn(
+                            "text-[8px] font-black uppercase tracking-widest",
+                            availableCount > 0 ? "text-green-500" : "text-muted-foreground opacity-50"
+                          )}>
+                            {availableCount} {availableCount === 1 ? 'Match' : 'Matches'}
+                          </span>
                         </div>
                       </div>
-
-                      {availableCount > 0 && (
-                        <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#22c55e] border-2 border-white/20" />
-                      )}
                     </Card>
                   </Link>
                 );
