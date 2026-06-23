@@ -138,19 +138,36 @@ export default function SettingsPage() {
               <Card className="bg-[#050505] border border-[#111111] rounded-[2rem] overflow-hidden shadow-none">
                 <div className="divide-y divide-[#111111]">
                   {section.items.map((item, idx) => (
-                    <div key={idx} className="p-5 flex items-center justify-between hover:bg-white/5 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-[#111111] flex items-center justify-center border border-white/5">
-                          <item.icon className={`w-5 h-5 ${item.color || 'text-white'}`} />
+                    <div key={idx} className="hover:bg-white/5 transition-all">
+                      {item.control ? (
+                        <div className="p-5 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-2xl bg-[#111111] flex items-center justify-center border border-white/5">
+                              <item.icon className={`w-5 h-5 ${item.color || 'text-white'}`} />
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-black text-gray-200 tracking-tight">{item.label}</p>
+                              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{item.sub}</p>
+                            </div>
+                          </div>
+                          {item.control}
                         </div>
-                        <div>
-                          <p className="text-[13px] font-black text-gray-200 tracking-tight">{item.label}</p>
-                          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{item.sub}</p>
-                        </div>
-                      </div>
-                      {item.control ? item.control : (
-                        <Link href={item.href || '#'} target={item.href?.startsWith('http') ? '_blank' : undefined}>
-                          <ChevronRight className="w-4 h-4 text-gray-700" />
+                      ) : (
+                        <Link 
+                          href={item.href || '#'} 
+                          target={item.href?.startsWith('http') ? '_blank' : undefined}
+                          className="p-5 flex items-center justify-between group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-2xl bg-[#111111] flex items-center justify-center border border-white/5">
+                              <item.icon className={`w-5 h-5 ${item.color || 'text-white'}`} />
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-black text-gray-200 tracking-tight">{item.label}</p>
+                              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{item.sub}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-primary transition-colors" />
                         </Link>
                       )}
                     </div>
