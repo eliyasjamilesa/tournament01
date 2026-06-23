@@ -7,7 +7,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
 
 export const metadata: Metadata = {
-  title: 'IgniteArena | Free Fire Tournament App',
+  title: 'Ts Tour | Free Fire Tournament App',
   description: 'High-stakes Free Fire tournaments and AI scouting',
 };
 

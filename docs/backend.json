@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Information about a user in the IgniteArena platform.",
+      "description": "Information about a user in the Ts Tour platform.",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },

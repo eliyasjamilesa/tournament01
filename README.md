@@ -1,4 +1,5 @@
-# Ignite Arena - Free Fire Tournament App
+
+# Ts Tour - Free Fire Tournament App
 
 এই প্রোজেক্টটি সফলভাবে GitHub-এ পুশ করা হয়েছে। এখন GitHub Actions ব্যবহার করে অটোমেটিক APK তৈরি হচ্ছে।
 
@@ -7,7 +8,7 @@
 ১. এই রিপোজিটরির **Actions** ট্যাবে যান।
 ২. **"Build Android APK"** ওয়ার্কফ্লোটি সিলেক্ট করুন।
 ৩. বিল্ড সফল হলে (সবুজ টিক ✅ আসলে), ওই রানটির ভেতরে প্রবেশ করুন।
-৪. নিচে **Artifacts** সেকশনে `ignite-arena-debug-apk` নামে একটি জিপ ফাইল পাবেন। সেটি ডাউনলোড করে আনজিপ করলেই আপনার **APK** ফাইলটি পেয়ে যাবেন।
+৪. নিচে **Artifacts** সেকশনে `ts-tour-debug-apk` নামে একটি জিপ ফাইল পাবেন। সেটি ডাউনলোড করে আনজিপ করলেই আপনার **APK** ফাইলটি পেয়ে যাবেন।
 
 ## প্রোজেক্ট আপডেট করার নিয়ম (ভবিষ্যতে)
 
@@ -25,4 +26,4 @@ git push origin main
 - **APK Engine:** Capacitor
 - **CI/CD:** GitHub Actions
 
-© Ignite Arena Team
+© Ts Tour Team

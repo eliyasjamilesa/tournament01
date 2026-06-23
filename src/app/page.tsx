@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -138,7 +139,7 @@ export default function Home() {
               <Zap className="w-6 h-6 text-white fill-white/20" />
            </div>
            <div>
-              <h1 className="text-lg font-black uppercase italic tracking-tighter leading-none text-white">IGNITE <span className="text-primary">ARENA</span></h1>
+              <h1 className="text-lg font-black uppercase italic tracking-tighter leading-none text-white">TS <span className="text-primary">TOUR</span></h1>
               <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Status: Operational</p>
            </div>
         </div>

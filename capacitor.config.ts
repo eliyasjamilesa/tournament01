@@ -2,8 +2,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ignitearena.app',
-  appName: 'Ignite Arena',
+  appId: 'com.tstour.app',
+  appName: 'Ts Tour',
   webDir: 'out',
   bundledWebRuntime: false,
   server: {

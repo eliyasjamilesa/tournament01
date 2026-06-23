@@ -104,7 +104,7 @@ export default function SettingsPage() {
         },
         { 
           icon: Info, 
-          label: 'About Ignite Arena', 
+          label: 'About Ts Tour', 
           sub: 'অ্যাপ সম্পর্কে জানুন', 
           href: '#',
           color: 'text-muted-foreground'
@@ -181,7 +181,7 @@ export default function SettingsPage() {
              <div className="w-14 h-14 rounded-[1.5rem] bg-[#111111] flex items-center justify-center mx-auto mb-3 border border-white/5">
                 <Settings className="w-7 h-7 text-gray-500" />
              </div>
-             <p className="text-[10px] font-black uppercase tracking-[0.2em]">Ignite Arena v1.0.4-Stable</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.2em]">Ts Tour v1.0.4-Stable</p>
              <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary italic">Born for the Arena</p>
           </div>
         </div>

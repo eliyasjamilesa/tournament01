@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -92,7 +93,7 @@ export default function LoginPage() {
       <div className="flex flex-col items-center mt-20 space-y-6 w-full">
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-headline font-black text-primary uppercase italic tracking-tight">
-            IGNITE ARENA
+            TS TOUR
           </h1>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em]">
             Elite Tournament Platform

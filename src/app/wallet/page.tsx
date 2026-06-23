@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRouter } from 'next/navigation';
@@ -92,7 +93,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-md">
                 <CircleDollarSign className="w-5 h-5 text-white" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Ignite Arena Wallet</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Ts Tour Wallet</span>
             </div>
 
             <div className="space-y-1">
