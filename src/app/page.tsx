@@ -135,10 +135,6 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-32 bg-background w-full">
       <header className="px-4 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-        <button className="p-2 -ml-2 text-white hover:bg-white/5 rounded-xl transition-colors">
-          <LayoutGrid className="w-6 h-6" />
-        </button>
-        
         <div className="flex items-center gap-2 bg-[#1a0505] border border-primary/20 px-4 py-2 rounded-full">
           <Zap className="w-4 h-4 text-primary fill-primary" />
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary italic">Live Status</span>
