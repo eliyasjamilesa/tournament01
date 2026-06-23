@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -17,6 +18,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +32,21 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db) return;
-    setIsLoading(true);
+    
     setErrorMsg(null);
+
+    // Validation
+    if (password !== confirmPassword) {
+      setErrorMsg("Passwords do not match!");
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -51,13 +66,14 @@ export default function SignupPage() {
         createdAt: serverTimestamp()
       }, { merge: true });
 
+      toast({ title: "সফল", description: "আপনার প্রোফাইল তৈরি হয়েছে।" });
       router.push('/');
     } catch (error: any) {
       let message = "Signup Failed";
       if (error.code === 'auth/email-already-in-use') {
         message = "This Email is already registered.";
-      } else if (error.code === 'auth/weak-password') {
-        message = "Password should be at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        message = "Invalid Email format.";
       }
       setErrorMsg(message);
       toast({
@@ -97,10 +113,7 @@ export default function SignupPage() {
 
       router.push('/');
     } catch (error: any) {
-      if (error.code === 'auth/unauthorized-domain') {
-        const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
-        setErrorMsg(`Domain (${domain}) is not authorized.`);
-      } else if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code !== 'auth/popup-closed-by-user') {
         setErrorMsg("Google Connection Failed");
       }
     } finally {
@@ -110,7 +123,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 max-w-md mx-auto relative">
-      <div className="flex flex-col items-center mt-16 space-y-6 w-full">
+      <div className="flex flex-col items-center mt-12 space-y-6 w-full">
         <div className="text-center space-y-1">
           <h1 className="text-xl font-headline font-black text-primary uppercase italic tracking-tight">
             BECOME A LEGEND
@@ -140,7 +153,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[10px) font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
             <Input 
               type="email"
               placeholder="warrior@ignite.com" 
@@ -163,24 +176,37 @@ export default function SignupPage() {
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
-            <div className="relative">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+              <div className="relative">
+                <Input 
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 6" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-simple pr-10"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Confirm</Label>
               <Input 
                 type={showPassword ? "text" : "password"}
-                placeholder="Min. 6 characters" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-simple pr-12"
+                placeholder="Repeat" 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-simple"
                 required
               />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
             </div>
           </div>
 
