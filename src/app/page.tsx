@@ -183,37 +183,43 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-6">
               {section.types.map((type) => {
                 const availableCount = getMatchCountForType(type.title);
                 const typeImage = PlaceHolderImages.find(img => img.id === type.image)?.imageUrl || '';
                 return (
                   <Link href={`/play?mode=${encodeURIComponent(type.title)}`} key={type.id} className="group outline-none">
-                    <Card className="magma-card rounded-[2.5rem] overflow-hidden flex flex-col items-stretch p-0 border border-white/10 shadow-2xl transition-all duration-300 active:scale-95">
-                      <div className="relative aspect-[16/11] w-full overflow-hidden">
+                    <Card className="magma-card rounded-[2rem] overflow-hidden flex flex-col items-stretch p-0 border border-white/10 shadow-2xl transition-all duration-300 active:scale-[0.98]">
+                      <div className="relative aspect-[21/9] w-full overflow-hidden">
                          <Image 
                             src={typeImage} 
                             alt={type.title} 
                             fill 
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                             data-ai-hint="game mode"
                           />
                          {availableCount > 0 && (
-                            <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#22c55e] border-2 border-background z-20" />
+                            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                               <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#22c55e] border-2 border-background" />
+                               <span className="text-[8px] font-black text-white uppercase bg-green-600/20 backdrop-blur-md px-2 py-0.5 rounded-full border border-green-500/30">Live Match</span>
+                            </div>
                          )}
                       </div>
                       
-                      <div className="p-4 bg-[#0d0d0d] border-t border-white/5 text-center space-y-1">
-                        <span className="text-[11px] font-black uppercase italic text-white tracking-tight leading-none block group-hover:text-primary transition-colors">
-                          {type.title}
-                        </span>
-                        <div className="flex flex-col items-center">
+                      <div className="p-5 bg-[#0d0d0d] border-t border-white/5 flex items-center justify-between">
+                        <div className="space-y-1">
+                          <span className="text-base font-black uppercase italic text-white tracking-tight leading-none block group-hover:text-primary transition-colors">
+                            {type.title}
+                          </span>
                           <span className={cn(
-                            "text-[8px] font-black uppercase tracking-widest",
+                            "text-[9px] font-black uppercase tracking-widest",
                             availableCount > 0 ? "text-green-500" : "text-muted-foreground opacity-50"
                           )}>
-                            {availableCount} {availableCount === 1 ? 'Match' : 'Matches'}
+                            {availableCount} {availableCount === 1 ? 'Match Available' : 'Matches Available'}
                           </span>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                         </div>
                       </div>
                     </Card>
