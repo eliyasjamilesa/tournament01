@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Flame, Loader2, ArrowLeft, Key, Mail, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Key, Loader2, ArrowLeft, Mail, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,8 +27,8 @@ export default function ForgotPasswordPage() {
       await sendPasswordResetEmail(auth, email);
       setIsSent(true);
       toast({
-        title: 'ইমেইল পাঠানো হয়েছে',
-        description: 'আপনার ইনবক্স চেক করুন পাসওয়ার্ড রিসেট করার লিঙ্কের জন্য।',
+        title: 'রিসেট রিকোয়েস্ট সফল',
+        description: 'আপনার ইমেইল চেক করুন।',
       });
     } catch (error: any) {
       let message = "Request Failed";
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
       {/* Decorative background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-sm space-y-8 relative z-10">
+      <div className="w-full max-sm:max-w-[320px] max-w-sm space-y-8 relative z-10">
         <Link href="/login" className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors group">
           <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mr-3 group-hover:bg-primary/10 transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -87,15 +87,17 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-xl shadow-primary/20">
-                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'রিসেট লিঙ্ক পাঠান'}
-                </Button>
+
                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
                   <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <p className="text-[9px] text-muted-foreground font-bold uppercase leading-relaxed">
-                    ইমেইল না পেলে আপনার <strong>Spam</strong> বা <strong>Promotions</strong> ফোল্ডারটি চেক করুন।
+                    লিঙ্কটি পাঠানোর পর আপনার ইমেইল ইনবক্সে না পেলে দয়া করে <strong>Spam</strong> ফোল্ডারটি চেক করুন।
                   </p>
                 </div>
+
+                <Button type="submit" disabled={isLoading} className="w-full h-14 magma-gradient font-black uppercase italic tracking-widest rounded-xl shadow-xl shadow-primary/20">
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'রিসেট লিঙ্ক পাঠান'}
+                </Button>
               </form>
             ) : (
               <div className="text-center py-4 space-y-6 animate-in zoom-in duration-500">
@@ -105,11 +107,17 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2">
                   <p className="text-sm font-black text-white uppercase italic">রিসেট লিঙ্ক পাঠানো হয়েছে!</p>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
-                    আপনার ইমেইল <span className="text-primary">{email}</span> চেক করুন এবং লিঙ্কে ক্লিক করুন।
+                    আপনার ইমেইল <span className="text-primary">{email}</span> চেক করুন।
                   </p>
-                  <p className="text-[9px] font-bold text-yellow-500 uppercase mt-2">
-                    ইমেইল না পেলে 'Spam' ফোল্ডারটি চেক করুন।
-                  </p>
+                  
+                  <div className="mt-4 p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20 text-left">
+                     <p className="text-[9px] font-bold text-yellow-500 uppercase flex items-center gap-2 mb-1">
+                       <ShieldCheck className="w-3 h-3" /> গুরুত্বপূর্ণ নোট
+                     </p>
+                     <p className="text-[10px] font-medium text-gray-400 leading-tight uppercase">
+                       যদি ইনবক্সে মেইল না পান, তবে আপনার ইমেইল অ্যাপের <strong>Spam</strong> বা <strong>Junk</strong> ফোল্ডারটি চেক করুন। অনেক সময় সিস্টেম এটিকে সেখানে পাঠিয়ে দেয়।
+                     </p>
+                  </div>
                 </div>
                 <Button variant="outline" asChild className="w-full h-12 rounded-xl border-white/10 bg-white/5 font-black uppercase italic tracking-widest text-[10px]">
                   <Link href="/login">লগইন পেজে ফিরে যান</Link>
