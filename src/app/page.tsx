@@ -38,11 +38,11 @@ export default function Home() {
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
-  // Increased splash timeout to 5 seconds for a better entrance
+  // Splash timeout set to 3 seconds as requested (2-3 seconds range)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 5000); 
+    }, 3000); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -130,7 +130,7 @@ export default function Home() {
     <div className="min-h-screen pb-40 bg-background w-full">
       {/* Splash Screen - Fixed and absolute with top z-index to hide Nav */}
       {(showSplash || (authLoading && !user)) && (
-        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden animate-out fade-out duration-1000 fill-mode-forwards">
+        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden animate-out fade-out duration-700 fill-mode-forwards">
           <Image 
             src="https://i.postimg.cc/jS80dpzz/20260623-091944.png"
             alt="Ts Tour Splash"
