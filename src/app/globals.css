@@ -6,24 +6,24 @@
   :root {
     --background: 0 0% 2%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 5%;
+    --card: 0 0% 4%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 10%;
+    --muted: 0 0% 8%;
     --muted-foreground: 0 0% 60%;
     --accent: 0 100% 50%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 10%;
+    --border: 0 0% 12%;
     --input: 0 0% 12%;
     --ring: 0 100% 50%;
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 
   * {
@@ -38,13 +38,33 @@
 }
 
 .magma-gradient {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #cc0000 100%);
+  background: linear-gradient(135deg, #ff0000 0%, #8b0000 100%);
+}
+
+.magma-card {
+  @apply bg-[#0a0a0a] border border-white/5 shadow-[0_0_15px_rgba(255,0,0,0.05)] transition-all duration-300;
+}
+
+.magma-card:hover {
+  @apply border-primary/40 shadow-[0_0_25px_rgba(255,0,0,0.15)] scale-[1.02];
+}
+
+.text-glow-red {
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.nav-glow {
+  box-shadow: 0 -5px 20px rgba(255, 0, 0, 0.2);
 }
 
 .input-simple {
-  @apply bg-[#111111] border-[#222222] rounded-xl focus:border-primary transition-colors h-12 px-4 text-sm font-medium placeholder:text-muted-foreground/40 text-white;
+  @apply bg-[#0d0d0d] border-[#1a1a1a] rounded-xl focus:border-primary transition-colors h-12 px-4 text-sm font-medium placeholder:text-muted-foreground/30 text-white;
 }
 
-.magma-overlay {
-  background: linear-gradient(to top, hsl(var(--background)) 10%, transparent 100%);
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
