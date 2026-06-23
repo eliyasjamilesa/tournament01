@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Bell, ChevronRight, Swords, Flame } from 'lucide-react';
+import { Zap, Bell, ChevronRight, Swords, Flame, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +28,7 @@ export default function Home() {
   
   // Only show splash if it hasn't been shown in this session
   const [showSplash, setShowSplash] = useState(!hasShownSplashInSession);
+  const [redirecting, setRedirecting] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -44,6 +45,9 @@ export default function Home() {
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
   useEffect(() => {
+    // Pre-fetch login page to avoid delay during redirect
+    router.prefetch('/login');
+
     if (hasShownSplashInSession) {
       setShowSplash(false);
       return;
@@ -52,9 +56,9 @@ export default function Home() {
     const timer = setTimeout(() => {
       setShowSplash(false);
       hasShownSplashInSession = true;
-    }, 7500); 
+    }, 5000); // 5 seconds splash is optimal
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!db || !user) return;
@@ -94,8 +98,10 @@ export default function Home() {
   }, [db, user, toast]);
 
   useEffect(() => {
+    // If splash is over and user is not logged in, redirect immediately
     if (!authLoading && !user && !showSplash) {
-      router.push('/login');
+      setRedirecting(true);
+      router.replace('/login');
     }
   }, [user, authLoading, router, showSplash]);
 
@@ -138,14 +144,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-40 bg-background w-full">
-      {/* Splash Screen - Fixed and absolute with top z-index to hide Nav */}
+      {/* Splash Screen - Fixed and absolute with top z-index */}
       {showSplash && (
-        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden animate-out fade-out duration-700 fill-mode-forwards">
+        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden">
           <Image 
             src="https://i.postimg.cc/jS80dpzz/20260623-091944.png"
             alt="Ts Tour Splash"
             fill
-            className="object-cover"
+            className="object-cover animate-in fade-in duration-500"
             priority
           />
           <div className="absolute bottom-12 flex flex-col items-center gap-3">
@@ -155,8 +161,16 @@ export default function Home() {
         </div>
       )}
 
+      {/* Redirecting Loader to prevent black screen */}
+      {redirecting && !showSplash && (
+        <div className="fixed inset-0 z-[9998] bg-background flex flex-col items-center justify-center gap-4">
+           <Loader2 className="w-10 h-10 animate-spin text-primary opacity-50" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Entering Arena...</p>
+        </div>
+      )}
+
       {user && (
-        <div className={cn("animate-in fade-in duration-1000", showSplash && "hidden")}>
+        <div className={cn("animate-in fade-in duration-1000", (showSplash || redirecting) && "hidden")}>
           <header className="px-4 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-xl z-[100]">
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
@@ -273,3 +287,4 @@ export default function Home() {
     </div>
   );
 }
+
