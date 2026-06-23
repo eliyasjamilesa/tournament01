@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
@@ -96,7 +95,7 @@ function JoinMatchContent() {
       return { base: baseFee, final: finalFee, hasDiscount: true };
     }
     
-    return { base: baseFee, final: baseFee, hasDiscount: false };
+    return { base: baseFee, final: finalFee, hasDiscount: false };
   }, [tournament, profile]);
 
   const handleProceed = async () => {
@@ -229,7 +228,7 @@ function JoinMatchContent() {
         ))}
       </div>
 
-      <main className="flex-1 px-6 pb-32 space-y-6 overflow-y-auto no-scrollbar">
+      <main className="flex-1 px-6 pb-40 space-y-6 overflow-y-auto no-scrollbar">
         {step === 1 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
