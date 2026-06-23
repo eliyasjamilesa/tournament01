@@ -38,11 +38,11 @@ export default function Home() {
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
-  // Splash timeout set to 3 seconds as requested (2-3 seconds range)
+  // Splash timeout set to 7.5 seconds as requested (7-8 seconds range)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 3000); 
+    }, 7500); 
     return () => clearTimeout(timer);
   }, []);
 
