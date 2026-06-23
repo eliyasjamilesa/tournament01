@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
@@ -74,9 +73,9 @@ function SlotsSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0">Slots</Button>
+        <Button variant="outline" className="h-10 rounded-xl text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5">Slots</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-4 pb-10 overflow-y-auto no-scrollbar">
+      <SheetContent side="bottom" className="h-[90vh] rounded-t-[2.5rem] bg-[#050505] border-t border-red-500/20 px-4 pb-10 overflow-y-auto no-scrollbar z-[300]">
         <SheetHeader className="sr-only">
           <SheetTitle>Tournament Slots - {tournament.matchId}</SheetTitle>
           <SheetDescription>View registered players for this match.</SheetDescription>
@@ -178,28 +177,37 @@ function PrizeDistributionSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0"><Trophy className="w-3 h-3 mr-1" /> Prizes</Button>
+        <Button variant="outline" className="h-10 rounded-xl text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5">
+          <Trophy className="w-3.5 h-3.5 mr-1.5 text-yellow-500" /> Prizes
+        </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-4 pb-10">
-        <SheetHeader className="mb-6">
+      <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-white/5 px-4 pb-12 z-[300]">
+        <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6" />
+        <SheetHeader className="mb-8">
           <SheetTitle className="text-xl font-black uppercase italic text-center">Prize Pool Details</SheetTitle>
-          <SheetDescription className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Rank-wise distribution of the total pool.</SheetDescription>
+          <SheetDescription className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Match ID: {tournament.matchId}</SheetDescription>
         </SheetHeader>
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-3 mb-8">
           {activePrizes.map((item) => (
-            <div key={item.pos} className="p-3 rounded-xl bg-muted/50 border border-white/5 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">Pos {item.pos}</span>
-              <span className="font-bold text-sm">{item.amount} TK</span>
+            <div key={item.pos} className="p-4 rounded-2xl bg-muted/30 border border-white/5 flex items-center justify-between shadow-inner">
+              <span className="text-[10px] font-black uppercase text-muted-foreground">Pos {item.pos}</span>
+              <span className="font-black text-sm text-white">{item.amount} TK</span>
             </div>
           ))}
           {Number(tournament.perKill || 0) > 0 && (
-            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-primary">Per Kill</span>
-              <span className="font-bold text-sm text-primary">{tournament.perKill || 0} TK</span>
+            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-between col-span-2">
+              <div className="flex items-center gap-2">
+                <Skull className="w-4 h-4 text-primary" />
+                <span className="text-[10px] font-black uppercase text-primary">Winning Per Kill</span>
+              </div>
+              <span className="font-black text-sm text-primary">{tournament.perKill || 0} TK</span>
             </div>
           )}
         </div>
-        <div className="p-5 rounded-2xl bg-primary flex items-center justify-between shadow-lg"><span className="text-sm font-black uppercase italic text-white">Total Prize</span><span className="text-xl font-black text-white">{tournament.prizePool || 0} TK</span></div>
+        <div className="p-6 rounded-[2rem] magma-gradient flex items-center justify-between shadow-xl shadow-primary/20">
+          <span className="text-sm font-black uppercase italic text-white tracking-widest">Total Pool</span>
+          <span className="text-2xl font-black text-white italic">{tournament.prizePool || 0} TK</span>
+        </div>
       </SheetContent>
     </Sheet>
   );
@@ -219,9 +227,11 @@ function RoomDetailsSheet({ tournament }: { tournament: any }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-9 rounded-lg text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5 px-0"><Key className="w-3 h-3 mr-1" /> Room</Button>
+        <Button variant="outline" className="h-10 rounded-xl text-[10px] font-bold uppercase w-full border-white/10 hover:bg-white/5">
+          <Key className="w-3.5 h-3.5 mr-1.5 text-primary" /> Room
+        </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-4 pb-12">
+      <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-[#0d0d0d] border-t border-white/5 px-4 pb-12 z-[300]">
         <SheetHeader className="sr-only">
           <SheetTitle>Room ID & Password</SheetTitle>
           <SheetDescription>Access credentials for joined players.</SheetDescription>
@@ -343,10 +353,10 @@ function TournamentCard({ tournament }: { tournament: any }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {isJoined ? (
             <Button 
-              className="w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg bg-green-600 hover:bg-green-700 border-none cursor-default"
+              className="w-full h-12 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg bg-green-600 hover:bg-green-700 border-none cursor-default"
             >
               <Check className="w-4 h-4 mr-2" /> JOINED
             </Button>
@@ -355,7 +365,7 @@ function TournamentCard({ tournament }: { tournament: any }) {
               onClick={() => router.push(`/play/join?id=${tournament.id}`)}
               disabled={tournament.currentPlayers >= tournament.maxPlayers} 
               className={cn(
-                "w-full h-11 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg transition-all active:scale-95 magma-gradient"
+                "w-full h-12 rounded-xl font-black uppercase italic tracking-wider text-xs shadow-lg transition-all active:scale-95 magma-gradient"
               )}
             >
               {tournament.currentPlayers >= tournament.maxPlayers ? (
