@@ -1,85 +1,95 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { PushNotifications, Token, PushNotificationSchema } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 
 /**
  * @fileOverview Manages system push notifications for native platforms (Android/iOS).
- * Added robust error handling to prevent crashes when google-services.json is missing.
+ * Added extreme error handling to prevent native crashes even if google-services.json is missing.
  */
 
 export function PushNotificationManager() {
   const { toast } = useToast();
+  const isInitializing = useRef(false);
 
   useEffect(() => {
-    // Only run on native platforms
-    if (!Capacitor.isNativePlatform()) {
+    // Only run on native platforms and prevent multiple initializations
+    if (!Capacitor.isNativePlatform() || isInitializing.current) {
       return;
     }
 
     const initializePush = async () => {
+      isInitializing.current = true;
+      console.log('Push: Starting initialization...');
+      
       try {
+        // Step 1: Check current permissions
         let permStatus = await PushNotifications.checkPermissions();
+        console.log('Push: Initial permission status:', permStatus.receive);
 
         if (permStatus.receive === 'granted') {
           await registerPush();
         } else if (permStatus.receive === 'prompt') {
+          // Step 2: Request permissions if not asked yet
           permStatus = await PushNotifications.requestPermissions();
+          console.log('Push: Permission requested. New status:', permStatus.receive);
+          
           if (permStatus.receive === 'granted') {
-            // Delay slightly to ensure system is ready
+            // CRITICAL: Delay registration after prompt to avoid native race-condition crash
             setTimeout(async () => {
               await registerPush();
-            }, 1000);
+            }, 2000);
           }
         }
       } catch (err) {
-        console.warn('Push: Permission request failed', err);
+        console.error('Push: Error in initializePush process', err);
       }
     };
 
     const registerPush = async () => {
       try {
-        // Clean up previous listeners
+        // Step 3: Remove old listeners to avoid memory leaks
         await PushNotifications.removeAllListeners();
 
-        // Listen for successful registration
+        // Step 4: Add success listener
         await PushNotifications.addListener('registration', (token: Token) => {
-          console.log('Push registration success:', token.value);
+          console.log('Push: Device registered. Token:', token.value);
         });
 
-        // Handle registration error (Commonly caused by missing google-services.json)
+        // Step 5: Add error listener (Handles missing google-services.json natively)
         await PushNotifications.addListener('registrationError', (error: any) => {
-          console.error('Push registration error:', error);
+          console.warn('Push: Native registration error (Likely missing config file):', error);
         });
 
-        // Handle incoming notifications while app is open
+        // Step 6: Handle incoming notifications
         await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
           toast({
-            title: notification.title || 'Elite Alert',
-            description: notification.body || '',
-            className: "bg-primary text-white border-none rounded-2xl shadow-2xl",
+            title: notification.title || 'Ts Tour Alert',
+            description: notification.body || 'নতুন মেসেজ এসেছে।',
+            className: "bg-primary text-white border-none rounded-2xl shadow-2xl z-[9999]",
           });
         });
 
-        // The core fix: wrap register() in a try-catch to prevent a native crash
-        // if the Firebase configuration file is missing.
+        // Step 7: Final Native Call - Wrapped in deep try-catch
+        console.log('Push: Calling native register...');
         try {
           await PushNotifications.register();
+          console.log('Push: Native register call completed.');
         } catch (regErr) {
-          console.error('Native Push Register call failed. Check if google-services.json is present in android/app/', regErr);
+          console.error('Push: CRITICAL Native call failed. Ensure google-services.json exists in android/app/', regErr);
         }
       } catch (err) {
-        console.error('Push Listener setup failed', err);
+        console.error('Push: Failed to setup listeners', err);
       }
     };
 
-    // Initial trigger with a delay to not block app startup
+    // Delay start to not interfere with app hydration
     const timer = setTimeout(() => {
       initializePush();
-    }, 4000);
+    }, 5000);
 
     return () => {
       clearTimeout(timer);
