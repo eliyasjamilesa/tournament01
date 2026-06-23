@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 /**
  * @fileOverview Manages system push notifications for native platforms (Android/iOS).
- * Added extreme error handling to prevent native crashes even if google-services.json is missing.
+ * Added extreme error handling and sequenced initialization to prevent native crashes.
  */
 
 export function PushNotificationManager() {
@@ -31,17 +31,17 @@ export function PushNotificationManager() {
         console.log('Push: Initial permission status:', permStatus.receive);
 
         if (permStatus.receive === 'granted') {
-          await registerPush();
+          await registerPushSequence();
         } else if (permStatus.receive === 'prompt') {
-          // Step 2: Request permissions if not asked yet
+          // Step 2: Request permissions
           permStatus = await PushNotifications.requestPermissions();
           console.log('Push: Permission requested. New status:', permStatus.receive);
           
           if (permStatus.receive === 'granted') {
             // CRITICAL: Delay registration after prompt to avoid native race-condition crash
             setTimeout(async () => {
-              await registerPush();
-            }, 2000);
+              await registerPushSequence();
+            }, 3000);
           }
         }
       } catch (err) {
@@ -49,23 +49,28 @@ export function PushNotificationManager() {
       }
     };
 
-    const registerPush = async () => {
+    const registerPushSequence = async () => {
       try {
-        // Step 3: Remove old listeners to avoid memory leaks
-        await PushNotifications.removeAllListeners();
+        // Step 3: Remove old listeners to avoid memory leaks or duplicate triggers
+        try {
+          await PushNotifications.removeAllListeners();
+        } catch (e) {
+          console.warn('Push: Failed to remove listeners', e);
+        }
 
         // Step 4: Add success listener
         await PushNotifications.addListener('registration', (token: Token) => {
-          console.log('Push: Device registered. Token:', token.value);
+          console.log('Push: Device registered successfully. Token length:', token.value.length);
         });
 
-        // Step 5: Add error listener (Handles missing google-services.json natively)
+        // Step 5: Add error listener
         await PushNotifications.addListener('registrationError', (error: any) => {
-          console.warn('Push: Native registration error (Likely missing config file):', error);
+          console.error('Push: Registration error event triggered:', JSON.stringify(error));
         });
 
         // Step 6: Handle incoming notifications
         await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+          console.log('Push: Notification received:', notification.title);
           toast({
             title: notification.title || 'Ts Tour Alert',
             description: notification.body || 'নতুন মেসেজ এসেছে।',
@@ -73,28 +78,30 @@ export function PushNotificationManager() {
           });
         });
 
-        // Step 7: Final Native Call - Wrapped in deep try-catch
-        console.log('Push: Calling native register...');
+        // Step 7: Final Native Call - Wrapped in deep try-catch to prevent "kick out" (crash)
+        console.log('Push: Calling native register method...');
         try {
           await PushNotifications.register();
-          console.log('Push: Native register call completed.');
+          console.log('Push: Native register call sent to OS.');
         } catch (regErr) {
-          console.error('Push: CRITICAL Native call failed. Ensure google-services.json exists in android/app/', regErr);
+          console.error('Push: CRITICAL Native register() failed. This usually means google-services.json is missing or corrupted inside the APK.', regErr);
         }
       } catch (err) {
-        console.error('Push: Failed to setup listeners', err);
+        console.error('Push: High-level sequence failed', err);
       }
     };
 
-    // Delay start to not interfere with app hydration
+    // Wait 7 seconds before initializing push to let the app fully mount and splash screen fade
     const timer = setTimeout(() => {
       initializePush();
-    }, 5000);
+    }, 7000);
 
     return () => {
       clearTimeout(timer);
       if (Capacitor.isNativePlatform()) {
-        PushNotifications.removeAllListeners().catch(() => {});
+        try {
+           PushNotifications.removeAllListeners().catch(() => {});
+        } catch (e) {}
       }
     };
   }, [toast]);
