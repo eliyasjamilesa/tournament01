@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -58,7 +57,6 @@ export function PushNotificationManager() {
 
         await PushNotifications.addListener('registrationError', (error: any) => {
           console.error('Push: Registration error reported by OS:', JSON.stringify(error));
-          // This usually happens if google-services.json is missing or invalid
         });
 
         await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
@@ -81,17 +79,17 @@ export function PushNotificationManager() {
           await PushNotifications.register();
           console.log('Push: Native register() called successfully');
         } catch (regErr) {
-          console.error('Push: Native register() call threw an exception. Is google-services.json missing?', regErr);
+          console.error('Push: Native register() call failed. This usually happens if google-services.json is missing in android/app/', regErr);
         }
       } catch (err) {
-        console.error('Push: Listener setup/registration failed', err);
+        console.error('Push: Listener setup failed', err);
       }
     };
 
     // Initialize after a short delay to ensure app is stable
     const timer = setTimeout(() => {
       initializePush();
-    }, 3000); // Increased delay slightly to 3s
+    }, 3000);
 
     return () => {
       clearTimeout(timer);
