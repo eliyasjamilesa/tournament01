@@ -16,13 +16,18 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
 
+// Module-level variable to persist splash state across internal navigations
+let hasShownSplashInSession = false;
+
 export default function Home() {
   const { user, loading: authLoading } = useUser();
   const router = useRouter();
   const db = useFirestore();
   const { toast } = useToast();
   const [lastNotifiedId, setLastNotifiedId] = useState<string | null>(null);
-  const [showSplash, setShowSplash] = useState(true);
+  
+  // Only show splash if it hasn't been shown in this session
+  const [showSplash, setShowSplash] = useState(!hasShownSplashInSession);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -38,10 +43,15 @@ export default function Home() {
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
-  // Splash timeout set to 7.5 seconds as requested (7-8 seconds range)
   useEffect(() => {
+    if (hasShownSplashInSession) {
+      setShowSplash(false);
+      return;
+    }
+
     const timer = setTimeout(() => {
       setShowSplash(false);
+      hasShownSplashInSession = true;
     }, 7500); 
     return () => clearTimeout(timer);
   }, []);
@@ -129,7 +139,7 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-40 bg-background w-full">
       {/* Splash Screen - Fixed and absolute with top z-index to hide Nav */}
-      {(showSplash || (authLoading && !user)) && (
+      {showSplash && (
         <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden animate-out fade-out duration-700 fill-mode-forwards">
           <Image 
             src="https://i.postimg.cc/jS80dpzz/20260623-091944.png"
@@ -146,7 +156,7 @@ export default function Home() {
       )}
 
       {user && (
-        <div className="animate-in fade-in duration-1000">
+        <div className={cn("animate-in fade-in duration-1000", showSplash && "hidden")}>
           <header className="px-4 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-xl z-[100]">
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-xl magma-gradient flex items-center justify-center shadow-lg shadow-primary/20">
