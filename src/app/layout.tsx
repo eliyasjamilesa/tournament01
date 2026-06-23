@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationManager } from '@/components/PushNotificationManager';
+import { NavigationHandler } from '@/components/NavigationHandler';
 
 export const metadata: Metadata = {
   title: 'Ts Tour | Free Fire Tournament App',
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="font-body antialiased pb-20 selection:bg-primary/30">
         <FirebaseClientProvider>
           <PushNotificationManager />
+          <NavigationHandler />
           <div className="min-h-screen bg-background relative w-full overflow-x-hidden">
             {children}
             <BottomNav />
