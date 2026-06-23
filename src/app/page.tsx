@@ -38,11 +38,11 @@ export default function Home() {
 
   const { data: allTournaments } = useCollection<any>(tournamentsQuery);
 
-  // Splash timeout logic - ensuring it covers the auth transition
+  // Increased splash timeout to 5 seconds for a better entrance
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 3000); // Show splash for 3 seconds for a smooth transition
+    }, 5000); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -138,10 +138,9 @@ export default function Home() {
             className="object-cover"
             priority
           />
-          {/* Optional: Add a small loading indicator if the image takes time */}
-          <div className="absolute bottom-10 flex flex-col items-center gap-2">
-             <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-             <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">TS TOUR v1.0.4</p>
+          <div className="absolute bottom-12 flex flex-col items-center gap-3">
+             <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+             <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">TS TOUR v1.0.4</p>
           </div>
         </div>
       )}
