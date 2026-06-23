@@ -17,7 +17,9 @@
 ১. [Firebase Console](https://console.firebase.google.com/)-এ যান।
 ২. আপনার প্রজেক্ট সিলেক্ট করে **Project Settings**-এ যান।
 ৩. **Your apps** সেকশনে **Add App** এ ক্লিক করে **Android** সিলেক্ট করুন।
-৪. **Package Name** হিসেবে দিন: `com.tstour.app`
+৪. **প্যাকেজ নাম ও ডাকনাম (Exact Values):**
+   - **Android package name:** `com.tstour.app`
+   - **App nickname:** `Ts Tour Android`
 ৫. এরপর **google-services.json** ফাইলটি ডাউনলোড করুন।
 ৬. আপনার প্রজেক্টের **`android/app/`** ফোল্ডারের ভেতরে ফাইলটি রাখুন এবং গিটহাবে পুশ করুন।
 
