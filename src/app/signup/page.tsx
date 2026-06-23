@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -11,9 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SignupPage() {
@@ -29,8 +26,6 @@ export default function SignupPage() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-
-  const appLogo = PlaceHolderImages.find(img => img.id === 'app-logo')?.imageUrl || '';
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +46,7 @@ export default function SignupPage() {
         phone: phone,
         photoURL: user.photoURL || '',
         coins: 0,
-        level: 1,
+        xp: 0,
         role: 'user', 
         createdAt: serverTimestamp()
       }, { merge: true });
@@ -94,7 +89,7 @@ export default function SignupPage() {
           email: user.email,
           photoURL: user.photoURL || '',
           coins: 0,
-          level: 1,
+          xp: 0,
           role: 'user',
           createdAt: serverTimestamp()
         }, { merge: true });
@@ -115,22 +110,9 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 max-w-md mx-auto relative">
-      <div className="flex flex-col items-center mt-10 space-y-6 w-full">
-        <div className="relative group">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-primary/20 logo-glow">
-            <Image 
-              src={appLogo} 
-              alt="App Logo" 
-              width={64} 
-              height={64} 
-              className="object-cover"
-              data-ai-hint="gaming logo"
-            />
-          </div>
-        </div>
-
+      <div className="flex flex-col items-center mt-16 space-y-6 w-full">
         <div className="text-center space-y-1">
-          <h1 className="text-lg font-headline font-black text-primary uppercase italic tracking-tight">
+          <h1 className="text-xl font-headline font-black text-primary uppercase italic tracking-tight">
             BECOME A LEGEND
           </h1>
           <p className="text-muted-foreground text-[8px] font-bold uppercase tracking-[0.2em]">
@@ -158,7 +140,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+            <Label className="text-[10px) font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
             <Input 
               type="email"
               placeholder="warrior@ignite.com" 
