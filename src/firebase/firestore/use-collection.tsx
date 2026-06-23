@@ -18,9 +18,13 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
   useEffect(() => {
     if (!query) {
+      setData([]);
       setLoading(false);
       return;
     }
+
+    // Reset state when query changes to prevent showing stale data
+    setLoading(true);
 
     const unsubscribe = onSnapshot(
       query,
@@ -33,10 +37,8 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         // Attempt to extract path for better error reporting
         let path = 'unknown';
         try {
-          // Firebase Internal path extraction
-          path = (query as any)._query?.path?.toString() || 
-                 (query as any).path || 
-                 'collection';
+          // @ts-ignore - Accessing internal path for debugging context
+          path = query._query?.path?.toString() || 'collection';
         } catch (e) {
           path = 'collection';
         }

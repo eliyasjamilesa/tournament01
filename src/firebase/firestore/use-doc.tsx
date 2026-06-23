@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,15 +18,20 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
 
   useEffect(() => {
     if (!docRef) {
+      setData(null);
       setLoading(false);
       return;
     }
+
+    // Reset state when docRef changes
+    setLoading(true);
 
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot: DocumentSnapshot<T>) => {
         setData(snapshot.exists() ? ({ ...snapshot.data(), id: snapshot.id } as T) : null);
         setLoading(false);
+        setError(null);
       },
       async (serverError: any) => {
         const permissionError = new FirestorePermissionError({
@@ -33,7 +39,10 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
           operation: 'get',
         } satisfies SecurityRuleContext);
 
-        errorEmitter.emit('permission-error', permissionError);
+        if (serverError.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', permissionError);
+        }
+        
         setError(serverError);
         setLoading(false);
       }
