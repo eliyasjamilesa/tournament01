@@ -161,7 +161,6 @@ export default function Home() {
                 className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-110"
                 data-ai-hint="gaming promotion"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
               
               <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between z-10">
                 <div className="bg-primary text-white text-[9px] font-black uppercase italic tracking-widest px-6 py-3 rounded-full shadow-2xl transition-all active:scale-95 flex items-center gap-2 border border-white/20">
