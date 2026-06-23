@@ -207,7 +207,7 @@ export default function ResultsPage() {
     );
   }, [db, activeTab, user]);
 
-  const { data: matches, loading } = useCollection<any>(resultsQuery);
+  const { data: matches, loading: matchesLoading } = useCollection<any>(resultsQuery);
 
   const getModeImage = (mode: string) => {
     const idMap: Record<string, string> = {
@@ -218,7 +218,7 @@ export default function ResultsPage() {
     return PlaceHolderImages.find(img => img.id === idMap[mode])?.imageUrl || '';
   };
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <div className="relative">
@@ -258,7 +258,12 @@ export default function ResultsPage() {
       </div>
 
       <main className="px-4 py-6 space-y-6">
-        {matches?.length === 0 ? (
+        {matchesLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+             <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
+             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">লোডিং হচ্ছে...</p>
+          </div>
+        ) : matches?.length === 0 ? (
           <div className="text-center py-20 bg-muted/5 rounded-3xl border border-white/5 border-dashed">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               No results for {activeTab} yet.

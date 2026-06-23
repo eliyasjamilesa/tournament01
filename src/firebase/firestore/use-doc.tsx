@@ -23,8 +23,9 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       return;
     }
 
-    // Reset state when docRef changes
+    // Reset state when docRef changes to prevent showing stale data
     setLoading(true);
+    setData(null);
 
     const unsubscribe = onSnapshot(
       docRef,

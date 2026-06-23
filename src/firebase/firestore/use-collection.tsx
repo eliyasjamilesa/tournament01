@@ -25,6 +25,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
     // Reset state when query changes to prevent showing stale data
     setLoading(true);
+    setData([]);
 
     const unsubscribe = onSnapshot(
       query,
