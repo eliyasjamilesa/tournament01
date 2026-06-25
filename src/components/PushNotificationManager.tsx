@@ -1,19 +1,43 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PushNotifications, Token, PushNotificationSchema } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 /**
  * @fileOverview Manages system push notifications for native platforms (Android/iOS).
  * Added extreme error handling and sequenced initialization to prevent native crashes.
+ * Saves registration token to user's Firestore document for targeting and debugging.
  */
 
 export function PushNotificationManager() {
   const { toast } = useToast();
+  const db = useFirestore();
+  const { user } = useUser();
+  const [token, setToken] = useState<string | null>(null);
   const isInitializing = useRef(false);
+
+  // Sync FCM token to Firestore when both user and token are available
+  useEffect(() => {
+    if (db && user && token) {
+      const saveToken = async () => {
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, {
+            pushToken: token
+          });
+          console.log('Push: Token saved to Firestore successfully:', token);
+        } catch (fsErr) {
+          console.error('Push: Failed to save token to Firestore', fsErr);
+        }
+      };
+      saveToken();
+    }
+  }, [db, user, token]);
 
   useEffect(() => {
     // Only run on native platforms and prevent multiple initializations
@@ -59,8 +83,9 @@ export function PushNotificationManager() {
         }
 
         // Step 4: Add success listener
-        await PushNotifications.addListener('registration', (token: Token) => {
-          console.log('Push: Device registered successfully. Token length:', token.value.length);
+        await PushNotifications.addListener('registration', (tokenObj: Token) => {
+          console.log('Push: Device registered successfully. Token length:', tokenObj.value.length);
+          setToken(tokenObj.value);
         });
 
         // Step 5: Add error listener
@@ -84,7 +109,7 @@ export function PushNotificationManager() {
           await PushNotifications.register();
           console.log('Push: Native register call sent to OS.');
         } catch (regErr) {
-          console.error('Push: CRITICAL Native register() failed. This usually means google-services.json is missing or corrupted inside the APK.', regErr);
+          console.error('Push: CRITICAL Native register() failed.', regErr);
         }
       } catch (err) {
         console.error('Push: High-level sequence failed', err);
@@ -100,7 +125,7 @@ export function PushNotificationManager() {
       clearTimeout(timer);
       if (Capacitor.isNativePlatform()) {
         try {
-           PushNotifications.removeAllListeners().catch(() => {});
+          PushNotifications.removeAllListeners().catch(() => {});
         } catch (e) {}
       }
     };
