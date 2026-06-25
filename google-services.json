@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "732250378255-s9bd29drgcio0fq4k8m1brhc6oq7bejp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tstour.app",
+            "certificate_hash": "ddca34c2d46b28a23528c7502936f9d9c43e477e"
+          }
+        },
+        {
           "client_id": "732250378255-8puhriha5775h4tiq8pth474eljr9usp.apps.googleusercontent.com",
           "client_type": 3
         }
