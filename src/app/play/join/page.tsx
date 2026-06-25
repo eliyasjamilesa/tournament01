@@ -163,7 +163,12 @@ function JoinMatchContent() {
         setStep(4);
         toast({ title: "সফল!", description: "ম্যাচ জয়েন করা হয়েছে।" });
       } catch (err: any) {
-        toast({ variant: "destructive", title: "Error", description: "জয়েন করতে সমস্যা হয়েছে।" });
+        console.error("Error joining match:", err);
+        toast({ 
+          variant: "destructive", 
+          title: "Error", 
+          description: `জয়েন করতে সমস্যা হয়েছে: ${err.message}` 
+        });
       } finally {
         setIsSubmitting(false);
       }
