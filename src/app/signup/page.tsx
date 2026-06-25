@@ -12,6 +12,7 @@ import { Loader2, AlertCircle, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
