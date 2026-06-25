@@ -27,7 +27,11 @@ service cloud.firestore {
     // Tournament rules
     match /tournaments/{tournamentId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentPlayers'])
+      );
       
       // Individual registrations within a tournament
       match /registrations/{userId} {
