@@ -60,7 +60,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user && !authLoading && !showSplash) {
-      const hasSeen = localStorage.getItem('has_seen_welcome_rules');
+      const hasSeen = sessionStorage.getItem('has_seen_welcome_rules_session');
       if (!hasSeen) {
         setShowWelcomeRules(true);
       }
@@ -68,7 +68,7 @@ export default function Home() {
   }, [user, authLoading, showSplash]);
 
   const handleAcceptRules = () => {
-    localStorage.setItem('has_seen_welcome_rules', 'true');
+    sessionStorage.setItem('has_seen_welcome_rules_session', 'true');
     setShowWelcomeRules(false);
   };
 
@@ -320,8 +320,8 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto shadow-inner">
                    <ShieldCheck className="w-8 h-8 text-primary animate-pulse" />
                 </div>
-                <AlertDialogTitle className="text-xl font-black uppercase italic tracking-tight text-white">স্বাগতম TS Tour এ!</AlertDialogTitle>
-                <AlertDialogDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <AlertDialogTitle className="text-2xl font-black uppercase italic tracking-tight text-white">স্বাগতম TS Tour এ!</AlertDialogTitle>
+                <AlertDialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   ম্যাচে জয়েন করার পূর্বে নিয়মগুলো মনোযোগ দিয়ে পড়ে নিন
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -361,12 +361,12 @@ export default function Home() {
                   }
                 ].map((rule) => (
                   <div key={rule.num} className="flex gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
-                    <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 font-black text-primary text-xs">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 font-black text-primary text-sm">
                       {rule.num}
                     </div>
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-white tracking-tight">{rule.title}</h4>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">{rule.desc}</p>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-white tracking-tight">{rule.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{rule.desc}</p>
                     </div>
                   </div>
                 ))}

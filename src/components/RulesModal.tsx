@@ -45,17 +45,17 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
         
         {/* Header */}
         <DialogHeader className="px-6 pt-8 pb-4 border-b border-white/5 flex flex-row items-center justify-between shrink-0">
-          <div className="space-y-0.5 text-left">
-            <DialogTitle className="text-lg font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-primary" /> Tournament Rules
+          <div className="space-y-1 text-left">
+            <DialogTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+              <ShieldCheck className="w-5.5 h-5.5 text-primary" /> Tournament Rules
             </DialogTitle>
-            <DialogDescription className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
               ম্যাচ খেলার পূর্বে নিয়মগুলো দেখে নিন
             </DialogDescription>
           </div>
           <button 
             onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-white transition-all active:scale-90"
+            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-white transition-all active:scale-90"
           >
             <X className="w-4 h-4" />
           </button>
@@ -71,13 +71,13 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all border",
+                  "flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border",
                   isActive 
                     ? "bg-primary border-primary text-white shadow-[0_0_12px_rgba(255,0,0,0.3)]" 
                     : "bg-card border-white/5 text-muted-foreground hover:bg-white/5 hover:text-white"
                 )}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-4 h-4" />
                 {tab.label}
               </button>
             );
@@ -123,13 +123,13 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
                 }
               ].map((rule, idx) => (
                 <Card key={idx} className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
-                  <CardContent className="p-4 flex gap-3.5">
-                    <div className="w-7.5 h-7.5 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 font-black text-primary text-xs">
+                  <CardContent className="p-4 flex gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 font-black text-primary text-sm">
                       {rule.num}
                     </div>
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-white tracking-tight">{rule.title}</h4>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">{rule.desc}</p>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-white tracking-tight">{rule.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{rule.desc}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -142,31 +142,31 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
             <div className="space-y-4 animate-in fade-in duration-250">
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Weapon & Character Rules</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Weapon & Character Rules</h3>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Double Vector & Charge Booster নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Double Vector & Charge Booster নিষিদ্ধ</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">All Sniper Gun ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">All Sniper Gun ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Only Kord Gun ব্যবহার করা যাবে না</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Only Kord Gun ব্যবহার করা যাবে না</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Vehicle (গাড়ি / Monster Truck) নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Vehicle (গাড়ি / Monster Truck) নিষিদ্ধ</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Irish Character ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Irish Character ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">M590 Gun ব্যবহার করা যাবে</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">M590 Gun ব্যবহার করা যাবে</span>
                     </div>
                   </div>
                 </CardContent>
@@ -174,19 +174,19 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
 
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Special Restrictions</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Special Restrictions</h3>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground">ID লেভেল কমপক্ষে ৫০ হতে হবে। লেভেল কম থাকার কারণে Kick করা হলে কোনো Refund দেওয়া হবে না।</span>
+                      <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">ID লেভেল কমপক্ষে ৫০ হতে হবে। লেভেল কম থাকার কারণে Kick করা হলে কোনো Refund দেওয়া হবে না।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground">Root করা ফোন বা PC Emulator ব্যবহার করলে সরাসরি BAN করা হবে।</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">Root করা ফোন বা PC Emulator ব্যবহার করলে সরাসরি BAN করা হবে।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground">Hack, Mod, বা Teaming করলে সরাসরি অ্যাকাউন্ট Permanent BAN হবে।</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">Hack, Mod, বা Teaming করলে সরাসরি অ্যাকাউন্ট Permanent BAN হবে।</span>
                     </div>
                   </div>
                 </CardContent>
@@ -194,18 +194,18 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
 
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Room & Refund Policy</h3>
-                  <div className="space-y-2.5 text-[11px] text-muted-foreground">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Room & Refund Policy</h3>
+                  <div className="space-y-2.5 text-xs text-muted-foreground">
                     <div className="flex items-start gap-2">
-                      <Video className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                      <Video className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                       <span>কাস্টম রুমে ঢুকে প্রথমে <strong>Observer Mode</strong> এ যাবেন, এরপর নিজের সিলেক্টেড স্লটে বসবেন।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <Video className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                      <Video className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                       <span>স্ক্রিন রেকর্ড থাকা বাধ্যতামূলক। ভিডিও প্রুফ ছাড়া কিক বা অন্য সমস্যায় রিফান্ড পাওয়া যাবে না।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <DollarSign className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <DollarSign className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                       <span>ম্যাচের উইনিং ও কিল রিওয়ার্ড গেম শেষের ৩০–৪০ মিনিটের মধ্যে এড হয়ে যাবে। প্রতিদিন সর্বোচ্চ ২ বার লিমিট ছাড়া উইথড্র করতে পারবেন।</span>
                     </div>
                   </div>
@@ -219,10 +219,10 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
             <div className="space-y-4 animate-in fade-in duration-250">
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5 flex items-center gap-1.5">
-                    <Trophy className="w-3.5 h-3.5" /> Point System
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5 flex items-center gap-1.5">
+                    <Trophy className="w-4 h-4" /> Point System
                   </h3>
-                  <div className="grid grid-cols-2 gap-3 text-[11px] mb-1">
+                  <div className="grid grid-cols-2 gap-3 text-xs mb-1">
                     <div className="space-y-1.5">
                       <div className="flex justify-between border-b border-white/5 pb-0.5"><span className="text-muted-foreground font-bold">🥇 Top 1</span> <span className="font-black text-white">12 Pts</span></div>
                       <div className="flex justify-between border-b border-white/5 pb-0.5"><span className="text-muted-foreground font-bold">🥈 Top 2</span> <span className="font-black text-white">9 Pts</span></div>
@@ -234,7 +234,7 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
                       <div className="flex justify-between border-b border-white/5 pb-0.5"><span className="text-muted-foreground">Top 9-10</span> <span className="font-black text-white">2-1 Pts</span></div>
                     </div>
                   </div>
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] bg-primary/5 p-2.5 rounded-xl border border-primary/20">
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs bg-primary/5 p-2.5 rounded-xl border border-primary/20">
                     <span className="font-black text-primary uppercase">💀 Per Kill Reward</span>
                     <span className="font-black text-primary">1 Point</span>
                   </div>
@@ -243,23 +243,23 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
 
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Gameplay Rules</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Gameplay Rules</h3>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">All Guns & Sniper Allowed (Esports Style)</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">All Guns & Sniper Allowed (Esports Style)</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Vehicle (গাড়ি) ব্যবহার করা যাবে</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Vehicle (গাড়ি) ব্যবহার করা যাবে</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Misha Character ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Misha Character ব্যবহার সম্পূর্ণ নিষিদ্ধ</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground">আইডি লেভেল ৫০+ হতে হবে। স্কোয়াডের কোনো মেম্বার টাইমে না ঢুকলে বাকি মেম্বার নিয়ে খেলতে হবে।</span>
+                      <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">আইডি লেভেল ৫০+ হতে হবে। স্কোয়াডের কোনো মেম্বার টাইমে না ঢুকলে বাকি মেম্বার নিয়ে খেলতে হবে।</span>
                     </div>
                   </div>
                 </CardContent>
@@ -272,29 +272,29 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
             <div className="space-y-4 animate-in fade-in duration-250">
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Match Settings</h3>
-                  <div className="grid grid-cols-2 gap-3 text-[11px] mb-1">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Match Settings</h3>
+                  <div className="grid grid-cols-2 gap-3 text-xs mb-1">
                     <div className="bg-black/40 p-2.5 rounded-xl border border-white/5 text-center">
-                      <span className="text-[8px] font-bold text-muted-foreground uppercase block mb-0.5">Total Round</span>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-0.5">Total Round</span>
                       <span className="font-black text-white">9 Rounds</span>
                     </div>
                     <div className="bg-black/40 p-2.5 rounded-xl border border-white/5 text-center">
-                      <span className="text-[8px] font-bold text-muted-foreground uppercase block mb-0.5">Initial Coins</span>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-0.5">Initial Coins</span>
                       <span className="font-black text-white">9500 Coins</span>
                     </div>
                   </div>
                   <div className="space-y-2.5 pt-1">
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Character Skill, Gun Attributes Disabled</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Character Skill, Gun Attributes Disabled</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Limited Ammo Disabled (আনলিমিটেড গ্লুওয়াল)</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Limited Ammo Disabled (আনলিমিটেড গ্লুওয়াল)</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Grenade / Throwable items সম্পূর্ণ নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Grenade / Throwable items সম্পূর্ণ নিষিদ্ধ</span>
                     </div>
                   </div>
                 </CardContent>
@@ -302,18 +302,18 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
 
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Security & Identity</h3>
-                  <div className="space-y-2.5 text-[11px] text-muted-foreground">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Security & Identity</h3>
+                  <div className="space-y-2.5 text-xs text-muted-foreground">
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                       <span>হ্যাক বা প্যানেল ব্যবহার করলে সরাসরি BAN করা হবে।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
+                      <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                       <span>রেজিস্ট্রেশনকৃত নামের সাথে গেমের নামের মিল থাকতে হবে।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                       <span>পরপর ২ ম্যাচ একই প্লেয়ার খেলতে পারবে না। রিপ্লে রেকর্ড ও স্ক্রিনশট রাখা বাধ্যতামূলক।</span>
                     </div>
                   </div>
@@ -327,19 +327,19 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
             <div className="space-y-4 animate-in fade-in duration-250">
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Match Settings</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Match Settings</h3>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Round: 9 Rounds, Limited Ammo Allowed</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Round: 9 Rounds, Limited Ammo Allowed</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">All Guns, Grenade & Flash Allowed</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">All Guns, Grenade & Flash Allowed</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">Character Skills & Gun Attributes নিষিদ্ধ</span>
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">Character Skills & Gun Attributes নিষিদ্ধ</span>
                     </div>
                   </div>
                 </CardContent>
@@ -347,14 +347,14 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
 
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Format & Play Rules</h3>
-                  <div className="space-y-2.5 text-[11px] text-muted-foreground">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Format & Play Rules</h3>
+                  <div className="space-y-2.5 text-xs text-muted-foreground">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                       <span>2v2 ম্যাচ ফরম্যাট: স্লট ১ ও ৩ বনাম ২ ও ৪।</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
+                      <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                       <span>প্লেয়ার কম হলে 1v1 ম্যাচ হবে এবং বাকিদের রিফান্ড দেওয়া হবে।</span>
                     </div>
                   </div>
@@ -368,19 +368,19 @@ export function RulesModal({ isOpen, onClose, defaultTab = 'overall' }: RulesMod
             <div className="space-y-4 animate-in fade-in duration-250">
               <Card className="border-white/5 bg-white/5 rounded-2xl overflow-hidden shadow-none">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Settings & Gameplay</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary border-b border-white/5 pb-1.5">Settings & Gameplay</h3>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">শুধুমাত্র Headshot Damage কার্যকর হবে (বডি ড্যামেজ কাজ করবে না)</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">শুধুমাত্র Headshot Damage কার্যকর হবে (বডি ড্যামেজ কাজ করবে না)</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground font-bold">All Guns Allowed (ওয়ান ট্যাপ মোড এনাবল)</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground font-bold">All Guns Allowed (ওয়ান ট্যাপ মোড এনাবল)</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-muted-foreground">প্লেয়ার লেভেল অবশ্যই ৫০+ হতে হবে এবং স্ক্রিন রেকর্ড থাকতে হবে।</span>
+                      <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">প্লেয়ার লেভেল অবশ্যই ৫০+ হতে হবে এবং স্ক্রিন রেকর্ড থাকতে হবে।</span>
                     </div>
                   </div>
                 </CardContent>
