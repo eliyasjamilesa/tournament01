@@ -35,10 +35,28 @@ export default function Home() {
   const { toast } = useToast();
   const [lastNotifiedId, setLastNotifiedId] = useState<string | null>(null);
   
-  // Only show splash if it hasn't been shown in this session
-  const [showSplash, setShowSplash] = useState(!hasShownSplashInSession);
+  const [showSplash, setShowSplash] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [showWelcomeRules, setShowWelcomeRules] = useState(false);
+
+  useEffect(() => {
+    // Only show splash if it hasn't been shown in this browser session
+    const hasShown = sessionStorage.getItem('has_shown_splash');
+    if (!hasShown) {
+      setShowSplash(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && showSplash) {
+      // 800ms delay for a quick, premium transition
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem('has_shown_splash', 'true');
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, showSplash]);
 
   useEffect(() => {
     if (user && !authLoading && !showSplash) {
@@ -71,17 +89,6 @@ export default function Home() {
   useEffect(() => {
     // Pre-fetch login page to avoid delay during redirect
     router.prefetch('/login');
-
-    if (hasShownSplashInSession) {
-      setShowSplash(false);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-      hasShownSplashInSession = true;
-    }, 5000); // 5 seconds splash is optimal
-    return () => clearTimeout(timer);
   }, [router]);
 
   useEffect(() => {

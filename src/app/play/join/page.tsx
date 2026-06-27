@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { RulesModal } from '@/components/RulesModal';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, setDoc, updateDoc, increment, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +49,7 @@ function JoinMatchContent() {
   const [ingameName, setIngameName] = useState('');
   const [ingameId, setIngameId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
 
   const tournamentRef = useMemoFirebase(() => {
     if (!db || !tournamentId) return null;
@@ -396,13 +398,12 @@ function JoinMatchContent() {
                 <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
                   টুর্নামেন্টে জয়েন করার পূর্বে আমাদের ম্যাচ রুলসগুলো মনোযোগ দিয়ে পড়ে নিন। নিয়ম ভঙ্গ করলে কোনো রিফান্ড দেওয়া হবে না।
                 </p>
-                <Link 
-                  href="/profile/rules" 
-                  target="_blank" 
-                  className="text-[10px] font-black uppercase tracking-wider text-primary hover:underline inline-flex items-center gap-1 mt-1"
+                <button 
+                  onClick={() => setRulesModalOpen(true)}
+                  className="text-[10px] font-black uppercase tracking-wider text-primary hover:underline inline-flex items-center gap-1 mt-1 text-left"
                 >
                   ম্যাচ রুলস পড়ুন <ExternalLink className="w-3 h-3" />
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -469,6 +470,8 @@ function JoinMatchContent() {
           </div>
         </div>
       )}
+
+      <RulesModal isOpen={rulesModalOpen} onClose={() => setRulesModalOpen(false)} />
     </div>
   );
 }

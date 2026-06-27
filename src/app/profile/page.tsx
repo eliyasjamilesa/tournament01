@@ -23,17 +23,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { RulesModal } from '@/components/RulesModal';
 import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collectionGroup, query, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function ProfilePage() {
   const { user, loading: userLoading } = useUser();
   const db = useFirestore();
   const auth = useAuth();
   const router = useRouter();
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -100,7 +102,7 @@ export default function ProfilePage() {
       items: [
         { icon: Swords, label: 'My Matches', href: '/joined', color: 'text-blue-500' },
         { icon: BarChart3, label: 'Leaderboard', href: '/leaderboard', color: 'text-yellow-500' },
-        { icon: ShieldCheck, label: 'Tournament Rules', href: '/profile/rules', color: 'text-green-500' },
+        { icon: ShieldCheck, label: 'Tournament Rules', onClick: () => setRulesModalOpen(true), color: 'text-green-500' },
       ]
     },
     {
@@ -211,8 +213,8 @@ export default function ProfilePage() {
             </h2>
             <Card className="border-white/5 bg-card/30 overflow-hidden shadow-none">
               <div className="divide-y divide-white/5">
-                {section.items.map((item) => (
-                  <Link href={item.href} key={item.label} className="block group">
+                {section.items.map((item) => {
+                  const content = (
                     <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-all">
                       <div className="flex items-center gap-4">
                         <div className="w-8 h-8 rounded-lg bg-secondary/30 flex items-center justify-center transition-colors">
@@ -224,8 +226,26 @@ export default function ProfilePage() {
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                     </div>
-                  </Link>
-                ))}
+                  );
+
+                  if ('onClick' in item && item.onClick) {
+                    return (
+                      <button 
+                        onClick={item.onClick} 
+                        key={item.label} 
+                        className="block w-full text-left group border-none outline-none bg-transparent"
+                      >
+                        {content}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <Link href={item.href || '#'} key={item.label} className="block group">
+                      {content}
+                    </Link>
+                  );
+                })}
               </div>
             </Card>
           </div>
@@ -245,6 +265,8 @@ export default function ProfilePage() {
           App Version 1.0.4-Stable
         </p>
       </div>
+
+      <RulesModal isOpen={rulesModalOpen} onClose={() => setRulesModalOpen(false)} />
     </div>
   );
 }
