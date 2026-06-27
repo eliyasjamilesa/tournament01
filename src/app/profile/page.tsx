@@ -100,7 +100,7 @@ export default function ProfilePage() {
       items: [
         { icon: Swords, label: 'My Matches', href: '/joined', color: 'text-blue-500' },
         { icon: BarChart3, label: 'Leaderboard', href: '/leaderboard', color: 'text-yellow-500' },
-        { icon: ShieldCheck, label: 'Tournament Rules', href: '#', color: 'text-green-500' },
+        { icon: ShieldCheck, label: 'Tournament Rules', href: '/profile/rules', color: 'text-green-500' },
       ]
     },
     {

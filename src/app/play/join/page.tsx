@@ -2,6 +2,7 @@
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   ArrowLeft, 
   Check, 
@@ -16,7 +17,8 @@ import {
   Info,
   ShieldAlert,
   Percent,
-  ChevronLeft
+  ChevronLeft,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -387,6 +389,22 @@ function JoinMatchContent() {
                 </div>
               </div>
             </Card>
+
+            <div className="p-5 rounded-[2rem] bg-white/5 border border-white/5 flex items-start gap-4">
+              <ShieldAlert className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
+                  টুর্নামেন্টে জয়েন করার পূর্বে আমাদের ম্যাচ রুলসগুলো মনোযোগ দিয়ে পড়ে নিন। নিয়ম ভঙ্গ করলে কোনো রিফান্ড দেওয়া হবে না।
+                </p>
+                <Link 
+                  href="/profile/rules" 
+                  target="_blank" 
+                  className="text-[10px] font-black uppercase tracking-wider text-primary hover:underline inline-flex items-center gap-1 mt-1"
+                >
+                  ম্যাচ রুলস পড়ুন <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
 
             {Number(profile?.coins || 0) < feeCalculation.final && (
                <div className="p-5 bg-red-600/10 border border-red-600/20 rounded-2xl flex items-center gap-4 animate-pulse">

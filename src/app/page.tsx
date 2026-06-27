@@ -3,11 +3,20 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Bell, ChevronRight, Swords, Flame, Loader2 } from 'lucide-react';
+import { Zap, Bell, ChevronRight, Swords, Flame, Loader2, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
@@ -29,6 +38,21 @@ export default function Home() {
   // Only show splash if it hasn't been shown in this session
   const [showSplash, setShowSplash] = useState(!hasShownSplashInSession);
   const [redirecting, setRedirecting] = useState(false);
+  const [showWelcomeRules, setShowWelcomeRules] = useState(false);
+
+  useEffect(() => {
+    if (user && !authLoading && !showSplash) {
+      const hasSeen = localStorage.getItem('has_seen_welcome_rules');
+      if (!hasSeen) {
+        setShowWelcomeRules(true);
+      }
+    }
+  }, [user, authLoading, showSplash]);
+
+  const handleAcceptRules = () => {
+    localStorage.setItem('has_seen_welcome_rules', 'true');
+    setShowWelcomeRules(false);
+  };
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -282,6 +306,75 @@ export default function Home() {
               </Link>
             </section>
           </main>
+
+          <AlertDialog open={showWelcomeRules} onOpenChange={setShowWelcomeRules}>
+            <AlertDialogContent className="bg-[#0c0c0c] border-white/5 rounded-[2.5rem] max-w-md w-[92%] max-h-[85vh] flex flex-col p-6 overflow-hidden shadow-2xl">
+              <AlertDialogHeader className="shrink-0 space-y-2 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto shadow-inner">
+                   <ShieldCheck className="w-8 h-8 text-primary animate-pulse" />
+                </div>
+                <AlertDialogTitle className="text-xl font-black uppercase italic tracking-tight text-white">স্বাগতম TS Tour এ!</AlertDialogTitle>
+                <AlertDialogDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  ম্যাচে জয়েন করার পূর্বে নিয়মগুলো মনোযোগ দিয়ে পড়ে নিন
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              {/* Rules list - Scrollable container */}
+              <div className="flex-1 overflow-y-auto pr-1 my-4 space-y-3.5 no-scrollbar text-left">
+                {[
+                  {
+                    num: "১",
+                    title: "স্লট নাম্বার নির্বাচন",
+                    desc: "ম্যাচে জয়েন করার সময় আপনি নিজের পছন্দমতো Slot Number নির্বাচন করতে পারবেন। জয়েন করার পর অবশ্যই আপনার স্লট নাম্বারটি মনে রাখবেন।"
+                  },
+                  {
+                    num: "২",
+                    title: "কাস্টম রুমে প্রবেশের নিয়ম",
+                    desc: "রুম ডিটেইলস থেকে Room ID ও Password সংগ্রহ করুন। Free Fire-এর Custom Section-এ গিয়ে Room ID দিয়ে সার্চ করুন। এরপর Password দিয়ে রুমে প্রবেশ করুন।"
+                  },
+                  {
+                    num: "৩",
+                    title: "Observer থেকে নিজের স্লটে যাওয়া",
+                    desc: "রুমে ঢোকার পর সরাসরি কোনো স্লটে বসবেন না। প্রথমে Observer Mode-এ যান। তারপর আপনার নির্ধারিত Slot Number অনুযায়ী সঠিক স্লটে বসুন।"
+                  },
+                  {
+                    num: "৪",
+                    title: "স্লট সংক্রান্ত সমস্যা হলে করণীয়",
+                    desc: "যদি দেখেন আপনার স্লটে অন্য কেউ বসে আছে, তাহলে চ্যাটে মেসেজ না দিয়ে সরাসরি Voice On করে Host-কে জানান। Voice ব্যবহার করাই উত্তম।"
+                  },
+                  {
+                    num: "৫",
+                    title: "শৃঙ্খলা বজায় রাখা",
+                    desc: "অপ্রয়োজনীয়ভাবে Voice On করে চিৎকার বা বিশৃঙ্খলা সৃষ্টি করবেন না। টুর্নামেন্টের পরিবেশ সুন্দর রাখা সকলের দায়িত্ব।"
+                  },
+                  {
+                    num: "৬",
+                    title: "Screen Record বাধ্যতামূলক",
+                    desc: "Room ID ও Password নেওয়া থেকে শুরু করে ম্যাচ শুরু হওয়া পর্যন্ত পুরো প্রক্রিয়াটি Screen Record করে রাখবেন। কোনো প্রকার Refund দাবি করতে হলে Video Proof থাকা আবশ্যক। Video Proof ছাড়া কোনো অভিযোগ গ্রহণযোগ্য হবে না।"
+                  }
+                ].map((rule) => (
+                  <div key={rule.num} className="flex gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 font-black text-primary text-xs">
+                      {rule.num}
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-bold text-white tracking-tight">{rule.title}</h4>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">{rule.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <AlertDialogFooter className="shrink-0 pt-2 border-t border-white/5">
+                <AlertDialogAction 
+                  onClick={handleAcceptRules}
+                  className="w-full h-12 magma-gradient font-black uppercase italic tracking-widest text-xs rounded-xl shadow-lg shadow-primary/25 active:scale-95 transition-all"
+                >
+                  আমি নিয়মগুলো পড়েছি ও রাজী
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
     </div>
