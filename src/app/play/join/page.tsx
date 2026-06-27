@@ -31,9 +31,15 @@ function JoinMatchContent() {
   const searchParams = useSearchParams();
   const tournamentId = searchParams.get('id');
   const router = useRouter();
-  const { user } = useUser();
+  const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const [step, setStep] = useState(1);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
@@ -183,7 +189,7 @@ function JoinMatchContent() {
     }
   };
 
-  if (tournamentLoading || regsLoading || profileLoading) {
+  if (authLoading || tournamentLoading || regsLoading || profileLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

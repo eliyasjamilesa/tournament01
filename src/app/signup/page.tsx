@@ -69,7 +69,7 @@ export default function SignupPage() {
       }, { merge: true });
 
       toast({ title: "সফল", description: "আপনার প্রোফাইল তৈরি হয়েছে।" });
-      router.push('/');
+      window.location.href = '/';
     } catch (error: any) {
       let message = "Signup Failed";
       if (error.code === 'auth/email-already-in-use') {
@@ -114,7 +114,7 @@ export default function SignupPage() {
         }, { merge: true });
       }
 
-      router.push('/');
+      window.location.href = '/';
     } catch (error: any) {
       if (error.code !== 'auth/popup-closed-by-user') {
         setErrorMsg("Google Connection Failed");

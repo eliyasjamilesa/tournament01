@@ -33,7 +33,7 @@ export default function LoginPage() {
     setErrorMsg(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      window.location.href = '/';
     } catch (error: any) {
       let message = "Login Failed";
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -75,7 +75,7 @@ export default function LoginPage() {
         }, { merge: true });
       }
 
-      router.push('/');
+      window.location.href = '/';
     } catch (error: any) {
       if (error.code === 'auth/unauthorized-domain') {
         const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';

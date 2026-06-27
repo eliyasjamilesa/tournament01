@@ -12,20 +12,22 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
+  const [prevDocRef, setPrevDocRef] = useState<DocumentReference<T> | null>(null);
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  if (docRef !== prevDocRef) {
+    setPrevDocRef(docRef);
+    setData(null);
+    setLoading(docRef ? true : false);
+    setError(null);
+  }
+
   useEffect(() => {
     if (!docRef) {
-      setData(null);
-      setLoading(false);
       return;
     }
-
-    // Reset state when docRef changes to prevent showing stale data
-    setLoading(true);
-    setData(null);
 
     const unsubscribe = onSnapshot(
       docRef,

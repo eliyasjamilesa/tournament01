@@ -12,20 +12,22 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
+  const [prevQuery, setPrevQuery] = useState<Query<T> | null>(null);
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setData([]);
+    setLoading(query ? true : false);
+    setError(null);
+  }
+
   useEffect(() => {
     if (!query) {
-      setData([]);
-      setLoading(false);
       return;
     }
-
-    // Reset state when query changes to prevent showing stale data
-    setLoading(true);
-    setData([]);
 
     const unsubscribe = onSnapshot(
       query,
